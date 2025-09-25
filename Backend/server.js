@@ -39,7 +39,7 @@ app.use("/api/purchases",purchaseRoutes)
 app.use("/api/sales",saleposRoutes)
 app.use("/api/cus_payments",customerpaymentRoutes)
 app.use("/api/sup_payments",supplierpaymentRoutes)
-app.use("/api/stocksadj",stockadjustmentRoutes)
+app.use("/api/stocks",stockadjustmentRoutes)
 app.use("/api/reports", reportRoutes);
 app.use("/api/users",userRoutes)
 

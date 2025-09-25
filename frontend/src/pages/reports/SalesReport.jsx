@@ -146,35 +146,35 @@ const SalesReport = () => {
               </tr>
             </thead>
             <tbody>
-              {filteredreports.length === 0 ? (
-                <tr>
-                  <td colSpan="11" className="text-center">
-                    No reports found.
-                  </td>
-                </tr>
-              ) : (
-                salesreport.map((s) => (
-                  <tr key={s._id}>
+  {filteredreports.length === 0 ? (
+    <tr>
+      <td colSpan="11" className="text-center">
+        No reports found.
+      </td>
+    </tr>
+  ) : (
+    filteredreports.map((s) => (
+      <tr key={s._id}>
+        <td>{s.from_date}</td>
+        <td>{s.to_date}</td>
+        <td>{s.customer_id && typeof s.customer_id === "object" ? s.customer_id.name : s.customer_id}</td>
+        <td>{s.invoice_type}</td>
+        <td>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => handleDelete(s._id)}
+          >
+            <span className="text-warning">
+              <MdDeleteForever />
+            </span>
+            Delete
+          </button>
+        </td>
+      </tr>
+    ))
+  )}
+</tbody>
 
-                    <td>{s.from_date}</td>
-                    <td>{s.to_date}</td>
-                    <td>{s.customer_id.name}</td>
-                    <td>{s.invoice_type}</td>
-                    <td>
-                      <button
-                        className="btn btn-danger btn-sm"
-                        onClick={() => handleDelete(s._id)}
-                      >
-                        <span className="text-warning">
-                          <MdDeleteForever />
-                        </span>
-                        Delete
-                      </button>
-                    </td>
-
-                  </tr>
-                )))}
-            </tbody>
           </table>
         </div>
       </div>

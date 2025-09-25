@@ -5,11 +5,17 @@ import { MdDelete } from "react-icons/md";
 import { FaSave } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
+import { useDispatch,useSelector } from "react-redux";
+import { fetchwarehouses } from "../redux/warehouseSlice";
+import { fetchProducts } from "../redux/productSlice";
+import { addstock, deletestock, fetchstocks } from "../redux/stockadjSlice";
 
 const StockAdjustment = () => {
-    const [warehouses, setWarehouses] = useState([]);
-    const [products, setProducts] = useState([]);
-    const [stocksadjust, setStocksadjust] = useState([]);
+    const dispatch=useDispatch()
+    const {items:stocks,status}= useSelector((state)=>state.stocks)
+    const {items:warehouses}=useSelector((state)=>state.warehouses)
+    const {items:products}=useSelector((state)=>state.products)
+    
     const [form, setForm] = useState({
         warehouse_id: "",
         reason: "",
@@ -19,17 +25,10 @@ const StockAdjustment = () => {
     });
 
     useEffect(() => {
-        axios.get("http://localhost:5000/api/warehouses")
-            .then(res => setWarehouses(res.data))
-            .catch(err => console.error("Error fetching warehouses:", err));
+       dispatch(fetchwarehouses())
 
-        axios.get("http://localhost:5000/api/products")
-            .then(res => setProducts(res.data))
-            .catch(err => console.error("Error fetching products:", err));
-
-        axios.get("http://localhost:5000/api/stocksadj")
-            .then(res => setStocksadjust(res.data))
-            .catch(err => console.error("Error fetching stock adjustments:", err));
+       dispatch(fetchProducts())
+dispatch(fetchstocks())
     }, []);
 
     const handleChange = (e) => {
@@ -64,8 +63,7 @@ const StockAdjustment = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const res = await axios.post("http://localhost:5000/api/stocksadj", form);
-            setStocksadjust([...stocksadjust, res.data]);
+            dispatch(addstock(form))
             setForm({
                 warehouse_id: "",
                 reason: "",
@@ -80,7 +78,7 @@ const StockAdjustment = () => {
 
     const [search, setSearch] = useState("")
 
-    const filteredstocks = stocksadjust.filter((s) => {
+    const filteredstocks = stocks.filter((s) => {
         const warehousename = s.warehouse_id?.store_name || warehouses.find((w) => w._id === s.warehouse_id)?.store_name || "";
         const productNames = s.items.map((item) =>
             products.find((p) => p._id === item.product_id)?.name || "Unknown"
@@ -96,12 +94,7 @@ const StockAdjustment = () => {
     });
 
     const handleDelete = async (id) => {
-        try {
-            await axios.delete(`http://localhost:5000/api/stocksadj/${id}`);
-            setStocksadjust(stocksadjust.filter((s) => s._id !== id));
-        } catch (err) {
-            console.error(err);
-        }
+      dispatch(deletestock(id))
     };
 
 
