@@ -12,7 +12,7 @@ exports.getGSTReports = async (req, res) => {
 
 exports.addGSTReport = async (req, res) => {
   try {
-    const gstreport = new GSTreport(req.body)
+    const gstreport = new GSTreport({...req.body, state: req.body.state || ""  })
     await gstreport.save()
     await gstreport.populate('customer_id', 'name state_code')
     await gstreport.populate('supplier_id', 'name state_code')

@@ -3,11 +3,16 @@ import React, { useEffect, useState } from "react";
 import { FaRegSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
-
+import { useDispatch,useSelector } from "react-redux";
+import { fetchsuppliers } from "../../redux/supplierSlice";
+import { addpurchasereport, deletepurchasereport, fetchpurchasereports } from "../../redux/purchasereportSlice";
 
 const PurchaseReport = () => {
-  const [suppliers,setSuppliers]=useState([])
-  const [purchasereport,setPurchasereport]=useState([])
+  const dispatch=useDispatch()
+  const {items:purchasereports,status}=useSelector((state)=>state.purchasereports)
+  const {items:suppliers}=useSelector((state)=>state.suppliers)
+  
+ 
   const [form,setForm]=useState({
     from_date: "",
     to_date: "",
@@ -15,12 +20,9 @@ const PurchaseReport = () => {
   })
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/suppliers")
-      .then(res => setSuppliers(res.data))
+  dispatch(fetchsuppliers())
 
-    axios.get("http://localhost:5000/api/reports/purchase")
-      .then(res => setPurchasereport(res.data))
-      .catch(err => console.error(err))
+    dispatch(fetchpurchasereports())
   }, [])
   const handleChange=(e)=>{
     const {name,value}=e.target
@@ -29,8 +31,7 @@ const PurchaseReport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const res=await axios.post("http://localhost:5000/api/reports/purchase", form)
-      setPurchasereport([...purchasereport, res.data])
+     dispatch(addpurchasereport(form))
       setForm({
         from_date: "",
         to_date: "",
@@ -42,7 +43,7 @@ const PurchaseReport = () => {
     }
   }
   const [search,setSearch]=useState("");
-  const filteredreports=purchasereport.filter((p) => {
+  const filteredreports=purchasereports.filter((p) => {
     const supplierName=p.supplier_id?.name || p.supplier_id?.toString() || "";
     return (
       supplierName.toLowerCase().includes(search.toLowerCase()) ||
@@ -52,12 +53,7 @@ const PurchaseReport = () => {
 
 
   const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/reports/purchase/${id}`);
-      setPurchasereport(purchasereport.filter((p) => p._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+    dispatch(deletepurchasereport(id))
   };
 
 
@@ -113,7 +109,7 @@ const PurchaseReport = () => {
                   </td>
                 </tr>
               ) : (
-                purchasereport.map((p) => (
+                purchasereports.map((p) => (
                   <tr key={p._id}>
 
                     <td>{p.from_date}</td>

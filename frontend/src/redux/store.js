@@ -11,6 +11,10 @@ import saleReducer from "./saleSlice"
 import customerPaymentReducer from "./customerpaymentSlice"
 import supplierPaymentReducer from "./supplierpaymentSlice"
 import stockadjReducer from "./stockadjSlice"
+import salereportReducer from "./salereportSlice"
+import purchasereportReducer from "./purchasereportSlice"
+import stockreportReducer from "./stockreportSlice"
+import gstreportReducer from "./gstreportSlice"
 
 export const store = configureStore({
   reducer: {
@@ -26,5 +30,9 @@ export const store = configureStore({
     cus_payments:customerPaymentReducer,
     sup_payments:supplierPaymentReducer,
     stocks:stockadjReducer,
+    salereports:salereportReducer,
+    purchasereports:purchasereportReducer,
+    stockreports:stockreportReducer,
+    gstreports:gstreportReducer,
   },
 });

@@ -7,7 +7,7 @@ const gstreportSchema = new mongoose.Schema({
     customer_id:{type:mongoose.Schema.Types.ObjectId,ref:"Customer"},
     supplier_id:{type:mongoose.Schema.Types.ObjectId,ref:"Supplier"},
     hsn:{type:String},
-    state:{type:String},
+    state_code:{type:String},
 })
 
 module.exports = mongoose.model("GSTreport",gstreportSchema)

@@ -3,10 +3,17 @@ import React, { useEffect, useState } from "react";
 import { FaRegSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { addsalereport, deletesalereport, fetchsalereports } from "../../redux/salereportSlice";
+import { fetchcustomers } from "../../redux/customerSlice";
+
 
 const SalesReport = () => {
-  const [customers, setCustomers] = useState([])
-  const [salesreport, setSalesreport] = useState([])
+  const dispatch=useDispatch()
+  const {items:salereports,status}=useSelector((state)=>state.salereports)
+  const {items:customers}=useSelector((state)=>state.customers)
+ 
+  
   const [form, setForm] = useState({
     from_date: "",
     to_date: "",
@@ -17,12 +24,10 @@ const SalesReport = () => {
   })
 
   useEffect(() => {
-    axios.get("http://localhost:5000/api/customers")
-      .then(res => setCustomers(res.data))
+    dispatch(fetchcustomers())
+    dispatch(fetchsalereports())
 
-    axios.get("http://localhost:5000/api/reports/sales")
-      .then(res => setSalesreport(res.data))
-      .catch(err => console.error(err))
+
   }, [])
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -31,9 +36,7 @@ const SalesReport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-      const res = await axios.post("http://localhost:5000/api/reports/sales", form);
-
-      setSalesreport([...salesreport, res.data]);
+     dispatch(addsalereport(form))
       setForm({
         from_date: "",
         to_date: "",
@@ -48,7 +51,7 @@ const SalesReport = () => {
   }
 
   const [search, setSearch] = useState("");
-  const filteredreports = salesreport.filter((s) => {
+  const filteredreports = salereports.filter((s) => {
     const customerName = s.customer_id?.name || s.customer_id?.toString() || "";
     return (
       customerName.toLowerCase().includes(search.toLowerCase()) ||
@@ -57,12 +60,7 @@ const SalesReport = () => {
   });
 
   const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/reports/sales/${id}`);
-      setSalesreport(salesreport.filter((s) => s._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+    dispatch(deletesalereport(id))
   };
   return (
     <div className="container mt-4 bg-gradient-warning">

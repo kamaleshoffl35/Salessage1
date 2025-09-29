@@ -9,7 +9,7 @@ export const fetchsales=createAsyncThunk("sales/fetchAll",async () => {
 })
 
 export const addSale=createAsyncThunk("sales/add",async (sale) => {
-    const res=await axios.get(API_URL,sale)
+    const res=await axios.post(API_URL,sale)
     return res.data
 })
 

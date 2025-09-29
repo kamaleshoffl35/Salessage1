@@ -3,13 +3,21 @@ import React, { useEffect, useState } from "react";
 import { FaRegSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../../redux/productSlice";
+import { fetchwarehouses } from "../../redux/warehouseSlice";
+import { fetchCategories } from "../../redux/categorySlice";
+import { addstockreport, deletestockreport, fetchstockreports } from "../../redux/stockreportSlice";
 
 
 const StockReport = () => {
-  const [products,setProducts]=useState([])
-  const [warehouses,setWarehouses]=useState([])
-  const [categories,setCategories]=useState([])
-  const [stockreport,setStockreport] = useState([])
+  const dispatch=useDispatch()
+  const {items:stockreports,status}=useSelector((state)=>state.stockreports)
+  const {items:products}=useSelector((state)=>state.products)
+  const {items:warehouses}=useSelector((state)=>state.warehouses)
+  const {items:categories}=useSelector((state)=>state.categories)
+  
+  
   const [form,setForm] = useState({
     product_id:"",
     warehouse_id:"",
@@ -17,18 +25,12 @@ const StockReport = () => {
   })
 
   useEffect(()=>{
-    axios.get("http://localhost:5000/api/products")
-    .then(res=>setProducts(res.data))
+    dispatch(fetchProducts())
 
-    axios.get("http://localhost:5000/api/warehouses")
-    .then(res=>setWarehouses(res.data))
+   dispatch(fetchwarehouses())
 
-    axios.get("http://localhost:5000/api/categories")
-    .then(res=>setCategories(res.data))
-
-    axios.get("http://localhost:5000/api/reports/stock")
-    .then(res=>setStockreport(res.data))
-    .catch(err=>console.error(err))
+   dispatch(fetchCategories())
+  dispatch(fetchstockreports())
   },[])
   const handleChange=(e)=>{
     const {name,value}=e.target
@@ -37,8 +39,7 @@ const StockReport = () => {
   const handleSubmit=async (e) => {
     e.preventDefault()
     try{
-      const res = await axios.post("http://localhost:5000/api/reports/stock",form)
-      setStockreport([...stockreport,res.data])
+      dispatch(addstockreport(form))
       setForm({
         product_id:"",
         warehouse_id:"",
@@ -51,7 +52,7 @@ const StockReport = () => {
   }
 
   const [search, setSearch] = useState("");
-    const filteredreports = stockreport.filter((s) => {
+    const filteredreports = stockreports.filter((s) => {
   const ProductName = s.product_id?.name || s.product_id?.toString() || "";
   const WarehouseName =s.warehouse_id?.name ||s.warehouse_id?.store_name ||s.warehouse_id?.warehouse_name ||(typeof s.warehouse_id === "string" ? s.warehouse_id : s.warehouse_id?.toString?.()) ||"";
   const CategoryName = s.category_id?.name || s.category_id?.toString() || "";
@@ -66,12 +67,7 @@ const StockReport = () => {
 });
 
 const handleDelete = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/api/reports/stock/${id}`);
-      setStockreport(stockreport.filter((s) => s._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+    dispatch(deletestockreport(id))
   };
 
   return (
