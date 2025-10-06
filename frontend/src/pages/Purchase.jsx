@@ -34,7 +34,7 @@ const Purchase = () => {
         payment_mode: "",
         notes: ""
     });
-    const [purchaseList, setPurchaseList] = useState([]);
+  
 
     useEffect(() => {
        dispatch(fetchsuppliers())
@@ -98,15 +98,37 @@ const Purchase = () => {
         });
     };
 
-  const handleSubmit = async (e) => {
+ const handleSubmit = async (e) => {
   e.preventDefault();
-  calculateTotals();
+
+  // manually compute totals first
+  let subtotal = 0;
+  purchase.items.forEach(item => {
+    const lineTotal =
+      (Number(item.qty) || 0) * (Number(item.unit_price) || 0) -
+      (Number(item.discount) || 0) +
+      (Number(item.tax) || 0);
+    subtotal += lineTotal;
+  });
+
+  const discount_amount = Number(purchase.discount_amount || 0);
+  const other_charges = Number(purchase.other_charges || 0);
+  const round_off = Number(purchase.round_off || 0);
+  const grand_total = subtotal - discount_amount + other_charges + round_off;
+
+  const paid_amount = Number(purchase.paid_amount || 0);
+  const due_amount = grand_total - paid_amount;
+
+  const purchaseData = {
+    ...purchase,
+    subtotal,
+    grand_total,
+    due_amount,
+  };
+
   try {
-    // Use unwrap to get the response from the thunk
-    const res = await dispatch(addpurchase(purchase)).unwrap();
-
-    setPurchaseList([...purchaseList, res]); // res has _id from backend
-
+    const res = await dispatch(addpurchase(purchaseData)).unwrap();
+    
     setPurchase({
       supplier_id: "",
       invoice_no: "",
@@ -129,8 +151,9 @@ const Purchase = () => {
 };
 
 
+
     const [search, setSearch] = useState("");
-    const filteredpurchase = purchaseList.filter((p) =>
+    const filteredpurchase = purchases.filter((p) =>
         (p.supplier_id?.name || p.supplier_id || "").toString().toLowerCase().includes(search.toLowerCase()) ||
         (p.invoice_no || "").toString().toLowerCase().includes(search.toLowerCase()) ||
         (p.items?.some(item => products.find(prod => prod._id === item.product_id)?.name?.toLowerCase().includes(search.toLowerCase())))
@@ -139,7 +162,7 @@ const Purchase = () => {
   if (!id) return console.error("Purchase ID is undefined");
   try {
     await dispatch(deletepurchase(id)).unwrap();
-    setPurchaseList(purchaseList.filter(p => p._id !== id));
+    
   } catch (err) {
     console.error(err);
   }
@@ -325,35 +348,58 @@ const Purchase = () => {
                                 <th className="fw-bold">Actions</th>
                             </tr>
                         </thead>
-                        <tbody>
-                            {filteredpurchase.map((p, index) => (
-                                <tr key={index}>
-                                    <td>{p.supplier_id?.name || p.supplier_id}</td>
-                                    <td>{p.invoice_no}</td>
-                                    <td>{p.invoice_date}</td>
-                                    <td>{p.warehouse_id?.store_name || p.warehouse_id}</td>
-                                    <td>
-                                        {p.items.map((item, idx) => (
-                                            <div key={idx}>
-                                                {item.product_id?.name || "Unknown Product"} ({item.qty})
-                                            </div>
-                                        ))}
-                                    </td>
-                                    <td>{p.subtotal}</td>
-                                    <td>{p.other_charges}</td>
-                                    <td>{p.grand_total}</td>
-                                    <td>{p.paid_amount}</td>
-                                    <td>{p.due_amount}</td>
-                                    <td>{p.payment_mode}</td>
-                                    <td><button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>
-                                        <span className="text-warning">
-                                            <MdDeleteForever />
-                                        </span>
-                                        Delete
-                                    </button></td>
-                                </tr>
-                            ))}
-                        </tbody>
+      <tbody>
+  {filteredpurchase.map((p, index) => (
+    <tr key={index}>
+      <td>
+        {typeof p.supplier_id === "object"
+          ? p.supplier_id.name
+          : suppliers.find(s => s._id === p.supplier_id)?.name || "Unknown Supplier"}
+      </td>
+      <td>{p.invoice_no}</td>
+      <td>{p.invoice_date}</td>
+      <td>
+        {typeof p.warehouse_id === "object"
+          ? p.warehouse_id.store_name
+          : warehouses.find(w => w._id === p.warehouse_id)?.store_name || "Unknown Warehouse"}
+      </td>
+     <td>
+  {p.items.map((item, idx) => {
+    // Defensive check for null
+    const productName =
+      item.product_id && typeof item.product_id === 'object'
+        ? item.product_id.name
+        : products.find(prod => prod._id === item.product_id)?.name || 'Unknown Product';
+
+    return (
+      <div key={idx}>
+        {productName} ({item.qty})
+      </div>
+    );
+  })}
+</td>
+
+
+      <td>{p.subtotal ?? 0}</td>
+      <td>{p.other_charges ?? 0}</td>
+      <td>{p.grand_total ?? 0}</td>
+      <td>{p.paid_amount}</td>
+      <td>{p.due_amount ?? 0}</td>
+      <td>{p.payment_mode}</td>
+      <td>
+        <button
+          className="btn btn-danger btn-sm"
+          onClick={() => handleDelete(p._id)}
+        >
+          <span className="text-warning"><MdDeleteForever /></span> Delete
+        </button>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
+
+
                     </table>
                 </div>
             </div>

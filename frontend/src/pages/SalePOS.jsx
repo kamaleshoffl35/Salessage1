@@ -391,41 +391,41 @@ const SalePOS = () => {
                 <th>Actions</th>
               </tr>
             </thead>
-           <tbody>
-  {filteredsales.map((s) => (
-    <tr key={s._id}>
-      <td>{s.customer_id?.name || "Unknown Customer"}</td>
-      <td>{s.invoice_no || "N/A"}</td>
-      <td>
-        {s.invoice_date_time
-          ? new Date(s.invoice_date_time).toLocaleDateString()
-          : "N/A"}
-      </td>
-      <td>{s.counter_id || "N/A"}</td>
-      <td>{s.payment_mode || "N/A"}</td>
-      <td>
-        {(s.items || []).map((item, idx) => (
-          <div key={idx}>
-            {item.product_id?.name || "Unknown Product"} ({item.qty || 0})
-          </div>
-        ))}
-      </td>
-      <td>{s.subtotal?.toFixed(2) || "0.00"}</td>
-      <td>{s.discount_amount?.toFixed(2) || "0.00"}</td>
-      <td>{s.tax_amount?.toFixed(2) || "0.00"}</td>
-      <td>{s.grand_total?.toFixed(2) || "0.00"}</td>
-      <td>{s.due_amount?.toFixed(2) || "0.00"}</td>
-      <td>
-        <button
-          className="btn btn-sm btn-danger"
-          onClick={() => handleDelete(s._id)}
-        >
-          <MdDeleteForever /> Delete
-        </button>
-      </td>
-    </tr>
-  ))}
-</tbody>
+            <tbody>
+              {filteredsales.map((s) => (
+                <tr key={s._id}>
+                  <td>{s.customer_id?.name || "Unknown Customer"}</td>
+                  <td>{s.invoice_no || "N/A"}</td>
+                  <td>
+                    {s.invoice_date_time
+                      ? new Date(s.invoice_date_time).toLocaleDateString()
+                      : "N/A"}
+                  </td>
+                  <td>{s.counter_id || "N/A"}</td>
+                  <td>{s.payment_mode || "N/A"}</td>
+                  <td>
+                    {(s.items || []).map((item, idx) => (
+                      <div key={idx}>
+                        {item.product_id?.name || "Unknown Product"} ({item.qty || 0})
+                      </div>
+                    ))}
+                  </td>
+                  <td>{s.subtotal?.toFixed(2) || "0.00"}</td>
+                  <td>{s.discount_amount?.toFixed(2) || "0.00"}</td>
+                  <td>{s.tax_amount?.toFixed(2) || "0.00"}</td>
+                  <td>{s.grand_total?.toFixed(2) || "0.00"}</td>
+                  <td>{s.due_amount?.toFixed(2) || "0.00"}</td>
+                  <td>
+                    <button
+                      className="btn btn-sm btn-danger"
+                      onClick={() => handleDelete(s._id)}
+                    >
+                      <MdDeleteForever /> Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
 
           </table>
         </div>

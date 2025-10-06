@@ -33,7 +33,7 @@ const ProfitLossReport = () => {
       const res = await fetch(`http://localhost:5000/api/reports/profitloss?${query}`);
       const data = await res.json();
 
-      // Ensure 'details' always exists
+      
       setReport({
         ...data,
         details: data.details || [],

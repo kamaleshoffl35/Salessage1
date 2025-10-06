@@ -60,7 +60,7 @@ exports.login = async (req, res) => {
       process.env.JWT_SECRET,              // secret key
       { expiresIn: "1h" }                  // expiration
     );
-
+   
     // send user info + token
     res.json({ user: userObj, token });
   } catch (err) {
