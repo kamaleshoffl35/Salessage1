@@ -11,6 +11,7 @@ import saleReducer from "./saleSlice"
 import customerPaymentReducer from "./customerpaymentSlice"
 import supplierPaymentReducer from "./supplierpaymentSlice"
 import stockadjReducer from "./stockadjSlice"
+import stockledgerReducer from "./stockledgerSlice"
 import salereportReducer from "./salereportSlice"
 import purchasereportReducer from "./purchasereportSlice"
 import stockreportReducer from "./stockreportSlice"
@@ -30,6 +31,7 @@ export const store = configureStore({
     cus_payments:customerPaymentReducer,
     sup_payments:supplierPaymentReducer,
     stocks:stockadjReducer,
+    stockss:stockledgerReducer,
     salereports:salereportReducer,
     purchasereports:purchasereportReducer,
     stockreports:stockreportReducer,

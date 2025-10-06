@@ -10,6 +10,7 @@ import { TbFileInvoice, TbReportSearch } from "react-icons/tb";
 import { GiTakeMyMoney } from "react-icons/gi";
 import { PiShippingContainer } from "react-icons/pi";
 import { FaArrowLeft } from "react-icons/fa";
+import { MdOutlineInventory2 } from "react-icons/md";
 import UserProfile from "../components/UserProfile";
 
 export default function Dashboard() {
@@ -27,6 +28,7 @@ export default function Dashboard() {
     { name: "Customer Receipts", path: "/cus_receipts", icon: <MdAttachMoney /> },
     { name: "Supplier Payments", path: "/sub_receipts", icon: <GiTakeMyMoney /> },
     { name: "Stock Adjustments", path: "/stocks", icon: <PiShippingContainer /> },
+    {name: "Stock Ledger", path: "/stockledger", icon:<MdOutlineInventory2/>},
     { name: "Reports", path: "/reports", icon: <TbReportSearch /> },
   ];
 
