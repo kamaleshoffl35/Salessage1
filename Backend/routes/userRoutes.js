@@ -1,7 +1,5 @@
 const express = require("express");
 const router = express.Router();
-const auth = require("../middleware/auth");
-
 const {
   register,
   login,
@@ -13,18 +11,19 @@ const {
   resetPassword,
 } = require("../controllers/userController");
 
-// Static routes first
-router.post("/register", register);
+const { protect, authorize } = require("../middleware/auth");
+
+// ---------------- PUBLIC ROUTES ----------------
+router.post("/signup", register); // 👈 Public registration route
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
-router.get("/me",auth, getMe);
-router.get("/",auth, listUsers);
-
-// Dynamic route must go LAST
-router.put("/:id",auth, updateUser);
-router.get("/:id",auth, getUserById);
-
+// ---------------- PROTECTED ROUTES ----------------
+router.post("/register", protect, authorize("super_admin"), register); // 👈 Admin-only route
+router.get("/me", protect, getMe);
+router.get("/", protect, authorize("super_admin", "admin"), listUsers);
+router.get("/:id", protect, authorize("super_admin", "admin"), getUserById);
+router.put("/:id", protect, authorize("super_admin", "admin"), updateUser);
 
 module.exports = router;

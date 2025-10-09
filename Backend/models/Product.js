@@ -5,7 +5,7 @@ const productSchema = new mongoose.Schema(
     sku:{type:String,required:true,unique:true},
     name:{type:String,required:true},
     category_id:{type:mongoose.Schema.Types.ObjectId,ref: "Category",required:true},
-    brands:{type:String}, 
+    brand_name:{type:String}, 
     unit_id:{type:String,default:"Kg"},
     hsn_code:{type:String},
     tax_rate_id:{type:String,default:"18%"},

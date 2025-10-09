@@ -44,18 +44,27 @@ const Product = () => {
     useEffect(() => {
         dispatch(fetchProducts());
     }, [dispatch]);
-    useEffect(() => {
-        const checkProduct = async () => {
-            if (form.name.trim() === "") return;
-            try {
-                const res = await axios.get(`/api/products/check-exists?name=${form.name.trim()}`);
-                setForm((prev) => ({ ...prev, status: res.data.exists }));
-            } catch (err) {
-                console.error(err);
-            }
-        };
-        checkProduct();
-    }, [form.name]);
+  useEffect(() => {
+  const checkProduct = async () => {
+    const name = form.name.trim();
+    if (!name) {
+      setForm(prev => ({ ...prev, status: false }));
+      return;
+    }
+
+    try {
+      const res = await axios.get(`http://localhost:5000/api/products/check-exists?name=${encodeURIComponent(name)}`);
+      setForm(prev => ({ ...prev, status: res.data.exists }));
+    } catch (err) {
+      console.error("Error checking product:", err);
+      setForm(prev => ({ ...prev, status: false }));
+    }
+  };
+
+  const delayDebounce = setTimeout(checkProduct, 400);
+  return () => clearTimeout(delayDebounce);
+}, [form.name]);
+
 
  const handleChange = async (e) => {
     const { name, value, type, checked } = e.target;
@@ -183,9 +192,17 @@ const Product = () => {
                     <label className="form-check-label ">Batch Tracking</label> </div>
                 <div className="col-md-4 form-check"> <input type="checkbox" className="form-check-input " name="is_serial_tracked" checked={form.is_serial_tracked} onChange={handleChange} />
                     <label className="form-check-label">Serial Tracking</label> </div>
-                <div className="col-md-4 form-check">
-                    <input type="checkbox" className="form-check-input " name="status" checked={form.status} onChange={handleChange} />
-                    <label className="form-check-label">Active Status</label> </div>
+               <div className="col-md-4 form-check">
+  <input
+    type="checkbox"
+    className="form-check-input"
+    name="status"
+    checked={form.status}
+    onChange={handleChange}
+  />
+  <label className="form-check-label">Active Status</label>
+</div>
+
                 <div className="col-12">
                     <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
                         <span className="text-warning me-2 d-flex align-items-center">

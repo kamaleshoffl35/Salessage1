@@ -12,21 +12,23 @@ const UserProfile = () => {
   useEffect(() => {
     const stored = localStorage.getItem("user");
     const userId = localStorage.getItem("userId");
-    if (stored) {
-      setUser(JSON.parse(stored));
-      setUserHeader(JSON.parse(stored)._id);
-    } else if (userId) {
-      (async () => {
-        try {
-          const fetched = await getMe(userId);
-          setUser(fetched);
-          setUserHeader(userId);
-          localStorage.setItem("user", JSON.stringify(fetched));
-        } catch (err) {
-          console.error("Could not fetch user:", err);
-        }
-      })();
+    const token = localStorage.getItem("token");
+if (stored && token) {
+  setUser(JSON.parse(stored));
+  setUserHeader(token);  // ✅ send token, not userId
+} else if (token) {
+  (async () => {
+    try {
+      const fetched = await getMe();
+      setUser(fetched);
+      setUserHeader(token);
+      localStorage.setItem("user", JSON.stringify(fetched));
+    } catch (err) {
+      console.error("Could not fetch user:", err);
     }
+  })();
+}
+
     const onDoc = (e) => {
       if (ref.current && !ref.current.contains(e.target)) setOpen(false);
     };

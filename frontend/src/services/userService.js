@@ -4,14 +4,17 @@ import axios from "axios";
 const API_URL = "http://localhost:5000/api/users";
 
 
-export const setUserHeader = (id) => {
-  if (id) {
-    axios.defaults.headers.common["x-user-id"] = id;
+// export const setUserHeader = (id) => {
+//   setAuthToken(token)
+// };
+
+export const setUserHeader = (token) => {
+  if (token) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
-    delete axios.defaults.headers.common["x-user-id"];
+    delete axios.defaults.headers.common["Authorization"];
   }
 };
-
 export const setAuthToken = (token) => {
   if (token) {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
@@ -21,22 +24,16 @@ export const setAuthToken = (token) => {
 };
 
 
-export const register = (name, email, password, phone, role, avatar, address) => {
+export const register = (form) => {
+   delete axios.defaults.headers.common["Authorization"];
   return axios
-    .post(`${API_URL}/register`, {
-      name,
-      email,
-      password,
-      phone,
-      role,
-      avatar,
-      address,
-    })
+    .post(`${API_URL}/signup`, form)
     .then((res) => res.data);
 };
 
 
 export const login = (email, password) => {
+   delete axios.defaults.headers.common["Authorization"];
   return axios
     .post(`${API_URL}/login`, { email, password })
     .then((res) => res.data);
@@ -56,9 +53,6 @@ export const Resetpassword = (token, password) => {
 };
 
 
-export const getMe = (userId) => {
-
-  return axios
-    .get(`${API_URL}/me`, { params: { userId } })
-    .then((res) => res.data);
+export const getMe = () => {
+  return axios.get(`${API_URL}/me`).then((res) => res.data);
 };

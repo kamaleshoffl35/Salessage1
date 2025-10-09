@@ -28,12 +28,17 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
+
 exports.checkProductExists = async (req, res) => {
   const { name } = req.query;
   try {
-    const product = await Product.findOne({ name: name.trim() });
-    res.json({ exists: !!product }); // returns { exists: true } if found
+    const product = await Product.findOne({
+      name: { $regex: new RegExp(`^${name.trim()}$`, "i") }, 
+    });
+    res.json({ exists: !!product });
   } catch (err) {
+    console.error("Error checking product:", err);
     res.status(500).json({ exists: false });
   }
 };
+

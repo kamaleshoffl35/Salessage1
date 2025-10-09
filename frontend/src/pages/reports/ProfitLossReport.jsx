@@ -8,7 +8,7 @@ import { fetchwarehouses } from "../../redux/warehouseSlice";
 import * as XLSX from "xlsx";
 import { saveAs } from "file-saver";
 import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable"; // ✅ Correct import only once
+import autoTable from "jspdf-autotable"; // ✅ Correct import for v3+
 
 const ProfitLossReport = () => {
   const dispatch = useDispatch();
@@ -38,7 +38,7 @@ const ProfitLossReport = () => {
 
   // ✅ Excel Export
   const handleExportExcel = () => {
-    if (!report || !report.details?.length) {
+    if (!report || !report.details || report.details.length === 0) {
       alert("No data available to export.");
       return;
     }
@@ -59,31 +59,25 @@ const ProfitLossReport = () => {
     saveAs(blob, "Profit_Loss_Report.xlsx");
   };
 
-  // ✅ PDF Export — fixed
+  // ✅ PDF Export
   const handleExportPdf = () => {
-    if (!report || !report.details?.length) {
+    if (!report || !report.details || report.details.length === 0) {
       alert("No data available to export.");
       return;
     }
 
     try {
-      const doc = new jsPDF();
+      const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
-      // Title
       doc.setFontSize(16);
       doc.text("Profit & Loss Report", 14, 15);
 
-      // Period
       if (form.from_date || form.to_date) {
         doc.setFontSize(11);
-        doc.text(
-          `Period: ${form.from_date || "—"} to ${form.to_date || "—"}`,
-          14,
-          22
-        );
+        doc.text(`Period: ${form.from_date || "—"} to ${form.to_date || "—"}`, 14, 22);
       }
 
-      // Summary
+      // Summary table
       const summary = [
         ["Net Sales", `₹${report.netSales}`],
         ["COGS", `₹${report.cogs}`],
@@ -97,13 +91,13 @@ const ProfitLossReport = () => {
         head: [["Metric", "Amount"]],
         body: summary,
         theme: "grid",
-        styles: { fontSize: 11 },
+        styles: { fontSize: 10 },
       });
 
       // Details table
       const tableData = report.details.map((d) => [
         d.category,
-        d.amount,
+        `₹${d.amount}`,
         d.notes || "-",
       ]);
 
@@ -112,23 +106,24 @@ const ProfitLossReport = () => {
         head: [["Category", "Amount (₹)", "Notes"]],
         body: tableData,
         theme: "striped",
-        styles: { fontSize: 10 },
+        styles: { fontSize: 9 },
       });
 
-      // ✅ Save
       doc.save("Profit_Loss_Report.pdf");
     } catch (error) {
       console.error("PDF export failed:", error);
-      alert("Error exporting PDF. Check console for details.");
+      alert("An error occurred while exporting the PDF. Check console for details.");
     }
   };
 
+  // ✅ Print
   const handlePrint = () => {
     window.print();
   };
 
   return (
     <div className="container mt-4">
+      {/* Filter Form */}
       <form className="row g-3" onSubmit={handleSubmit}>
         <div className="col-md-4">
           <label className="form-label">From Date</label>
@@ -173,35 +168,48 @@ const ProfitLossReport = () => {
         </div>
       </form>
 
+      {/* Report Section */}
       {report && (
         <>
           {/* Summary Cards */}
           <div className="row mt-4">
-            {[
-              ["Net Sales", report.netSales],
-              ["COGS", report.cogs],
-              ["Gross Profit", report.grossProfit],
-              ["Expenses", report.expenses],
-              ["Net Profit", report.netProfit],
-            ].map(([label, value], i) => (
-              <div className="col-md-2" key={i}>
-                <div
-                  className={`card text-center p-3 ${
-                    label === "Net Profit"
-                      ? value >= 0
-                        ? "bg-success text-white"
-                        : "bg-danger text-white"
-                      : "bg-light"
-                  }`}
-                >
-                  <h6>{label}</h6>
-                  <h5>₹{value}</h5>
-                </div>
+            <div className="col-md-2">
+              <div className="card text-center p-3 bg-light">
+                <h6>Net Sales</h6>
+                <h5>₹{report.netSales}</h5>
               </div>
-            ))}
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center p-3 bg-light">
+                <h6>COGS</h6>
+                <h5>₹{report.cogs}</h5>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center p-3 bg-light">
+                <h6>Gross Profit</h6>
+                <h5>₹{report.grossProfit}</h5>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div className="card text-center p-3 bg-light">
+                <h6>Expenses</h6>
+                <h5>₹{report.expenses}</h5>
+              </div>
+            </div>
+            <div className="col-md-2">
+              <div
+                className={`card text-center p-3 ${
+                  report.netProfit >= 0 ? "bg-success text-white" : "bg-danger text-white"
+                }`}
+              >
+                <h6>Net Profit</h6>
+                <h5>₹{report.netProfit}</h5>
+              </div>
+            </div>
           </div>
 
-          {/* Details */}
+          {/* Details Table */}
           <div className="card shadow-sm mt-4">
             <div className="card-body">
               <h5 className="mb-3">Profit & Loss Breakdown</h5>
@@ -242,17 +250,12 @@ const ProfitLossReport = () => {
                 </tbody>
               </table>
 
+              {/* Export Buttons */}
               <div className="mt-3">
-                <button
-                  className="btn btn-danger me-2"
-                  onClick={handleExportPdf}
-                >
+                <button className="btn btn-danger me-2" onClick={handleExportPdf}>
                   <MdPictureAsPdf /> Export PDF
                 </button>
-                <button
-                  className="btn btn-success me-2"
-                  onClick={handleExportExcel}
-                >
+                <button className="btn btn-success me-2" onClick={handleExportExcel}>
                   <FaFileExcel /> Export Excel
                 </button>
                 <button className="btn btn-secondary" onClick={handlePrint}>
