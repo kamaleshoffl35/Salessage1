@@ -4,7 +4,11 @@
     "convert-units": "^2.3.4",
     "country-state-city": "^3.2.1",
     "crypto": "^1.0.1",
+    "file-saver": "^2.0.5",
     "jsonwebtoken": "^9.0.2",
-    "nodemailer": "^7.0.6"
+    "jspdf": "^3.0.3",
+    "jspdf-autotable": "^5.0.2",
+    "nodemailer": "^7.0.6",
+    "xlsx": "^0.18.5"
   }
 }
