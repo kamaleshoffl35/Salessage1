@@ -1,3 +1,58 @@
+// // backend/middleware/auth.js
+
+// const jwt = require("jsonwebtoken");
+// const User = require("../models/User");
+
+// // ---------------- PROTECT ROUTE ----------------
+// const protect = async (req, res, next) => {
+//   try {
+//     // Get token from headers
+//     const token = req.headers.authorization?.split(" ")[1];
+//     if (!token) {
+//       return res.status(401).json({ error: "Not authorized, token missing" });
+//     }
+
+//     // Verify token
+//    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+// req.user = decoded; // contains { id, email, role }
+// next();
+//     if (!decoded) {
+//       return res.status(401).json({ error: "Invalid token" });
+//     }
+
+//     // Find user by decoded id
+//     const user = await User.findById(decoded.id);
+//     if (!user) {
+//       return res.status(401).json({ error: "User not found" });
+//     }
+
+//     // Attach user to request
+//     req.user = user;
+//     next();
+//   } catch (err) {
+//     console.error(err);
+//     return res.status(401).json({ error: "Not authorized" });
+//   }
+// };
+
+// // ---------------- ROLE-BASED ACCESS ----------------
+// const authorize = (...roles) => {
+//   return (req, res, next) => {
+//     if (!req.user) {
+//       return res.status(401).json({ error: "Not authorized" });
+//     }
+//     console.log(req.user?.role)
+//     if (!roles.includes(req.user.role)) {
+//       return res.status(403).json({ error: "Forbidden: Insufficient role" });
+//     }
+//     next();
+//   };
+// };
+
+// // Export both middlewares
+// module.exports = { protect, authorize };
+
+
 // backend/middleware/auth.js
 
 const jwt = require("jsonwebtoken");
@@ -18,14 +73,18 @@ const protect = async (req, res, next) => {
       return res.status(401).json({ error: "Invalid token" });
     }
 
-    // Find user by decoded id
-    const user = await User.findById(decoded.id);
-    if (!user) {
+    // Attach decoded payload to req.user
+    req.user = decoded; // contains { id, email, role }
+
+    // Optional: verify user still exists in DB
+    const userInDB = await User.findById(decoded.id);
+    if (!userInDB) {
       return res.status(401).json({ error: "User not found" });
     }
 
-    // Attach user to request
-    req.user = user;
+    // Ensure role exists from DB if missing
+    req.user.role = req.user.role || userInDB.role;
+
     next();
   } catch (err) {
     console.error(err);
@@ -39,9 +98,11 @@ const authorize = (...roles) => {
     if (!req.user) {
       return res.status(401).json({ error: "Not authorized" });
     }
+
     if (!roles.includes(req.user.role)) {
       return res.status(403).json({ error: "Forbidden: Insufficient role" });
     }
+
     next();
   };
 };

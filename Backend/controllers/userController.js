@@ -66,15 +66,21 @@ exports.login = async (req, res) => {
     if (!ok) return res.status(400).json({ error: "Invalid credentials" });
 
     const userObj = user.toObject();
-    delete userObj.password;
+    delete userObj.password; // keep all other fields
 
+    // Generate JWT token
     const token = generateToken(user);
 
-    res.json({ user: userObj, token });
+    // ✅ Return both user object and token
+    res.json({
+      user: userObj,
+      token, // this is what frontend needs
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 // ---------------- GET USER BY ID ----------------
 exports.getUserById = async (req, res) => {

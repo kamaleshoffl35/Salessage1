@@ -4,9 +4,7 @@ import axios from "axios";
 const API_URL = "http://localhost:5000/api/users";
 
 
-// export const setUserHeader = (id) => {
-//   setAuthToken(token)
-// };
+
 
 export const setUserHeader = (token) => {
   if (token) {
@@ -32,12 +30,30 @@ export const register = (form) => {
 };
 
 
-export const login = (email, password) => {
-   delete axios.defaults.headers.common["Authorization"];
-  return axios
-    .post(`${API_URL}/login`, { email, password })
-    .then((res) => res.data);
+export const login = async (email, password) => {
+  // clear any old token
+  delete axios.defaults.headers.common["Authorization"];
+
+  // send login request
+  const res = await axios.post(`${API_URL}/login`, { email, password });
+
+  const { user, token } = res.data;
+
+  // ✅ Save BOTH user and token to localStorage
+  localStorage.setItem(
+    "user",
+    JSON.stringify({
+      ...user,
+      token,
+    })
+  );
+
+  // ✅ Set default header for all axios requests
+  
+
+  return res.data;
 };
+
 
 
 export const Forgotpassword = (email) => {

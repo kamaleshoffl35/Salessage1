@@ -5,4 +5,4 @@ export const getUserRole = () => {
 
 export const isSuperAdmin = () => getUserRole() === "super_admin";
 export const isAdmin = () => getUserRole() === "admin";
-export const isEntryUser = () => getUserRole() === "entry_user";
+export const isEntryUser = () => getUserRole() === "user";

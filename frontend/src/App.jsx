@@ -41,16 +41,16 @@
 // function App() {
 //   return (
 //     <>
-      
+
 //       <div className="container-fluid w-100 p-0">
-        
+
 //         <Routes>
 //           <Route path="/login" element={<Login />} />
 //           <Route path="/register" element={<Register />} />
 //           <Route path="/forgot-password" element={<ForgotPassword/>}/>
 //           <Route path="/reset-password/:token" element={<ResetPassword/>}/>
 //           <Route path="/" element={<ProtectedRoute>{<Dashboard/>}</ProtectedRoute>}>
-          
+
 //           <Route path="/products" element={<Product />} />
 //           <Route path="/categories" element={<Category />} />
 //           {/* <Route path="/units" element={<Units/>} /> */}
@@ -77,7 +77,7 @@
 //             </Route>
 //             <Route path="*" element={<Navigate to="/login" replace />} />
 //         </Routes>
-        
+
 //       </div>
 //     </>
 //   );
@@ -134,57 +134,57 @@ const PrivateRoute = ({ children, roles }) => {
 
 function App() {
   return (
-    
-      <div className="container-fluid w-100 p-0">
-        <Routes>
-          {/* PUBLIC ROUTES */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/reset-password/:token" element={<ResetPassword />} />
 
-          {/* DASHBOARD - ALL LOGGED IN USERS */}
-         <Route 
-  path="/" 
-  element={
-    <PrivateRoute roles={["super_admin", "admin", "entry_user"]}>
-      <Dashboard />
-    </PrivateRoute>
-  }
->
-  {/* CHILD PAGES - RELATIVE PATHS */}
-  <Route path="products" element={<PrivateRoute roles={["super_admin","admin"]}><Product /></PrivateRoute>} />
-  <Route path="categories" element={<PrivateRoute roles={["super_admin","admin"]}><Category /></PrivateRoute>} />
-  <Route path="taxes" element={<PrivateRoute roles={["super_admin","admin"]}><Tax /></PrivateRoute>} />
-  <Route path="customers" element={<PrivateRoute roles={["super_admin","admin","entry_user"]}><Customer /></PrivateRoute>} />
-  <Route path="suppliers" element={<PrivateRoute roles={["super_admin","admin"]}><Supplier /></PrivateRoute>} />
-  <Route path="warehouses" element={<PrivateRoute roles={["super_admin","admin"]}><Warehouse /></PrivateRoute>} />
-  <Route path="purchases" element={<PrivateRoute roles={["super_admin","admin"]}><Purchase /></PrivateRoute>} />
-  <Route path="sales" element={<PrivateRoute roles={["super_admin","admin","entry_user"]}><SalePOS /></PrivateRoute>} />
-  <Route path="cus_receipts" element={<PrivateRoute roles={["super_admin","admin","entry_user"]}><Customer_Payment /></PrivateRoute>} />
-  <Route path="sub_receipts" element={<PrivateRoute roles={["super_admin","admin"]}><Supplier_Payment /></PrivateRoute>} />
-  <Route path="stocks" element={<PrivateRoute roles={["super_admin","admin"]}><StockAdjustment /></PrivateRoute>} />
-  <Route path="stockledger" element={<PrivateRoute roles={["super_admin","admin"]}><StockLedger /></PrivateRoute>} />
-  <Route path="expenses" element={<PrivateRoute roles={["super_admin","admin"]}><Expenses /></PrivateRoute>} />
-  <Route path="profile" element={<PrivateRoute roles={["super_admin","admin","entry_user"]}><Profile /></PrivateRoute>} />
-  
-  {/* REPORTS */}
-  <Route path="reports" element={<PrivateRoute roles={["super_admin","admin"]}><Reports /></PrivateRoute>}>
-    <Route index element={<SalesReport />} />
-    <Route path="sales" element={<SalesReport />} />
-    <Route path="purchase" element={<PurchaseReport />} />
-    <Route path="stock" element={<StockReport />} />
-    <Route path="gst" element={<GstReport />} />
-    <Route path="profitloss" element={<ProfitLossReport />} />
-  </Route>
-</Route>
+    <div className="container-fluid w-100 p-0">
+      <Routes>
+        {/* PUBLIC ROUTES */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+        {/* DASHBOARD - ALL LOGGED IN USERS */}
+        <Route
+          path="/"
+          element={
+            <PrivateRoute roles={["super_admin", "admin", "user"]}>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        >
+          {/* CHILD PAGES - RELATIVE PATHS */}
+          <Route path="products" element={<PrivateRoute roles={["super_admin", "admin", "user"]}><Product /></PrivateRoute>} />
+          <Route path="categories" element={<PrivateRoute roles={["super_admin", "admin"]}><Category /></PrivateRoute>} />
+          <Route path="taxes" element={<PrivateRoute roles={["super_admin", "admin"]}><Tax /></PrivateRoute>} />
+          <Route path="customers" element={<PrivateRoute roles={["super_admin", "admin", "entry_user"]}><Customer /></PrivateRoute>} />
+          <Route path="suppliers" element={<PrivateRoute roles={["super_admin", "admin"]}><Supplier /></PrivateRoute>} />
+          <Route path="warehouses" element={<PrivateRoute roles={["super_admin", "admin"]}><Warehouse /></PrivateRoute>} />
+          <Route path="purchases" element={<PrivateRoute roles={["super_admin", "admin"]}><Purchase /></PrivateRoute>} />
+          <Route path="sales" element={<PrivateRoute roles={["super_admin", "admin", "entry_user"]}><SalePOS /></PrivateRoute>} />
+          <Route path="cus_receipts" element={<PrivateRoute roles={["super_admin", "admin", "entry_user"]}><Customer_Payment /></PrivateRoute>} />
+          <Route path="sub_receipts" element={<PrivateRoute roles={["super_admin", "admin"]}><Supplier_Payment /></PrivateRoute>} />
+          <Route path="stocks" element={<PrivateRoute roles={["super_admin", "admin"]}><StockAdjustment /></PrivateRoute>} />
+          <Route path="stockledger" element={<PrivateRoute roles={["super_admin", "admin"]}><StockLedger /></PrivateRoute>} />
+          <Route path="expenses" element={<PrivateRoute roles={["super_admin", "admin"]}><Expenses /></PrivateRoute>} />
+          <Route path="profile" element={<PrivateRoute roles={["super_admin", "admin", "entry_user"]}><Profile /></PrivateRoute>} />
+
+          {/* REPORTS */}
+          <Route path="reports" element={<PrivateRoute roles={["super_admin", "admin"]}><Reports /></PrivateRoute>}>
+            <Route index element={<SalesReport />} />
+            <Route path="sales" element={<SalesReport />} />
+            <Route path="purchase" element={<PurchaseReport />} />
+            <Route path="stock" element={<StockReport />} />
+            <Route path="gst" element={<GstReport />} />
+            <Route path="profitloss" element={<ProfitLossReport />} />
+          </Route>
+        </Route>
 
 
-          {/* CATCH ALL */}
-          <Route path="*" element={<Navigate to="/login" replace />} />
-        </Routes>
-      </div>
-  
+        {/* CATCH ALL */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </div>
+
   );
 }
 

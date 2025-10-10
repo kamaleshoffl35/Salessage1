@@ -157,18 +157,18 @@ export default function Dashboard() {
 
   // Define modules with role-based visibility
   const modules = [
-    { name: "Dashboard", path: "/", icon: <AiOutlineDashboard />, roles: ["super_admin", "admin", "entry_user"] },
+    { name: "Dashboard", path: "/", icon: <AiOutlineDashboard />, roles: ["super_admin", "admin", "user"] },
     // { name: "Manage Users", path: "/users", icon: <AiOutlineDashboard />, roles: ["super_admin"] },
-    { name: "Products", path: "/products", icon: <MdProductionQuantityLimits />, roles: ["super_admin", "admin"] },
+    { name: "Products", path: "/products", icon: <MdProductionQuantityLimits />, roles: ["super_admin", "admin","user"] },
     { name: "Categories", path: "/categories", icon: <MdOutlineCategory />, roles: ["super_admin", "admin"] },
     // { name: "Units", path: "/units", icon: <LiaWeightSolid />, roles: ["super_admin", "admin"] },
     { name: "Tax Rates", path: "/taxes", icon: <MdOutlineAttachMoney />, roles: ["super_admin", "admin"] },
-    { name: "Customers", path: "/customers", icon: <IoIosContact />, roles: ["super_admin", "admin", "entry_user"] },
+    { name: "Customers", path: "/customers", icon: <IoIosContact />, roles: ["super_admin", "admin", "user"] },
     { name: "Suppliers", path: "/suppliers", icon: <IoIosContact />, roles: ["super_admin", "admin"] },
     { name: "Warehouses", path: "/warehouses", icon: <MdOutlineWarehouse />, roles: ["super_admin", "admin"] },
     { name: "Purchases", path: "/purchases", icon: <BiPurchaseTag />, roles: ["super_admin", "admin"] },
     { name: "Sales", path: "/sales", icon: <TbFileInvoice />, roles: ["super_admin", "admin", "entry_user"] },
-    { name: "Customer Receipts", path: "/cus_receipts", icon: <MdAttachMoney />, roles: ["super_admin", "admin", "entry_user"] },
+    { name: "Customer Receipts", path: "/cus_receipts", icon: <MdAttachMoney />, roles: ["super_admin", "admin", "user"] },
     { name: "Supplier Payments", path: "/sub_receipts", icon: <GiTakeMyMoney />, roles: ["super_admin", "admin"] },
     { name: "Stock Adjustments", path: "/stocks", icon: <PiShippingContainer />, roles: ["super_admin", "admin"] },
     { name: "Stock Ledger", path: "/stockledger", icon: <MdOutlineInventory2 />, roles: ["super_admin", "admin"] },

@@ -179,48 +179,51 @@ const Register = () => {
         <h4 className="mb-3 text-center">REGISTER</h4>
         {error && <div className="alert alert-danger">{error}</div>}
    <div className="d-flex justify-content-between mb-3 ">
-  <div class="form-check ">
-  
-  <label class="form-check-label" for="super_admin">
-    Super Admin
-  </label>
+  <div className="form-check">
   <input
-    class="form-check-input"
+    className="form-check-input"
     type="radio"
     name="role"
     id="super_admin"
-    value={form.role}
+    value="super_admin"
+    checked={form.role === "super_admin"}
+    onChange={handleChange}
   />
-  
+  <label className="form-check-label" htmlFor="super_admin">
+    Super Admin
+  </label>
 </div>
 
-<div class="form-check ">
-  
-  <label class="form-check-label" for="admin">
-    Admin
-  </label>
+<div className="form-check">
   <input
-    class="form-check-input"
+    className="form-check-input"
     type="radio"
     name="role"
     id="admin"
-    value={form.role}
+    value="admin"
+    checked={form.role === "admin"}
+    onChange={handleChange}
   />
-  
-</div>
-<div class="form-check ">
-  
-  <label class="form-check-label" for="user">
-   Entry User
+  <label className="form-check-label" htmlFor="admin">
+    Admin
   </label>
+</div>
+
+<div className="form-check">
   <input
-    class="form-check-input"
+    className="form-check-input"
     type="radio"
     name="role"
     id="user"
-    value={form.role}
+    value="user"
+    checked={form.role === "user"}
+    onChange={handleChange}
   />
-  </div>
+  <label className="form-check-label" htmlFor="user">
+    Entry User
+  </label>
+</div>
+
   </div>
 
         <div className="mb-2">

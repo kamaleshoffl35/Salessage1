@@ -92,39 +92,32 @@ const Login = () => {
     setForm({ ...form, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      const { user, token } = await login(
-        form.email.trim(),
-        form.password.trim()
-      );
+  e.preventDefault();
+  setError("");
+  try {
+    const { user, token } = await login(form.email.trim(), form.password.trim());
 
-      // Save user and token to localStorage
-      localStorage.setItem("user", JSON.stringify(user));
-      localStorage.setItem("token", token);
+    // ✅ Store user + token in one object
+    localStorage.setItem("user", JSON.stringify({ ...user, token }));
 
-      // Set axios default Authorization header
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    // ✅ Set axios default header
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
 
-      // Optional: Redirect user based on role
-      switch (user.role) {
-        case "super_admin":
-          navigate("/"); // super admin default page
-          break;
-        case "admin":
-          navigate("/"); // admin default page
-          break;
-        case "entry_user":
-          navigate("/"); // entry user default page
-          break;
-        default:
-          navigate("/"); // fallback
-      }
-    } catch (err) {
-      setError(err.response?.data?.error || err.message);
+    // Redirect based on role
+    switch (user.role) {
+      case "super_admin":
+      case "admin":
+      case "user":
+        navigate("/");
+        break;
+      default:
+        navigate("/");
     }
-  };
+  } catch (err) {
+    setError(err.response?.data?.error || err.message);
+  }
+};
+
 
   return (
     <div

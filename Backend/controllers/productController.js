@@ -2,16 +2,31 @@ const Product = require("../models/Product");
 
 exports.getProducts = async (req, res) => {
   try {
-    const products = await Product.find().populate("category_id", "name")
+    let products;
+
+    if (req.user.role === "user") {
+      // Users see products created by super_admin or admin
+      products = await Product.find({ created_by_role: { $in: ["super_admin", "admin",] } })
+        .populate("category_id", "name");
+    } else {
+      // Admins and super_admin see all products
+      products = await Product.find().populate("category_id", "name");
+    }
+
     res.json(products);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
+
+
 exports.addProduct = async (req, res) => {
   try {
-    const product = new Product(req.body);
+    const product = new Product({
+  ...req.body,
+  created_by_role: req.user.role,  // ✅ required
+});
     await product.save();
     res.json(product);
   } catch (err) {
