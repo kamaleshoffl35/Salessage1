@@ -40,26 +40,13 @@ export const register = (form) => {
 
 
 export const login = async (email, password) => {
-  // clear any old token
+ 
   delete axios.defaults.headers.common["Authorization"];
-
-  // send login request
   const res = await axios.post(`${API_URL}/login`, { email, password });
 
   const { user, token } = res.data;
 
-  // ✅ Save BOTH user and token to localStorage
-  localStorage.setItem(
-    "user",
-    JSON.stringify({
-      ...user,
-      token,
-    })
-  );
-
-  // ✅ Set default header for all axios requests
-  
-
+  localStorage.setItem( "user",JSON.stringify({...user,token }) );
   return res.data;
 };
 

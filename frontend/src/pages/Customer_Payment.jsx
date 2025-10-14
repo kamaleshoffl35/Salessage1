@@ -47,7 +47,7 @@ const Customer_Payment = () => {
     try {
       const resultAction = await dispatch(addpayment(form)).unwrap()
       if (addpayment.fulfilled.match(resultAction)) {
-        // Reset form only after successful addition
+        
         setForm({
           customer_id: "",
           date: new Date().toISOString().slice(0, 16),
@@ -84,8 +84,6 @@ const Customer_Payment = () => {
         </span>
         <b>CUSTOMER PAYMENT RECEIPT</b>
       </h2>
-
-      {/* Payment Form */}
       <form className="row g-3" onSubmit={handleSubmit}>
         <div className="col-md-6">
           <label className="form-label">Customer <span className="text-danger">*</span></label>
@@ -142,7 +140,6 @@ const Customer_Payment = () => {
         </div>
       </form>
 
-      {/* Payment Table */}
       <div className="card shadow-sm mt-4">
         <div className="card-body">
           <h5 className="mb-3">Payment Tree</h5>

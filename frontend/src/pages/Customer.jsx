@@ -279,15 +279,7 @@ const Customer = () => {
                                {c.status ? "Active" : "Inactive"}
                              </td>
                              <td>
-                               <button
-                                 className="btn btn-danger btn-sm"
-                                 onClick={() => handleDelete(c._id)}
-                               >
-                                 <span className="text-warning">
-                                   <MdDeleteForever />
-                                 </span>
-                                 Delete
-                               </button>
+                               <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c._id)}><span className="text-warning"><MdDeleteForever /></span>Delete</button>
                              </td>
                            </tr>)
                          ))

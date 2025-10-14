@@ -145,7 +145,7 @@ const SalePOS = () => {
   e.preventDefault();
   try {
     await dispatch(addSale(form));
-    await dispatch(fetchsales()); // ✅ refresh table
+    await dispatch(fetchsales()); 
     setForm({
       invoice_no: "INV" + Math.floor(1000 + Math.random() * 9000),
       invoice_date_time: new Date().toISOString().slice(0, 10),
@@ -167,7 +167,6 @@ const SalePOS = () => {
   }
 };
 
-
   const [search, setSearch] = useState("");
   const filteredsales = sales.filter((s) => {
     const customerName = s.customer_id?.name || s.customer_id || "";
@@ -185,52 +184,25 @@ const SalePOS = () => {
   return (
     <div className="container mt-4 bg-gradient-warning">
       <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <TbFileInvoice size={24} />
-        </span>
-        <b>SALES/INVOICE MASTER</b>
+        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}><TbFileInvoice size={24} /></span><b>SALES/INVOICE MASTER</b>
       </h2>
 
-      {/* --- Sale Form --- */}
       <form onSubmit={handleSubmit}>
         <div className="row g-3">
           <div className="col-md-6">
             <label>Customer <span className="text-danger">*</span></label>
-            <select
-              name="customer_id"
-              value={form.customer_id}
-              onChange={handleChange}
-              className="form-select bg-light"
-              required
-            >
+            <select name="customer_id" value={form.customer_id} onChange={handleChange} className="form-select bg-light" required>
               <option value="">Select Customer</option>
-              {customers.map((c) => (
-                <option key={c._id} value={c._id}>
-                  {c.name}
-                </option>
-              ))}
+              {customers.map((c) => (<option key={c._id} value={c._id}>{c.name}</option>))}
             </select>
           </div>
           <div className="col-md-3">
             <label>Invoice Date</label>
-            <input
-              type="date"
-              name="invoice_date_time"
-              value={form.invoice_date_time}
-              onChange={handleChange}
-              className="form-control bg-light"
-              required
-            />
+            <input type="date" name="invoice_date_time" value={form.invoice_date_time} onChange={handleChange} className="form-control bg-light"  required/>
           </div>
           <div className="col-md-3">
             <label>Counter</label>
-            <select
-              name="counter_id"
-              value={form.counter_id}
-              onChange={handleChange}
-              className="form-select bg-light"
-              required
-            >
+            <select name="counter_id" value={form.counter_id} onChange={handleChange} className="form-select bg-light" required >
               <option value="">Select Counter</option>
               <option value="POS-1">POS-1</option>
               <option value="POS-2">POS-2</option>
@@ -239,13 +211,7 @@ const SalePOS = () => {
           </div>
           <div className="col-md-6">
             <label>Payment Mode</label>
-            <select
-              name="payment_mode"
-              value={form.payment_mode}
-              onChange={handleChange}
-              className="form-select bg-light"
-              required
-            >
+            <select name="payment_mode" value={form.payment_mode} onChange={handleChange} className="form-select bg-light" required>
               <option value="Cash">Cash</option>
               <option value="Card">Card</option>
               <option value="UPI">UPI</option>
@@ -255,7 +221,6 @@ const SalePOS = () => {
           </div>
         </div>
 
-        {/* --- Sale Items --- */}
         <h5 className="mt-4">Sale Items</h5>
         <table className="table table-bordered table-striped">
           <thead className="table-dark">
@@ -272,79 +237,34 @@ const SalePOS = () => {
             {form.items.map((item, index) => (
               <tr key={index}>
                 <td>
-                  <select
-                    name="product_id"
-                    value={item.product_id}
-                    onChange={(e) => handleItemChange(index, e)}
-                    className="form-select bg-light"
-                  >
+                  <select name="product_id" value={item.product_id} onChange={(e) => handleItemChange(index, e)} className="form-select bg-light" >
                     <option value="">Select Product</option>
-                    {products.map((p) => (
-                      <option key={p._id} value={p._id}>
-                        {p.name}
-                      </option>
-                    ))}
+                    {products.map((p) => ( <option key={p._id} value={p._id}>{p.name}</option> ))}
                   </select>
                 </td>
                 <td>
-                  <input
-                    type="number"
-                    name="qty"
-                    value={item.qty}
-                    onChange={(e) => handleItemChange(index, e)}
-                    className="form-control bg-light"
-                  />
+                  <input type="number"  name="qty" value={item.qty} onChange={(e) => handleItemChange(index, e)} className="form-control bg-light" />
                 </td>
                 <td>
-                  <input
-                    type="number"
-                    name="unit_price"
-                    value={item.unit_price}
-                    onChange={(e) => handleItemChange(index, e)}
-                    className="form-control bg-light"
-                  />
+                  <input type="number" name="unit_price" value={item.unit_price} onChange={(e) => handleItemChange(index, e)}  className="form-control bg-light"/>
                 </td>
                 <td>
-                  <input
-                    type="number"
-                    name="discount_percent"
-                    value={item.discount_percent}
-                    onChange={(e) => handleItemChange(index, e)}
-                    className="form-control bg-light"
-                  />
+                  <input type="number" name="discount_percent" value={item.discount_percent} onChange={(e) => handleItemChange(index, e)} className="form-control bg-light"/>
                 </td>
                 <td>
-                  <select
-                    name="tax_rate_id"
-                    value={item.tax_rate_id}
-                    onChange={(e) => handleItemChange(index, e)}
-                    className="form-select bg-light"
-                  >
+                  <select name="tax_rate_id" value={item.tax_rate_id} onChange={(e) => handleItemChange(index, e)} className="form-select bg-light" >
                     <option value="">Select Tax</option>
-                    {taxes.map((t) => (
-                      <option key={t._id} value={t._id}>
-                        {t.name}
-                      </option>
-                    ))}
+                    {taxes.map((t) => ( <option key={t._id} value={t._id}>{t.name}</option> ))}
                   </select>
                 </td>
                 <td>
-                  <input
-                    type="text"
-                    value={item.line_total.toFixed(2)}
-                    readOnly
-                    className="form-control bg-light"
-                  />
+                  <input type="text" value={item.line_total.toFixed(2)} readOnly className="form-control bg-light"/>
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-        <button type="button" onClick={addItem} className="btn btn-outline-primary mt-2">
-          + Add Item
-        </button>
-
-        {/* --- Totals --- */}
+        <button type="button" onClick={addItem} className="btn btn-outline-primary mt-2">+ Add Item </button>
         <div className="mt-4">
           <p><strong>Subtotal:</strong> {form.subtotal.toFixed(2)}</p>
           <p><strong>Discount:</strong> {form.discount_amount.toFixed(2)}</p>
@@ -361,18 +281,12 @@ const SalePOS = () => {
       </form>
       <br />
 
-      {/* --- Sales Table --- */}
+
       <div className="card shadow-sm">
         <div className="card-body">
           <h5 className="mb-3">Sales Records</h5>
           <div className="mt-4 mb-2 input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search Customer name, Counter"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
+            <input type="text" className="form-control" placeholder="Search Customer name, Counter" value={search} onChange={(e) => setSearch(e.target.value)}/>
             <span className="input-group-text"><FaSearch /></span>
           </div>
 

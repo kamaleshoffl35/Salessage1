@@ -57,11 +57,11 @@ function App() {
     const token = user?.token;
 
     if (!token || isTokenExpired(token)) {
-      // token missing or expired
+  
       localStorage.removeItem("user");
       navigate("/login");
     } else {
-      // token valid → auto logout after remaining time
+      
       const decoded = JSON.parse(atob(token.split(".")[1]));
       const remainingTime = decoded.exp * 1000 - Date.now();
 

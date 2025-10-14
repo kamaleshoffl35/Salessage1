@@ -105,7 +105,7 @@ const Supplier_Payment = () => {
           </div>
         </div>
 
-        {/* Payment Mode */}
+       
         <div className="col-md-6">
           <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
           <select className="form-select bg-light" name="mode" value={form.mode} onChange={handleChange}>
@@ -116,13 +116,11 @@ const Supplier_Payment = () => {
           </select>
         </div>
 
-        {/* Reference No */}
         <div className="col-md-6">
           <label className="form-label">Reference No (UTR / Cheque)</label>
           <input type="text" className="form-control bg-light" placeholder="Enter reference no" name="reference_no" value={form.reference_no} onChange={handleChange} />
         </div>
 
-        {/* Purchase Invoice Adjust */}
         <div className="col-md-6">
           <label className="form-label">Purchase Invoice to Adjust</label>
           <select className="form-select bg-light" name="applied_purchase_id" value={form.applied_purchase_id} onChange={handleChange}>
@@ -133,13 +131,13 @@ const Supplier_Payment = () => {
           </select>
         </div>
 
-        {/* Notes */}
+      
         <div className="col-12">
           <label className="form-label">Notes</label>
           <textarea className="form-control bg-light" rows="2" placeholder="Enter notes" name="notes" value={form.notes} onChange={handleChange}></textarea>
         </div>
 
-        {/* Buttons */}
+ 
         <div className="col-12 d-flex gap-2">
           <button
             type="submit"

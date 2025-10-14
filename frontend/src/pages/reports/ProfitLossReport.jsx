@@ -36,7 +36,7 @@ const ProfitLossReport = () => {
     dispatch(fetchProfitLoss(form));
   };
 
-  // ✅ Excel Export
+
   const handleExportExcel = () => {
     if (!report || !report.details || report.details.length === 0) {
       alert("No data available to export.");
@@ -59,13 +59,12 @@ const ProfitLossReport = () => {
     saveAs(blob, "Profit_Loss_Report.xlsx");
   };
 
-  // ✅ PDF Export
+
   const handleExportPdf = () => {
     if (!report || !report.details || report.details.length === 0) {
       alert("No data available to export.");
       return;
     }
-
     try {
       const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
 
@@ -76,25 +75,10 @@ const ProfitLossReport = () => {
         doc.setFontSize(11);
         doc.text(`Period: ${form.from_date || "—"} to ${form.to_date || "—"}`, 14, 22);
       }
+      const summary = [ ["Net Sales", `₹${report.netSales}`], ["COGS", `₹${report.cogs}`],["Gross Profit", `₹${report.grossProfit}`],["Expenses", `₹${report.expenses}`],["Net Profit", `₹${report.netProfit}`],];
+autoTable(doc, {startY: 28, head: [["Metric", "Amount"]],body: summary,theme: "grid",styles: { fontSize: 10 },      });
 
-      // Summary table
-      const summary = [
-        ["Net Sales", `₹${report.netSales}`],
-        ["COGS", `₹${report.cogs}`],
-        ["Gross Profit", `₹${report.grossProfit}`],
-        ["Expenses", `₹${report.expenses}`],
-        ["Net Profit", `₹${report.netProfit}`],
-      ];
 
-      autoTable(doc, {
-        startY: 28,
-        head: [["Metric", "Amount"]],
-        body: summary,
-        theme: "grid",
-        styles: { fontSize: 10 },
-      });
-
-      // Details table
       const tableData = report.details.map((d) => [
         d.category,
         `₹${d.amount}`,
@@ -116,62 +100,36 @@ const ProfitLossReport = () => {
     }
   };
 
-  // ✅ Print
   const handlePrint = () => {
     window.print();
   };
 
   return (
     <div className="container mt-4">
-      {/* Filter Form */}
+     
       <form className="row g-3" onSubmit={handleSubmit}>
         <div className="col-md-4">
           <label className="form-label">From Date</label>
-          <input
-            type="date"
-            className="form-control bg-light"
-            name="from_date"
-            value={form.from_date}
-            onChange={handleChange}
-          />
+          <input type="date" className="form-control bg-light" name="from_date" value={form.from_date}  onChange={handleChange} />
         </div>
         <div className="col-md-4">
           <label className="form-label">To Date</label>
-          <input
-            type="date"
-            className="form-control bg-light"
-            name="to_date"
-            value={form.to_date}
-            onChange={handleChange}
-          />
+          <input type="date" className="form-control bg-light"name="to_date"value={form.to_date} onChange={handleChange}/>
         </div>
         <div className="col-md-4">
           <label className="form-label">Warehouse</label>
-          <select
-            className="form-select bg-light"
-            name="warehouse_id"
-            value={form.warehouse_id}
-            onChange={handleChange}
-          >
+          <select className="form-select bg-light"  name="warehouse_id" value={form.warehouse_id} onChange={handleChange}  >
             <option value="">All Warehouses</option>
-            {warehouses.map((w) => (
-              <option key={w._id} value={w._id}>
-                {w.store_name}
-              </option>
-            ))}
+            {warehouses.map((w) => (<option key={w._id} value={w._id}>{w.store_name}</option>))}
           </select>
         </div>
         <div className="col-12">
-          <button type="submit" className="btn btn-primary px-4">
-            Generate Report
-          </button>
+          <button type="submit" className="btn btn-primary px-4">Generate Report</button>
         </div>
       </form>
 
-      {/* Report Section */}
       {report && (
         <>
-          {/* Summary Cards */}
           <div className="row mt-4">
             <div className="col-md-2">
               <div className="card text-center p-3 bg-light">
@@ -198,30 +156,20 @@ const ProfitLossReport = () => {
               </div>
             </div>
             <div className="col-md-2">
-              <div
-                className={`card text-center p-3 ${
-                  report.netProfit >= 0 ? "bg-success text-white" : "bg-danger text-white"
-                }`}
-              >
+              <div className={`card text-center p-3 ${ report.netProfit >= 0 ? "bg-success text-white" : "bg-danger text-white" }`} >
                 <h6>Net Profit</h6>
                 <h5>₹{report.netProfit}</h5>
               </div>
             </div>
           </div>
 
-          {/* Details Table */}
+    
           <div className="card shadow-sm mt-4">
             <div className="card-body">
               <h5 className="mb-3">Profit & Loss Breakdown</h5>
 
               <div className="mt-2 mb-2 input-group">
-                <input
-                  type="text"
-                  className="form-control"
-                  placeholder="Search category..."
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+                <input type="text" className="form-control" placeholder="Search category..."  value={search} onChange={(e) => setSearch(e.target.value)}/>
                 <span className="input-group-text">
                   <FaSearch />
                 </span>
@@ -250,17 +198,10 @@ const ProfitLossReport = () => {
                 </tbody>
               </table>
 
-              {/* Export Buttons */}
               <div className="mt-3">
-                <button className="btn btn-danger me-2" onClick={handleExportPdf}>
-                  <MdPictureAsPdf /> Export PDF
-                </button>
-                <button className="btn btn-success me-2" onClick={handleExportExcel}>
-                  <FaFileExcel /> Export Excel
-                </button>
-                <button className="btn btn-secondary" onClick={handlePrint}>
-                  🖨️ Print
-                </button>
+                <button className="btn btn-danger me-2" onClick={handleExportPdf}><MdPictureAsPdf /> Export PDF</button>
+                <button className="btn btn-success me-2" onClick={handleExportExcel}> <FaFileExcel /> Export Excel</button>
+                <button className="btn btn-secondary" onClick={handlePrint}>🖨️ Print </button>
               </div>
             </div>
           </div>

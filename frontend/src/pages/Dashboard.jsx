@@ -48,7 +48,6 @@ export default function Dashboard() {
     navigate(path);
   };
 
-  // Get user role once
   const userRole = JSON.parse(localStorage.getItem("user"))?.role;
 
   return (
@@ -72,8 +71,7 @@ export default function Dashboard() {
 
       <div className="d-flex flex-grow-1">
         {sidebarOpen && (
-          <div
-            className="p-3"
+          <div className="p-3"
             style={{
               width: "280px",
               background: "linear-gradient(180deg, #1e293b, #0f172a)",
@@ -82,11 +80,9 @@ export default function Dashboard() {
             }}
           >
             <div className="list-group list-group-flush text-center">
-              {modules
-                .filter((m) => m.roles.includes(userRole)) // Filter modules based on role
-                .map((m) => (
+              {modules.filter((m) => m.roles.includes(userRole)).map((m) => (
                   <div
-                    key={m.path}
+                  key={m.path}
                     onClick={() => handleMenuClick(m.path)}
                     className="list-group-item border-0 list-group-item-action bg-transparent text-light hover-bg-light d-flex align-items-center gap-2"
                     style={{ cursor: "pointer", padding: "0.75rem 1rem" }}

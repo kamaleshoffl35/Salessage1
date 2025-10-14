@@ -12,7 +12,7 @@ const ForgotPassword = () => {
   e.preventDefault();
   setMessage("");
   setError("");
-  console.log("Submitting email:", email); // ✅ debug
+  console.log("Submitting email:", email); 
   try {
     const res = await Forgotpassword(email);
     console.log("Response:", res);

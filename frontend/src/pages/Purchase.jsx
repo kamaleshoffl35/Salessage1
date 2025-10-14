@@ -349,7 +349,7 @@ const Purchase = () => {
       </td>
      <td>
   {p.items.map((item, idx) => {
-    // Defensive check for null
+   
     const productName =
       item.product_id && typeof item.product_id === 'object'
         ? item.product_id.name

@@ -5,8 +5,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { protect, authorize } = require("../middleware/auth");
 
-// ---------------- HELPER ----------------
-// Generate JWT token
+
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, email: user.email, role: user.role },
@@ -16,8 +15,6 @@ const generateToken = (user) => {
   );
 };
 
-// ---------------- REGISTER ----------------
-// Super Admin only can create Admin/Entry
 exports.register = async (req, res) => {
   try {
     const { name, email, password, phone, role, avatar, address } = req.body;
@@ -34,13 +31,13 @@ exports.register = async (req, res) => {
       email: emailNormalized,
       password,
       phone,
-      role: role || "user", // default role
+      role: role || "user", 
       avatar,
       address,
     });
 
     await user.save();
-    const token = generateToken(user); // ✅ include JWT
+    const token = generateToken(user); 
 
     const userObj = user.toObject();
     delete userObj.password;
@@ -52,7 +49,6 @@ exports.register = async (req, res) => {
 };
 
 
-// ---------------- LOGIN ----------------
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -68,14 +64,12 @@ exports.login = async (req, res) => {
 
     const userObj = user.toObject();
     delete userObj.password; 
-    // Generate JWT token
     const token = generateToken(user);
      res.cookie("token",generateToken, {httpOnly:true, maxAge:300000,samesite:"lax",secure:false})
 
-    // ✅ Return both user object and token
     res.json({
       user: userObj,
-      token, // this is what frontend needs
+      token, 
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -83,7 +77,6 @@ exports.login = async (req, res) => {
 };
 
 
-// ---------------- GET USER BY ID ----------------
 exports.getUserById = async (req, res) => {
   try {
     const id = req.params.id;
@@ -95,7 +88,6 @@ exports.getUserById = async (req, res) => {
   }
 };
 
-// ---------------- GET CURRENT USER ----------------
 exports.getMe = async (req, res) => {
   try {
     if (!req.user) return res.status(401).json({ error: "Not authorized" });
@@ -107,7 +99,7 @@ exports.getMe = async (req, res) => {
   }
 };
 
-// ---------------- UPDATE USER ----------------
+
 exports.updateUser = async (req, res) => {
   try {
     const id = req.params.id;
@@ -127,7 +119,6 @@ exports.updateUser = async (req, res) => {
   }
 };
 
-// ---------------- LIST USERS ----------------
 exports.listUsers = async (req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -137,7 +128,6 @@ exports.listUsers = async (req, res) => {
   }
 };
 
-// ---------------- FORGOT PASSWORD ----------------
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -149,7 +139,7 @@ exports.forgotPassword = async (req, res) => {
 
     const token = crypto.randomBytes(32).toString("hex");
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; // 1h
+    user.resetPasswordExpires = Date.now() + 3600000; 
     await user.save();
 
     const transporter = nodemailer.createTransport({
@@ -178,7 +168,6 @@ exports.forgotPassword = async (req, res) => {
   }
 };
 
-// ---------------- RESET PASSWORD ----------------
 exports.resetPassword = async (req, res) => {
   try {
     const { token } = req.params;
@@ -191,7 +180,7 @@ exports.resetPassword = async (req, res) => {
 
     if (!user) return res.status(400).json({ error: "Invalid or expired token" });
 
-    user.password = password; // pre-save hook will hash
+    user.password = password; 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 

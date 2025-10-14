@@ -197,24 +197,12 @@ const Supplier = () => {
         
         <div className="col-md-6">
           <label className="form-label">State <span className="text-danger">*</span></label>
-          <select 
-            className="form-select bg-light" 
-            name="state_code" 
-            value={form.state_code} 
-            onChange={handleChange}
-            required
-            disabled={!form.country}
-          >
+          <select  className="form-select bg-light" name="state_code"  value={form.state_code} onChange={handleChange} required disabled={!form.country} >
             <option value="">Select State</option>
-            {states.map(s => (
-              <option key={s.isoCode} value={s.isoCode}>
-                {s.name} ({s.isoCode})
-              </option>
-            ))}
+            {states.map(s => (<option key={s.isoCode} value={s.isoCode}> {s.name} ({s.isoCode})</option>  ))}
           </select>
           {form.country && (
-            <small className="form-text text-muted">
-              States for {Country.getCountryByCode(form.country)?.name || form.country}: {states.length} states available
+            <small className="form-text text-muted">States for {Country.getCountryByCode(form.country)?.name || form.country}: {states.length} states available
             </small>
           )}
         </div>

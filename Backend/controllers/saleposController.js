@@ -2,10 +2,7 @@ const Sale = require("../models/Sale")
 
 exports.getSalePOSs = async (req, res) => {
   try {
-    const sales = await Sale.find()
-      .populate("customer_id", "name")
-      .populate("items.product_id", "name")
-      .populate("items.tax_rate_id", "name");
+    const sales = await Sale.find().populate("customer_id", "name").populate("items.product_id", "name").populate("items.tax_rate_id", "name");
 
     res.json(sales);
   } catch (err) {
