@@ -101,7 +101,7 @@ export default function Dashboard() {
           
         )}
         
-        <div className="flex-grow-1 p-4 overflow-auto" style={{ backgroundColor: "#c9d9ecff" }}>
+        <div className="flex-grow-1 p-4 overflow-auto" style={{ backgroundColor: "#94b4c1" }}>
           
          <div className={`${ window.location.pathname === "/"? "p-0 border-0 shadow-none bg-transparent": "bg-white border rounded shadow-sm p-4 h-100" }`}>
   {window.location.pathname === "/" && <DashboardSummary />}
