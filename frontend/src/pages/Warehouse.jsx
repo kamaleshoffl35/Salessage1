@@ -8,7 +8,7 @@ import { MdDeleteForever } from "react-icons/md";
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch,useSelector } from 'react-redux';
-import { addwarehouse, deletewarehouse, fetchwarehouses } from '../redux/warehouseSlice';
+import { addwarehouse, deletewarehouse, fetchwarehouses, updateWarehouse } from '../redux/warehouseSlice';
 import { setAuthToken } from '../services/userService';
 
 const Warehouse = () => {
@@ -102,7 +102,16 @@ const Warehouse = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-     await dispatch(addwarehouse(form)).unwrap()
+      if(editingWarehouse){
+        await dispatch(updateWarehouse({id:editingWarehouse,updatedData:form})).unwrap()
+        setEditingWarehouse(null)
+        console.log("Warehouse updated Successfully")
+      }
+      else{
+         await dispatch(addwarehouse(form)).unwrap()
+         console.log("Warehouse added Successfully")
+      }
+     
       setForm({
         store_name: "",
         code: "",
@@ -134,6 +143,22 @@ const Warehouse = () => {
     dispatch(deletewarehouse(id))
   };
 
+  const [editingWarehouse,setEditingWarehouse]=useState(null)
+
+  const handleEdit=(warehouse)=>{
+    setEditingWarehouse(warehouse._id)
+    setForm({
+       store_name:warehouse.store_name || "",
+        code:warehouse.code || "",
+        address:warehouse.address || "",
+        country:warehouse.country || "",
+        state_code:warehouse.state_code || "",
+        contact:warehouse.contact || "",
+        phone:warehouse.PhoneInput ||  "",
+        email:warehouse.email ||  "",
+        status:warehouse.status || false
+    })
+  }
   return (
     <div className="container mt-4 bg-gradient-warning">
       <h2 className="mb-4 d-flex align-items-center fs-5">
@@ -296,12 +321,14 @@ const Warehouse = () => {
                     </td>
                     <td>
                       {["super_admin","admin"].includes(role) ? (
+                        <>
+                        <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(w)}>Edit</button>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(w._id)}>
                         <span className="text-warning">
                           <MdDeleteForever />
                         </span>
                         Delete
-                      </button>):(
+                      </button></>):(
                         <button className="btn btn-secondary btn-sm" disabled>
                                                         View Only
                                                     </button>

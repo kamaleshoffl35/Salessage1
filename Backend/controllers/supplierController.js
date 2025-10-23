@@ -38,3 +38,14 @@ exports.deleteSupplier = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+exports.updateSupplier=async(req,res)=>{
+  try{
+    const updated=await Supplier.findByIdAndUpdate(req.params.id,req.body,{new : true})
+    res.json(updated)
+
+  }
+  catch(err){
+    res.status(400).json({error:err.message})
+  }
+}

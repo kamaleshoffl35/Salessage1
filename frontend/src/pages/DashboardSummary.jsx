@@ -250,29 +250,40 @@ const salesPurchaseData = useMemo(()=>{
         {recentpurchases.map((p) => (
           <tr key={p._id}>
             <td>
-              {typeof p.supplier_id === "object"
-                ? p.supplier_id.name
-                : suppliers.find(s => s._id === p.supplier_id)?.name || "Unknown Supplier"}
+             <td>
+  {p.supplier_id && typeof p.supplier_id === "object"
+    ? p.supplier_id.name
+    : suppliers.find(s => s._id === p.supplier_id)?.name || "Unknown Supplier"}
+</td>
+
             </td>
             <td>{p.invoice_no || "N/A"}</td>
             <td>{p.invoice_date ? new Date(p.invoice_date).toLocaleDateString() : "N/A"}</td>
             <td>
-              {typeof p.warehouse_id === "object"
-                ? p.warehouse_id.store_name
-                : warehouses.find(w => w._id === p.warehouse_id)?.store_name || "Unknown Warehouse"}
+              {p.warehouse_id && typeof p.warehouse_id === "object"
+    ? p.warehouse_id.store_name
+    : warehouses.find(w => w._id === p.warehouse_id)?.store_name || "Unknown Warehouse"}
             </td>
             <td>
-              {p.items?.map((item, idx) => {
-                const productName =
-                  item.product_id && typeof item.product_id === 'object'
-                    ? item.product_id.name
-                    : products.find(prod => prod._id === item.product_id)?.name || 'Unknown Product';
-                return (
-                  <div key={idx}>
-                    {productName} ({item.qty})
-                  </div>
-                );
-              })}
+             {p.items?.map((item, idx) => {
+  let productName = "Unknown Product";
+
+  if (item?.product_id && typeof item.product_id === "object") {
+    productName = item.product_id.name || "Unknown Product";
+  } else if (item?.product_id && Array.isArray(products)) {
+    const foundProduct = products.find(
+      (prod) => prod._id === item.product_id
+    );
+    productName = foundProduct?.name || "Unknown Product";
+  }
+
+  return (
+    <div key={idx}>
+      {productName} ({item.qty || 0})
+    </div>
+  );
+})}
+
             </td>
             <td>₹{p.grand_total?.toFixed(2) || "0.00"}</td>
           </tr>

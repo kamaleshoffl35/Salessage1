@@ -7,6 +7,7 @@ import axios from "axios";
 import { fetchCategories } from "../redux/categorySlice";
 import { variants } from "../data/variants";
 import { setAuthToken } from "../services/userService";
+import { updateProduct } from "../redux/productSlice";
 
 const Product = () => {
   const dispatch=useDispatch();
@@ -95,7 +96,15 @@ if (name === "category_id") {
   const handleSubmit=async (e) => {
     e.preventDefault();
     try {
-      await dispatch(addProduct(form)).unwrap();
+      if(editingProduct) {
+        await dispatch(updateProduct({id:editingProduct,updatedData:form})).unwrap()
+        setEditingProduct(null)
+        console.log("Product Update Successfully")
+      }else{
+        await dispatch(addProduct(form)).unwrap();
+        console.log("Product added Successfully")
+      }
+      
       setForm({
         name: "",
         sku: "",
@@ -115,7 +124,7 @@ if (name === "category_id") {
         status: true,
       });
       dispatch(fetchProducts());
-      console.log("Product added successfully!");
+  
     } catch (err) {
       console.error("Error adding product:", err.response?.data || err.message);
     }
@@ -139,6 +148,30 @@ if (selectedCategory) {
       setBrands([]);
     }
   };
+
+  const [editingProduct, setEditingProduct] = useState(null);
+
+  const handleEdit = (product) => {
+  setEditingProduct(product._id);
+  setForm({
+    name: product.name || "",
+    sku: product.sku || "",
+    category_id: product.category_id?._id || "",
+    brand_name: product.brand_name || "",
+    unit_id: product.unit_id || "Kg",
+    hsn_code: product.hsn_code || "",
+    tax_rate_id: product.tax_rate_id || "18%",
+    mrp: product.mrp || "",
+    purchase_price: product.purchase_price || "",
+    sale_price: product.sale_price || "",
+    min_stock: product.min_stock || "",
+    barcode: product.barcode || "",
+    is_batch_tracked: product.is_batch_tracked || false,
+    is_serial_tracked: product.is_serial_tracked || false,
+    status: product.status || false,
+  });
+};
+
  const handleDelete=(id) => {
     dispatch(deleteProduct(id));
   };
@@ -263,7 +296,7 @@ const filteredProducts = products.filter(
               <span className="text-warning me-2 d-flex align-items-center">
                 <FaCartPlus />
               </span>
-              Add Product
+              {editingProduct ? "Update Product" : "Add Product"}
             </button>
           </div>
         </form>
@@ -328,12 +361,20 @@ const filteredProducts = products.filter(
                       </td>
                       <td>
                         {["super_admin", "admin"].includes(role) ? (
+                          <>
+                          <button
+        className="btn btn-warning btn-sm me-2"
+        onClick={() => handleEdit(p)}
+      >
+        Edit
+      </button>
                           <button
                             className="btn btn-danger btn-sm"
                             onClick={() => handleDelete(p._id)}
                           >
                             <MdDeleteForever /> Delete
                           </button>
+                          </>
                         ) : (
                           <button className="btn btn-secondary btn-sm" disabled>
                             View Only

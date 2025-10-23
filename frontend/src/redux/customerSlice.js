@@ -19,6 +19,15 @@ export const deletecustomer=createAsyncThunk("customers/delete",async (id) => {
     return id
 })
 
+export const updatecustomer=createAsyncThunk("customers/update",async({id,updatedData})=>{
+    const user=JSON.parse(localStorage.getItem("user"))
+    const token=user?.token
+    if(!token)
+        throw new Error("Token missing")
+    const res = await axios.put(`${API_URL}/${id}`,updatedData,{headers:{Authorization:`Bearer ${token}`}})
+    return res.data
+})
+
 const customerSlice=createSlice({
     name:"customers",
     initialState:{
@@ -45,6 +54,13 @@ const customerSlice=createSlice({
     })
     .addCase(deletecustomer.fulfilled,(state,action)=>{
         state.items=state.items.filter((c)=>c._id !== action.payload)
+    })
+    .addCase(updatecustomer.fulfilled,(state,action)=>{
+        const index=state.items.findIndex((c)=>c._id === action.payload._id)
+        if(index !== -1)
+        {
+            state.items[index]=action.payload
+        }
     })
     }
         

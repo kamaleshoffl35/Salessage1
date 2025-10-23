@@ -8,7 +8,7 @@ import 'react-phone-input-2/lib/style.css';
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
-import { addSupplier, deleteSupplier, fetchsuppliers } from '../redux/supplierSlice';
+import { addSupplier, deleteSupplier, fetchsuppliers, updateSupplier } from '../redux/supplierSlice';
 import { setAuthToken } from '../services/userService';
 
 const Supplier = () => {
@@ -101,7 +101,16 @@ const Supplier = () => {
   const handleSubmit = async (e) => {
     e.preventDefault()
     try {
-  await dispatch(addSupplier(form)).unwrap()
+      if(editingSupplier){
+        await dispatch(updateSupplier({id:editingSupplier,updatedData:form})).unwrap()
+        setEditingSupplier(null)
+        console.log("Supplier Updated Successfully")
+      }
+      else{
+       await dispatch(addSupplier(form)).unwrap()
+       console.log("Supplier added Successfully")
+      }
+
       setForm({
         name: "",
         phone: "",
@@ -133,6 +142,21 @@ const Supplier = () => {
     dispatch(deleteSupplier(id))
   };
 
+  const [editingSupplier,setEditingSupplier]=useState(null)
+
+  const handleEdit=(supplier)=>{
+    setEditingSupplier(supplier._id)
+    setForm({
+      name:supplier.name || "",
+        phone:supplier.PhoneInput || "",
+        country: supplier.country  || "",
+        gstin: supplier.gstin || "",
+        email: supplier.email ||"",
+        address: supplier.address || "",
+        state_code: supplier.state_code ||"",
+        opening_balance: supplier.opening_balance ||"",
+    })
+  }
   return (
     <div className="container mt-4 bg-gradient-warning">
       <h2 className="mb-4 d-flex align-items-center fs-5">
@@ -214,7 +238,7 @@ const Supplier = () => {
         
         <div className="col-12">
           <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
-            <span className="text-warning me-2 d-flex align-items-center"><FaRegSave /></span> Save Supplier
+            <span className="text-warning me-2 d-flex align-items-center"><FaRegSave /></span> {editingSupplier ? "Update Supplier"  : "Add Supplier"}
           </button>
         </div>
       </form>)}
@@ -261,12 +285,14 @@ const Supplier = () => {
                     <td>{s.opening_balance}</td>
                     <td>
                       {["super_admin","admin"].includes(role) ? (
+                        <>
+                        <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(s)}>Edit</button>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(s._id)}>
                         <span className="text-warning">
                           <MdDeleteForever />
                         </span>
                         Delete
-                      </button>):(
+                      </button></>):(
                             <button className="btn btn-secondary btn-sm" disabled>
                                                         View Only
                                                     </button>

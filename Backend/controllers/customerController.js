@@ -1,3 +1,6 @@
+
+
+
 const Customer = require('../models/Customer')
 
 exports.getCustomers = async (req, res) => {
@@ -32,3 +35,13 @@ exports.deleteCustomer = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+
+exports.updateCustomer=async(req,res)=>{
+    try{
+      const updated=await Customer.findByIdAndUpdate(req.params.id,req.body,{new:true})
+      res.json(updated)
+    }catch(err){
+      res.status(400).json({error:err.message})
+    }
+}
+

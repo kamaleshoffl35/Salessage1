@@ -8,7 +8,7 @@ import 'react-phone-input-2/lib/style.css';
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch,useSelector } from 'react-redux';
-import { addcustomer, deletecustomer, fetchcustomers } from '../redux/customerSlice';
+import { addcustomer, deletecustomer, fetchcustomers, updatecustomer } from '../redux/customerSlice';
 
 const Customer = () => {
    const dispatch=useDispatch()
@@ -104,9 +104,18 @@ const Customer = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        e.preventDefault()
         try {
-           dispatch(addcustomer(form))
+            if(editingCustomer){
+                await dispatch(updatecustomer({id:editingCustomer,updatedData:form})).unwrap()
+                setEditingCustomer(null)
+                console.log("Customer Updated Successfully")
+            }
+            else{
+                  await dispatch(addcustomer(form)).unwrap()
+                  console.log("Customer Added Successfully")
+            }
+           
             setForm({
                 name: "",
                 phone: "",
@@ -135,6 +144,24 @@ const Customer = () => {
             c.phone.toString().includes(search) ||
             c.email.toLowerCase().includes(search.toLowerCase())
     );
+
+    const [editingCustomer,setEditingCustomer]=useState(null)
+
+    const handleEdit =(customer)=>{
+        setEditingCustomer(customer._id)
+        setForm({
+             name: customer.name || "",
+                phone: customer.PhoneInput || "",
+                country:customer.country ||  "",
+                gstin: customer.gstin || "",
+                email: customer.email || "",
+                billing_address: customer.billing_address|| "",
+                shipping_address: customer.shipping_address || "",
+                state_code: customer.state_code || "",
+                credit_limit:customer.credit_limit || "",
+                opening_balance: customer.opening_balance || "",
+        })
+    }
 
     return (
         <div className="container mt-4 bg-gradient-warning">
@@ -232,7 +259,7 @@ const Customer = () => {
 
                 <div className="col-12 d-flex gap-2">
                     <button type="button" className=" btn btn-secondary px-4 d-flex align-items-center justify-content-center"><span className='me-2 d-flex align-items-center'><FcCancel /></span> Cancel</button>
-                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center"><span className='text-warning me-2 d-flex align-items-center'><FaRegSave /> </span>Save Customer</button>
+                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center"><span className='text-warning me-2 d-flex align-items-center'><FaRegSave /> </span>{editingCustomer ? "Update Customer " :"Add Customer"}</button>
                 </div>
             </form><br />
 
@@ -279,6 +306,7 @@ const Customer = () => {
                                {c.status ? "Active" : "Inactive"}
                              </td> */}
                              <td>
+                                <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(c)}>Edit</button>
                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c._id)}><span className="text-warning"><MdDeleteForever /></span>Delete</button>
                              </td>
                            </tr>)

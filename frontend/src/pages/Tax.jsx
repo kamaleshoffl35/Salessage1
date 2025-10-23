@@ -7,7 +7,7 @@ import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch,useSelector } from 'react-redux';
 // import { fetchUnits } from '../redux/unitSlice';
-import { addtax, deletetax, fetchtaxes } from '../redux/taxSlice';
+import { addtax, deletetax, fetchtaxes, updatetax } from '../redux/taxSlice';
 import { setAuthToken } from '../services/userService';
 
 const Tax = () => {
@@ -44,7 +44,15 @@ const Tax = () => {
     const handleSubmit = async (e) => {
         e.preventDefault()
         try {
-           await dispatch(addtax(form)).unwrap()
+            if(editingTax){
+                await dispatch(updatetax({id:editingTax,updatedData:form})).unwrap()
+                setEditingTax(null)
+                console.log("Tax Updated Successfully")
+            }else{
+              await dispatch(addtax(form)).unwrap()
+              console.log("Tax added Successfully")
+            }
+           
             setForm({
                 name: "",
                 cgst_percent: "",
@@ -71,6 +79,20 @@ const Tax = () => {
     const handleDelete = async (id) => {
     dispatch(deletetax(id))
   };
+
+  const [editingTax,setEditingTax]=useState(null)
+
+  const handleEdit=(tax)=>{
+    setEditingTax(tax._id)
+    setForm({
+         name: tax.name || "",
+                cgst_percent:tax.cgst_percent || "",
+                sgst_percent: tax.sgst_percent || "",
+                igst_percent: tax.igst_percent || "",
+                cess_percent: tax.cess_percent || "",
+                is_inclusive: tax.is_inclusive || false,
+    })
+  }
 
     return (
         <div className="container mt-4 bg-gradient-warning">
@@ -115,7 +137,7 @@ const Tax = () => {
                     <label className="form-check-label">Inclusive Tax</label>
                 </div>
                 <div className="col-12 d-flex gap-2">
-                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center"><span className="text-warning me-2 d-flex align-items-center"><FaRegSave /></span>Save</button>
+                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center"><span className="text-warning me-2 d-flex align-items-center"><FaRegSave /></span>{editingTax ? "Update Tax" :"Add Tax"}</button>
                     <button type="submit" className="btn btn-secondary btn btn-primary px-4 d-flex align-items-center justify-content-center"> <span className='me-2 d-flex align-items-center' ><FcCancel /></span>Cancel</button>
                 </div>
             </form>)}
@@ -163,12 +185,14 @@ const Tax = () => {
                                         </td>
                                         <td>
                                             {["super_admin","admin"].includes(role) ? (
+                                                <>
+                                                <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(t)}>Edit</button>
                                             <button className="btn btn-danger btn-sm" onClick={()=>handleDelete(t._id)}>
                                                 <span className="text-warning">
                                                     <MdDeleteForever />
                                                 </span>
                                                 Delete
-                                            </button>
+                                            </button></>
                                             ):(
                                               <button className="btn btn-secondary btn-sm" disabled>
                                                         View Only

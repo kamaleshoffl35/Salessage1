@@ -7,6 +7,7 @@ import { FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories,addCategory,deleteCategory } from "../redux/categorySlice";
 import { setAuthToken } from "../services/userService";
+import { updateCategory } from "../redux/categorySlice";
 
 
 const Category = () => {
@@ -71,9 +72,18 @@ if (name === "name") {
   };
 const handleSubmit = async (e) => {
     e.preventDefault();
+     const payload={...form,brands:form.brand ?[form.brand]:[],};
     try {
-      const payload={...form,brands:form.brand ?[form.brand]:[],};
-      await dispatch(addCategory(payload)).unwrap()
+      if(editingCategory){
+        await dispatch(updateCategory({id:editingCategory,updatedData:form})).unwrap()
+        setEditingCategory(null)
+        console.log("Category Updated Successfully")
+      }else{
+         await dispatch(addCategory(payload)).unwrap()
+         console.log("Category Added Successfully")
+      }
+     
+     
       setForm({
         parental_id: "",
         name: "",
@@ -101,6 +111,20 @@ const handleSubmit = async (e) => {
 const handleDelete = async (id) => {
     dispatch(deleteCategory(id))
   };
+
+  const [editingCategory, setEditingCategory]=useState(null)
+
+  const handleEdit=(category)=>{
+    setEditingCategory(category._id)
+    setForm({
+      parental_id:category.parental_id || "",
+      name: category.name || "",
+        code: category.code || "",
+        subcategory: category.subcategory || "",
+        brand: category.brand || "",
+        status: category.status || false,
+    })
+  }
   
  return (
     <div className="container mt-4 bg-gradient-warning">
@@ -159,7 +183,7 @@ const handleDelete = async (id) => {
         </div>
        <div className="col-12">
           <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center"><span className="text-warning me-2 d-flex align-items-center "><RiFunctionAddLine /></span>
-            Add Category
+            {editingCategory ? "Update Category": "Add Category"}
           </button>
         </div>
       </form>)}
@@ -202,6 +226,8 @@ const handleDelete = async (id) => {
                   </td>
                   <td>
                     {["super_admin","admin"].includes(role) ? (
+                      <>
+                      <button  className="btn btn-warning btn-sm me-2" onClick={()=>handleEdit(c)}>Edit</button>
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(c._id)}
@@ -210,7 +236,7 @@ const handleDelete = async (id) => {
                         <MdDeleteForever />
                       </span>
                       Delete
-                    </button>):(
+                    </button></>):(
                        <button className="btn btn-secondary btn-sm" disabled>
                                                         View Only
                                                     </button>

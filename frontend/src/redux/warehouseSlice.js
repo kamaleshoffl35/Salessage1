@@ -31,6 +31,15 @@ export const deletewarehouse=createAsyncThunk("warehouses/delete",async (id) => 
     return id
 })
 
+export const updateWarehouse=createAsyncThunk("warehouses/update",async ({id,updatedData}) => {
+    const user=JSON.parse(localStorage.getItem("user"))
+    const token=user?.token
+    if(!token)
+        throw new Error("Token Missing")
+    const res=await axios.put(`${API_URL}/${id}`,updatedData,{headers:{Authorization:`Bearer ${token}`}})
+    return res.data
+})
+
 const warehouseSlice=createSlice({
     name:"warehouses",
     initialState:{
@@ -58,6 +67,12 @@ const warehouseSlice=createSlice({
         })
         .addCase(deletewarehouse.fulfilled,(state,action)=>{
             state.items=state.items.filter((w)=>w._id !== action.payload)
+        })
+        .addCase(updateWarehouse.fulfilled,(state,action)=>{
+            const index=state.items.findIndex((w)=>w._id  === action.payload)
+            if(index !== -1){
+                state.items[index]=action.payload
+            }
         })
         }
     
