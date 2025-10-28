@@ -8,8 +8,11 @@ import { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from '../redux/productSlice';
 import { fetchwarehouses } from '../redux/warehouseSlice';
-import { addstock, deletestock, fetchstocks } from '../redux/stockledgerSlice';
+import { addstock, deletestock, fetchstocks, updatestock } from '../redux/stockledgerSlice';
 import { setAuthToken } from '../services/userService';
+import { MdEdit } from "react-icons/md";
+
+
 const StockLedger = () => {
     const dispatch = useDispatch()
     const { items: stocks, status } = useSelector((state) => state.stockss)
@@ -48,27 +51,37 @@ const StockLedger = () => {
 
     };
     const handleSubmit = async (e) => {
-        e.preventDefault()
-        try {
-            await dispatch(addstock(form)).unwrap()
-            setForm({
-                productId: "",
-                warehouseId: "",
-                txnType: "SALE" | "PURCHASE" | "ADJUSTMENT",
-                txnId: "",
-                txnDate: "",
-                inQty: "",
-                outQty: "",
-                rate: "",
-                balanceQty: "",
-            })
-            dispatch(fetchstocks())
-        }
-        catch (err) {
-            console.error(err.response?.data || err.message);
-        }
+  e.preventDefault();
+  try {
+    if (editingstockledger) {
+      await dispatch(updatestock({ id: editingstockledger, updatedData: form })).unwrap();
+      setEditingstockledger(null);
+      console.log("Stock Ledger Updated Successfully");
 
+      
+    } else {
+      await dispatch(addstock(form)).unwrap();
+   
+      console.log("Stock Ledger Added Successfully");
     }
+    dispatch(fetchstocks())
+    setForm({
+      productId: "",
+      warehouseId: "",
+      txnType: "SALE" | "PURCHASE" | "ADJUSTMENT",
+      txnId: "",
+      txnDate: "",
+      inQty: "",
+      outQty: "",
+      rate: "",
+      balanceQty: "",
+    });
+    dispatch(fetchstocks())
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+  }
+};
+
     const [search, setSearch] = useState("")
 
     const filteredstockss = (stocks || []).filter((s) => {
@@ -95,6 +108,23 @@ const StockLedger = () => {
     const handleDelete = async (id) => {
         dispatch(deletestock(id))
     };
+
+    const [editingstockledger,setEditingstockledger]=useState(null)
+
+    const handleEdit=(stockledger)=>{
+        setEditingstockledger(stockledger._id)
+        setForm({
+            productId:stockledger.productId || "",
+        warehouseId:stockledger.warehouseId || "",
+        txnType:stockledger.txnType || "SALE" | "PURCHASE" | "ADJUSTMENT",
+        txnId:stockledger.txnId || "",
+        txnDate: stockledger.txnDate ||"",
+        inQty:stockledger.inQty || "",
+        outQty: stockledger.outQty ||"",
+        rate: stockledger.rate ||"",
+        balanceQty:stockledger.balanceQty || "",
+        })
+    }
 
     return (
         <div className="container mt-4">
@@ -165,7 +195,7 @@ const StockLedger = () => {
                 <div className="col-12">
                     <button type="submit" className="btn btn-primary px-4 d-flex align-center justify-center">
                         <span className="text-warning me-2 d-flex align-items-center"><FaRegSave />
-                        </span>Save</button>
+                        </span>{editingstockledger ? "Update Ledger" : "Save Ledger"}</button>
                 </div>
             </form>)}<br />
 
@@ -209,6 +239,8 @@ const StockLedger = () => {
                                         <td>{s.rate}</td>
                                         <td>{s.balanceQty}</td>
                                         <td>{["super_admin"].includes(role) ? (
+                                            <>
+                                            <button className='btn btn-sm btn-warning' onClick={()=>handleEdit(s)}><MdEdit/>Edit</button>
                                             <button
                                                 className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"
                                                 onClick={() => handleDelete(s._id)}
@@ -216,7 +248,7 @@ const StockLedger = () => {
                                                                                                 <MdDeleteForever />
                                                                                               </span>
                                                 Delete
-                                            </button>):(
+                                            </button></>):(
                                                   <button className="btn btn-secondary btn-sm" disabled>
                                                         View Only
                                                     </button>

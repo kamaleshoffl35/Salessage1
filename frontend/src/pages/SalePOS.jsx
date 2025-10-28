@@ -9,6 +9,7 @@ import { addSale, deleteSale, fetchsales, updateSale } from '../redux/saleSlice'
 import { fetchtaxes } from '../redux/taxSlice';
 import { fetchProducts } from '../redux/productSlice';
 import { fetchcustomers } from '../redux/customerSlice';
+import { MdEdit } from "react-icons/md";
 
 const SalePOS = () => {
   const dispatch = useDispatch();
@@ -367,7 +368,7 @@ const SalePOS = () => {
                   <td>{s.due_amount?.toFixed(2) || "0.00"}</td>
                   <td>
                     <>
-                    <button className='btn btn-sm btn-warning' onClick={()=>handleEdit(s)}>Edit</button>
+                    <button className='btn btn-sm btn-warning' onClick={()=>handleEdit(s)}><MdEdit/>Edit</button>
                     <button
                       className="btn btn-sm btn-danger"
                       onClick={() => handleDelete(s._id)}

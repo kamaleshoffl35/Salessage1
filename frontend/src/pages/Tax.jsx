@@ -9,6 +9,7 @@ import { useDispatch,useSelector } from 'react-redux';
 // import { fetchUnits } from '../redux/unitSlice';
 import { addtax, deletetax, fetchtaxes, updatetax } from '../redux/taxSlice';
 import { setAuthToken } from '../services/userService';
+import { MdEdit } from "react-icons/md";
 
 const Tax = () => {
     const dispatch=useDispatch()
@@ -186,7 +187,7 @@ const Tax = () => {
                                         <td>
                                             {["super_admin","admin"].includes(role) ? (
                                                 <>
-                                                <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(t)}>Edit</button>
+                                                <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(t)}><MdEdit/>Edit</button>
                                             <button className="btn btn-danger btn-sm" onClick={()=>handleDelete(t._id)}>
                                                 <span className="text-warning">
                                                     <MdDeleteForever />

@@ -7,10 +7,11 @@ import { FaRegSave } from "react-icons/fa";
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useDispatch, useSelector } from "react-redux";
+import { MdEdit } from "react-icons/md";
 
 import { fetchwarehouses } from '../redux/warehouseSlice';
 import { addstock, deletestock, fetchstocks } from '../redux/stockledgerSlice';
-import { addexpense, deleteexpense, fetchexpenses } from '../redux/expenseSlice';
+import { addexpense, deleteexpense, fetchexpenses, updateexpense } from '../redux/expenseSlice';
 import { setAuthToken } from '../services/userService';
 const Expenses = () => {
     const dispatch = useDispatch()
@@ -46,7 +47,15 @@ const Expenses = () => {
     const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-        await dispatch(addexpense(form)).unwrap()
+        if(editingexpense){
+            await dispatch(updateexpense({id:editingexpense,updatedData:form})).unwrap()
+            setEditingexpense(null)
+            console.log("Expense Updated Successfully")
+        }else{
+                await dispatch(addexpense(form)).unwrap()
+                console.log("Expense Added Successfully")
+        }
+      
         dispatch(fetchexpenses()); 
         setForm({
             expenseDate: "",
@@ -79,6 +88,19 @@ const Expenses = () => {
     const handleDelete = async (id) => {
         dispatch(deleteexpense(id))
     };
+
+    const [editingexpense,setEditingexpense]=useState(null)
+
+    const handleEdit=(expense)=>{
+        setEditingexpense(expense._id)
+        setForm({
+            expenseDate:expense.expenseDate || "",
+            warehouseId:expense.warehouseId || "",
+            expenseHead:expense.expenseHead || "",
+            amount:expense.amount || "",
+            notes:expense.notes || "",
+        })
+    }
 
     return (
         <div className="container mt-4">
@@ -126,7 +148,7 @@ const Expenses = () => {
                 <div className="col-12">
                     <button type="submit" className="btn btn-primary px-4 d-flex align-center justify-center">
                         <span className="text-warning me-2 d-flex align-items-center"><FaRegSave />
-                        </span>Save</button>
+                        </span>{editingexpense ? "Update Expense" :"Add Expense"}</button>
                 </div>
             </form>)}<br />
 
@@ -166,6 +188,8 @@ const Expenses = () => {
                                         
                                         <td>
                                             {["super_admin"].includes(role) ? (
+                                                <>
+                                                <button className='btn btn-sm btn-warning' onClick={()=>handleEdit(e)}><MdEdit/>Edit</button>
                                             <button
                                                 className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"
                                                 onClick={() => handleDelete(e._id)}
@@ -173,7 +197,7 @@ const Expenses = () => {
                                                                                                                                             <MdDeleteForever />
                                                                                                                                           </span>
                                                 Delete
-                                            </button>):(
+                                            </button></>):(
                                                     <button className="btn btn-secondary btn-sm" disabled>
                                                         View Only
                                                     </button>

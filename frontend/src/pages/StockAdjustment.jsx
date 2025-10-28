@@ -8,8 +8,9 @@ import { MdDeleteForever } from "react-icons/md";
 import { useDispatch,useSelector } from "react-redux";
 import { fetchwarehouses } from "../redux/warehouseSlice";
 import { fetchProducts } from "../redux/productSlice";
-import { addstock, deletestock, fetchstocks } from "../redux/stockadjSlice";
+import { addstock, deletestock, fetchstocks, updateStock } from "../redux/stockadjSlice";
 import { setAuthToken } from "../services/userService";
+import { MdEdit } from "react-icons/md";
 
 const StockAdjustment = () => {
     const dispatch=useDispatch()
@@ -74,7 +75,15 @@ const StockAdjustment = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            await dispatch(addstock(form)).unwrap()
+            if(editingStockAdjustment){
+                await dispatch(updateStock({id:editingStockAdjustment,updatedData:form})).unwrap()
+                setEditingStockAdjustment(null)
+                console.log("Stock Adjustment Updated Successfully")
+            }else{
+                   await dispatch(addstock(form)).unwrap()
+                   console.log("Stock Adjustment Added Successfully")
+            }
+         
             setForm({
                 warehouse_id: "",
                 reason: "",
@@ -108,6 +117,19 @@ const StockAdjustment = () => {
     const handleDelete = async (id) => {
       dispatch(deletestock(id))
     };
+
+    const [editingStockAdjustment,setEditingStockAdjustment]=useState(null)
+
+    const handleEdit=(stockadjustment)=>{
+        setEditingStockAdjustment(stockadjustment._id)
+        setForm({
+              warehouse_id:stockadjustment.warehouse_id || "",
+        reason: stockadjustment.reason ||"",
+        date:stockadjustment.date || new Date().toISOString().slice(0, 16),
+        notes:stockadjustment.notes || "",
+        items: [{ product_id: stockadjustment.product_id ||"", batch:stockadjustment.batch || "", qty:stockadjustment.qty|| "", remarks:stockadjustment.remarks || "" }]  
+        })
+    }
 
 
     return (
@@ -185,7 +207,7 @@ const StockAdjustment = () => {
                 <button type="button" className="btn btn-secondary mb-3" onClick={addItem}>+ Add Row</button>
                 <br />
                 <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
-                    <span className="text-warning me-2 d-flex align-items-center"><FaSave /> </span>Save Adjustment
+                    <span className="text-warning me-2 d-flex align-items-center"><FaSave /> </span>{editingStockAdjustment ? "Update Adjustment" : "Save Adjustment"}
                 </button>
             </form><br />
 
@@ -223,7 +245,7 @@ const StockAdjustment = () => {
                                         <td>{s.reason}</td>
                                         <td>{new Date(s.date).toLocaleString()}</td>
                                         <td>{s.notes}</td>
-                                        <td>
+                                        
   <td>
   {s.items.map((item, idx) => (
     <div key={idx}>
@@ -231,10 +253,12 @@ const StockAdjustment = () => {
     </div>
   ))}
 </td>
-</td>
+
 
                                         <td>
                                             {["super_admin","admin"].includes(role) ? (
+                                                <>
+                                                <button className="btn btn-sm btn-warning" onClick={()=>handleEdit(s)}><MdEdit/>Edit</button>
                                             <button
                                                 className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"
                                                 onClick={() => handleDelete(s._id)}
@@ -243,7 +267,7 @@ const StockAdjustment = () => {
                                                     <MdDeleteForever />
                                                 </span>
                                                 Delete
-                                            </button>):(
+                                            </button></>):(
                                                       <button className="btn btn-secondary btn-sm" disabled>
                                                         View Only
                                                     </button>

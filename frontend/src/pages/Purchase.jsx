@@ -10,6 +10,7 @@ import { fetchProducts } from "../redux/productSlice";
 import { fetchwarehouses } from "../redux/warehouseSlice";
 import { fetchsuppliers } from "../redux/supplierSlice";
 import { setAuthToken } from "../services/userService";
+import { MdEdit } from "react-icons/md";
 
 
 const Purchase = () => {
@@ -445,7 +446,7 @@ const handleEdit =(purchase)=>{
 
             {["super_admin", "admin"].includes(role) ? (
               <>
-              <button className="btn btn-warning btn-sm" onClick={()=>handleEdit(p)}>Edit</button>
+              <button className="btn btn-warning btn-sm me-2" onClick={()=>handleEdit(p)}><MdEdit/>Edit</button>
               <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>
                 <span className="text-warning"><MdDeleteForever /></span>{" "}Delete</button></>
             ) : (

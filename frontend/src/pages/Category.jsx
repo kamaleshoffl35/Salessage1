@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories,addCategory,deleteCategory } from "../redux/categorySlice";
 import { setAuthToken } from "../services/userService";
 import { updateCategory } from "../redux/categorySlice";
+import { MdEdit } from "react-icons/md";
 
 
 const Category = () => {
@@ -227,7 +228,7 @@ const handleDelete = async (id) => {
                   <td>
                     {["super_admin","admin"].includes(role) ? (
                       <>
-                      <button  className="btn btn-warning btn-sm me-2" onClick={()=>handleEdit(c)}>Edit</button>
+                      <button  className="btn btn-warning btn-sm me-2" onClick={()=>handleEdit(c)}><MdEdit/>Edit</button>
                     <button
                       className="btn btn-danger btn-sm"
                       onClick={() => handleDelete(c._id)}

@@ -145,18 +145,19 @@ const PurchaseReport = () => {
             </thead>
             <tbody>
               {filteredreports.length === 0 ? (
-                <tr>
-                  <td colSpan="11" className="text-center">
-                    No reports found.
-                  </td>
-                </tr>
-              ) : (
-                purchasereports.map((p) => (
+  <tr>
+    <td colSpan="11" className="text-center">
+      No reports found.
+    </td>
+  </tr>
+) : (
+  filteredreports.map((p) => (
+
                   <tr key={p._id}>
 
                     <td>{p.from_date ? new Date(p.from_date).toISOString().split('T')[0]:"-"}</td>
                     <td>{p.to_date ? new Date(p.to_date).toISOString().split("T")[0]:"-"}</td>
-                    <td>{p.supplier_id.name}</td>
+                    <td>{p.supplier_id?.name || p.supplier_id || "-"}</td>
                     <td>
                       <button
                         className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"

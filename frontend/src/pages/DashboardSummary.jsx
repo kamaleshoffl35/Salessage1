@@ -249,14 +249,14 @@ const salesPurchaseData = useMemo(()=>{
       <tbody>
         {recentpurchases.map((p) => (
           <tr key={p._id}>
-            <td>
+            
              <td>
   {p.supplier_id && typeof p.supplier_id === "object"
     ? p.supplier_id.name
     : suppliers.find(s => s._id === p.supplier_id)?.name || "Unknown Supplier"}
 </td>
 
-            </td>
+            
             <td>{p.invoice_no || "N/A"}</td>
             <td>{p.invoice_date ? new Date(p.invoice_date).toLocaleDateString() : "N/A"}</td>
             <td>

@@ -10,7 +10,7 @@ import { State, Country } from 'country-state-city';
 import { useDispatch,useSelector } from 'react-redux';
 import { addwarehouse, deletewarehouse, fetchwarehouses, updateWarehouse } from '../redux/warehouseSlice';
 import { setAuthToken } from '../services/userService';
-
+import { MdEdit } from "react-icons/md";
 const Warehouse = () => {
   const dispatch=useDispatch()
   const {items:warehouses,status}=useSelector((state)=>state.warehouses)
@@ -322,7 +322,7 @@ const Warehouse = () => {
                     <td>
                       {["super_admin","admin"].includes(role) ? (
                         <>
-                        <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(w)}>Edit</button>
+                        <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(w)}><MdEdit/>Edit</button>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(w._id)}>
                         <span className="text-warning">
                           <MdDeleteForever />

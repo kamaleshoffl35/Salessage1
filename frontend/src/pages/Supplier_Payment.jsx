@@ -10,6 +10,7 @@ import { fetchsuppliers } from '../redux/supplierSlice';
 
 import { addpayment, deletepayment, fetchpayments, updatepayment } from '../redux/supplierpaymentSlice';
 import { setAuthToken } from '../services/userService';
+import { MdEdit } from "react-icons/md";
 
 const Supplier_Payment = () => {
   const dispatch=useDispatch()
@@ -220,7 +221,7 @@ const Supplier_Payment = () => {
                     <td>{p.notes}</td>
                     <td>
                       {["super_admin"].includes(role) ? (
-                        <><button className='btn btn-sm btn-warning' onClick={()=>handleEdit(p)}>Edit</button>
+                        <><button className='btn btn-sm btn-warning' onClick={()=>handleEdit(p)}><MdEdit/>Edit</button>
                                                 <button
                                                   className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"
                                                   onClick={() => handleDelete(p._id)}

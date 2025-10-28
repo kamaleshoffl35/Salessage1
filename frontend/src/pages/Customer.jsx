@@ -9,6 +9,7 @@ import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch,useSelector } from 'react-redux';
 import { addcustomer, deletecustomer, fetchcustomers, updatecustomer } from '../redux/customerSlice';
+import { MdEdit } from "react-icons/md";
 
 const Customer = () => {
    const dispatch=useDispatch()
@@ -306,7 +307,7 @@ const Customer = () => {
                                {c.status ? "Active" : "Inactive"}
                              </td> */}
                              <td>
-                                <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(c)}>Edit</button>
+                                <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(c)}><MdEdit/>Edit</button>
                                <button className="btn btn-danger btn-sm" onClick={() => handleDelete(c._id)}><span className="text-warning"><MdDeleteForever /></span>Delete</button>
                              </td>
                            </tr>)

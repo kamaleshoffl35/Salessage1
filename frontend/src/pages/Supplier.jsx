@@ -10,6 +10,7 @@ import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addSupplier, deleteSupplier, fetchsuppliers, updateSupplier } from '../redux/supplierSlice';
 import { setAuthToken } from '../services/userService';
+import { MdEdit } from "react-icons/md";
 
 const Supplier = () => {
   const dispatch=useDispatch()
@@ -286,7 +287,7 @@ const Supplier = () => {
                     <td>
                       {["super_admin","admin"].includes(role) ? (
                         <>
-                        <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(s)}>Edit</button>
+                        <button className='btn btn-warning btn-sm me-2' onClick={()=>handleEdit(s)}><MdEdit/>Edit</button>
                       <button className="btn btn-danger btn-sm" onClick={() => handleDelete(s._id)}>
                         <span className="text-warning">
                           <MdDeleteForever />

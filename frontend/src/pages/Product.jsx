@@ -8,6 +8,7 @@ import { fetchCategories } from "../redux/categorySlice";
 import { variants } from "../data/variants";
 import { setAuthToken } from "../services/userService";
 import { updateProduct } from "../redux/productSlice";
+import { MdEdit } from "react-icons/md";
 
 const Product = () => {
   const dispatch=useDispatch();
@@ -365,7 +366,7 @@ const filteredProducts = products.filter(
                           <button
         className="btn btn-warning btn-sm me-2"
         onClick={() => handleEdit(p)}
-      >
+      > <MdEdit />
         Edit
       </button>
                           <button

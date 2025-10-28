@@ -5,6 +5,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { fetchcustomers } from '../redux/customerSlice';
 import { addpayment, deletepayment, fetchpayments, updatePayment } from '../redux/customerpaymentSlice';
 import { setAuthToken } from '../services/userService';
+import { MdEdit } from "react-icons/md";
 
 const Customer_Payment = () => {
   const dispatch = useDispatch()
@@ -203,7 +204,7 @@ const [editingPayment, setEditingPayment]=useState(null)
                       <td>
                         {["super_admin","admin"].includes(role) ? (
                           <>
-                          <button className='btn btn-sm btn-warning' onClick={()=>handleEdit(p)}>Edit</button>
+                          <button className='btn btn-sm btn-warning' onClick={()=>handleEdit(p)}><MdEdit/>Edit</button>
                         <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>
                           <MdDeleteForever className="text-warning" /> Delete
                         </button></>):(

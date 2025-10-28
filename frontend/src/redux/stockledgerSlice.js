@@ -30,6 +30,15 @@ export const deletestock=createAsyncThunk("stockledger/delete",async (id) => {
     return id
 })
 
+export const updatestock=createAsyncThunk("stockledger/update",async ({id,updatedData}) => {
+    const user=JSON.parse(localStorage.getItem("user"))
+    const token=user?.token
+    if(!token)
+        throw new Error("Token Missing")
+    const res=await axios.put(`${API_URL}/${id}`,updatedData,{headers:{Authorization:`Bearer ${token}`}})
+    return res.data
+})
+
 const stockledgerSlice=createSlice({
   name:"stockss",
   initialState:{
@@ -58,6 +67,12 @@ const stockledgerSlice=createSlice({
         .addCase(deletestock.fulfilled,(state,action)=>{
             state.items=state.items.filter((p)=>p._id !== action.payload)
         })
+       .addCase(updatestock.fulfilled,(state,action)=>{
+               const index=state.items.findIndex((s)=>s._id === action.payload._id)
+               if(index !== -1){
+                   state.items[index]=action.payload
+               }
+           })
        }
   
 })
