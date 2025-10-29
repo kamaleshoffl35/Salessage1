@@ -53,24 +53,30 @@ function App() {
    const navigate = useNavigate();
 
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user"));
-    const token = user?.token;
+  const publicPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
+  const currentPath = window.location.pathname;
 
-    if (!token || isTokenExpired(token)) {
-  
+  // Skip auth check for public routes
+  if (publicPaths.some((p) => currentPath.startsWith(p))) 
+    return;
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const token = user?.token;
+
+  if (!token || isTokenExpired(token)) {
+    localStorage.removeItem("user");
+    navigate("/login");
+  } else {
+    const decoded = JSON.parse(atob(token.split(".")[1]));
+    const remainingTime = decoded.exp * 1000 - Date.now();
+
+    setTimeout(() => {
       localStorage.removeItem("user");
       navigate("/login");
-    } else {
-      
-      const decoded = JSON.parse(atob(token.split(".")[1]));
-      const remainingTime = decoded.exp * 1000 - Date.now();
+    }, remainingTime);
+  }
+}, [navigate]);
 
-      setTimeout(() => {
-        localStorage.removeItem("user");
-        navigate("/login");
-      }, remainingTime);
-    }
-  }, [navigate]);
   return (
 
     <div className="container-fluid w-100 p-0">

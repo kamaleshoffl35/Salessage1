@@ -32,7 +32,7 @@ export const setAuthToken = (token) => {
 export const register = (form) => {
    delete axios.defaults.headers.common["Authorization"];
   return axios
-    .post(`${API_URL}/signup`, form)
+    .post(`${API_URL}/register`, form)
     .then((res) => res.data);
 };
 

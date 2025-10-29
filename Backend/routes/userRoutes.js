@@ -4,7 +4,7 @@ const {register,login,getUserById,getMe,updateUser,listUsers,forgotPassword,rese
 
 const { protect, authorize } = require("../middleware/auth");
 
-router.post("/signup", register); 
+// router.post("/signup", register); 
 router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
