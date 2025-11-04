@@ -33,8 +33,8 @@ export default function Dashboard() {
     { name: "Warehouses", path: "/warehouses", icon: <MdOutlineWarehouse />, roles: ["super_admin", "admin", "user"] },
     { name: "Purchases", path: "/purchases", icon: <BiPurchaseTag />, roles: ["super_admin", "admin", "user"] },
     { name: "Sales", path: "/sales", icon: <TbFileInvoice />, roles: ["super_admin", "admin", "user"] },
-    { name: "Customer Receipts", path: "/cus_receipts", icon: <MdAttachMoney />, roles: ["super_admin", "admin", "user"] },
-    { name: "Supplier Payments", path: "/sub_receipts", icon: <GiTakeMyMoney />, roles: ["super_admin", "admin", "user"] },
+    { name: "Customer Receipts", path: "/cus_receipts", icon: <MdAttachMoney />, roles: ["super_admin", "admin",] },
+    { name: "Supplier Receipts", path: "/sub_receipts", icon: <GiTakeMyMoney />, roles: ["super_admin", "admin",] },
     { name: "Stock Adjustments", path: "/stocks", icon: <PiShippingContainer />, roles: ["super_admin", "admin", "user"] },
     { name: "Stock Ledger", path: "/stockledger", icon: <MdOutlineInventory2 />, roles: ["super_admin", "admin", "user"] },
     { name: "Expense", path: "/expenses", icon: <GiMoneyStack />, roles: ["super_admin", "admin", "user"] },
@@ -101,7 +101,7 @@ export default function Dashboard() {
 
         )}
 
-        <div className="flex-grow-1 p-4 overflow-auto" style={{ backgroundColor: "#94b4c1" }}>
+        <div className="flex-grow-1 p-4 overflow-auto" style={{ backgroundColor: "#3d4e6eff" }}>
 
           <div className={`${window.location.pathname === "/" ? "p-0 border-0 shadow-none bg-transparent" : "bg-white border rounded shadow-sm p-4 h-100"}`}>
             {window.location.pathname === "/" && <DashboardSummary />}

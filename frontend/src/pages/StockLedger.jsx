@@ -1,17 +1,18 @@
 
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from 'react';
-import { MdOutlineInventory2, MdEdit, MdDeleteForever } from 'react-icons/md';
-import { FaSearch, FaRegSave, FaPlus } from 'react-icons/fa';
+import { MdOutlineInventory2, MdEdit, MdDeleteForever, MdClose, MdAdd } from 'react-icons/md';
+import { FaSearch, FaRegSave } from 'react-icons/fa';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from '../redux/productSlice';
 import { fetchwarehouses } from '../redux/warehouseSlice';
 import { addstock, deletestock, fetchstocks, updatestock } from '../redux/stockledgerSlice';
 import { setAuthToken } from '../services/userService';
+import ReusableTable,{createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
 
 const StockLedger = () => {
   const dispatch = useDispatch();
-  const { items: stocks } = useSelector((state) => state.stockss);
+  const { items: stocks, status } = useSelector((state) => state.stockss);
   const { items: products } = useSelector((state) => state.products);
   const { items: warehouses } = useSelector((state) => state.warehouses);
 
@@ -135,6 +136,97 @@ const StockLedger = () => {
     );
   });
 
+  // Helper function to get product name
+  const getProductName = (stock) => {
+    if (typeof stock.productId === "object" && stock.productId !== null) {
+      return stock.productId?.name || "Unknown Product";
+    }
+    return products.find((p) => p._id === stock.productId)?.name || "Unknown Product";
+  };
+
+  // Helper function to get warehouse name
+  const getWarehouseName = (stock) => {
+    if (typeof stock.warehouseId === "object" && stock.warehouseId !== null) {
+      return stock.warehouseId?.store_name || "Unknown Warehouse";
+    }
+    return warehouses.find((w) => w._id === stock.warehouseId)?.store_name || "Unknown Warehouse";
+  };
+
+  // Define table columns for reusable table
+  const tableColumns = [
+    {
+      key: "product",
+      header: "Product",
+      headerStyle: { width: "150px" },
+      render: (stock) => getProductName(stock)
+    },
+    {
+      key: "warehouse",
+      header: "Warehouse",
+      headerStyle: { width: "150px" },
+      render: (stock) => getWarehouseName(stock)
+    },
+    {
+      key: "txnType",
+      header: "Type",
+      headerStyle: { width: "100px" },
+      render: (stock) => stock.txnType || "N/A"
+    },
+    {
+      key: "txnId",
+      header: "Transaction ID",
+      headerStyle: { width: "120px" },
+      render: (stock) => stock.txnId || "N/A"
+    },
+    {
+      key: "txnDate",
+      header: "Date",
+      headerStyle: { width: "100px" },
+      render: (stock) => stock.txnDate ? new Date(stock.txnDate).toLocaleDateString() : "N/A"
+    },
+    {
+      key: "inQty",
+      header: "In Qty",
+      headerStyle: { width: "80px" },
+      render: (stock) => stock.inQty || "0"
+    },
+    {
+      key: "outQty",
+      header: "Out Qty",
+      headerStyle: { width: "80px" },
+      render: (stock) => stock.outQty || "0"
+    },
+    {
+      key: "rate",
+      header: "Rate",
+      headerStyle: { width: "80px" },
+      render: (stock) => stock.rate ? `₹${stock.rate}` : "₹0"
+    },
+    {
+      key: "balanceQty",
+      header: "Balance Qty",
+      headerStyle: { width: "100px" },
+      render: (stock) => stock.balanceQty || "0"
+    }
+  ];
+
+ const tableActions = createCustomRoleActions({
+    edit: { 
+      show: () => ["super_admin", "admin",].includes(role) // User can edit
+    },
+    delete: { 
+      show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+    }})
+  
+    // Handle table actions
+    const handleTableAction = (actionType, category) => {
+      if (actionType === "edit") {
+        handleEdit(category);
+      } else if (actionType === "delete") {
+        handleDelete(category._id);
+      }
+    };
+ 
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
@@ -144,13 +236,22 @@ const StockLedger = () => {
         <b>STOCK LEDGER</b>
       </h2>
 
-      {["super_admin"].includes(role) && (
-        <button className="btn btn-primary mb-3 d-flex align-items-center" onClick={openModal}>
-          <FaPlus className="me-2" /> Add Ledger
-        </button>
-      )}
+      {/* Add Button */}
+      <div className="row mb-4">
+        <div className="col-12">
+          {["super_admin"].includes(role) && (
+            <button 
+              className="btn btn-primary d-flex align-items-center" 
+              onClick={openModal}
+            >
+              <MdAdd className="me-2" />
+              Add Ledger
+            </button>
+          )}
+        </div>
+      </div>
 
-      {/* ===================== Modal ===================== */}
+      {/* Modal */}
       <div
         className={`modal fade ${showModal ? "show d-block" : ""}`}
         style={{ backgroundColor: showModal ? "rgba(0,0,0,0.5)" : "transparent" }}
@@ -297,9 +398,10 @@ const StockLedger = () => {
               <div className="modal-footer d-flex justify-content-between">
                 <button
                   type="button"
-                  className="btn btn-secondary"
+                  className="btn btn-secondary d-flex align-items-center"
                   onClick={() => setShowModal(false)}
                 >
+                  <MdClose className="me-2" />
                   Cancel
                 </button>
                 <button type="submit" className="btn btn-primary d-flex align-items-center">
@@ -312,86 +414,20 @@ const StockLedger = () => {
         </div>
       </div>
 
-      {/* ===================== Table ===================== */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="mb-3">Stock Ledger List</h5>
-          <div className="mt-3 mb-3 input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search by warehouse or product"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <span className="input-group-text">
-              <FaSearch />
-            </span>
-          </div>
-
-          <table className="table table-bordered table-striped">
-            <thead className="table-dark">
-              <tr>
-                <th>Product</th>
-                <th>Warehouse</th>
-                <th>Type</th>
-                <th>Transaction ID</th>
-                <th>Date</th>
-                <th>In Qty</th>
-                <th>Out Qty</th>
-                <th>Rate</th>
-                <th>Balance Qty</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredStocks.length === 0 ? (
-                <tr>
-                  <td colSpan="10" className="text-center">
-                    No records found.
-                  </td>
-                </tr>
-              ) : (
-                filteredStocks.map((s, index) => (
-                  <tr key={index}>
-                    <td>{s.productId?.name || "Unknown"}</td>
-                    <td>{s.warehouseId?.store_name || "Unknown"}</td>
-                    <td>{s.txnType}</td>
-                    <td>{s.txnId}</td>
-                    <td>{new Date(s.txnDate).toLocaleDateString()}</td>
-                    <td>{s.inQty}</td>
-                    <td>{s.outQty}</td>
-                    <td>{s.rate}</td>
-                    <td>{s.balanceQty}</td>
-                    <td>
-                      {["super_admin"].includes(role) ? (
-                        <>
-                          <button
-                            className="btn btn-sm btn-warning me-2"
-                            onClick={() => handleEdit(s)}
-                          >
-                            <MdEdit /> Edit
-                          </button>
-                          <button
-                            className="btn btn-danger btn-sm d-flex align-items-center"
-                            onClick={() => handleDelete(s._id)}
-                          >
-                            <MdDeleteForever className="me-1" /> Delete
-                          </button>
-                        </>
-                      ) : (
-                        <button className="btn btn-secondary btn-sm" disabled>
-                          View Only
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      {/* Reusable Table Component - Replaces the old table */}
+      <ReusableTable
+        data={filteredStocks}
+        columns={tableColumns}
+        loading={status === "loading"}
+        searchable={true}
+        searchTerm={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by warehouse or product"
+        actions={tableActions}
+        onActionClick={handleTableAction}
+        emptyMessage="No stock ledger records found."
+        className="mt-4"
+      />
     </div>
   );
 };

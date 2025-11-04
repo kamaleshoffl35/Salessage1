@@ -1,10 +1,10 @@
-import axios from "axios";
+import API from "../api/axiosInstance";
 
 
-const API_URL = "http://localhost:5000/api/users";
+const API_URL = "/users";
 
 
-axios.interceptors.response.use((response) => response,(error) => {
+API.interceptors.response.use((response) => response,(error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem("user");
       window.location.href = "/login";
@@ -15,23 +15,23 @@ axios.interceptors.response.use((response) => response,(error) => {
 
 export const setUserHeader = (token) => {
   if (token) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
-    delete axios.defaults.headers.common["Authorization"];
+    delete API.defaults.headers.common["Authorization"];
   }
 };
 export const setAuthToken = (token) => {
   if (token) {
-    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
   } else {
-    delete axios.defaults.headers.common["Authorization"];
+    delete API.defaults.headers.common["Authorization"];
   }
 };
 
 
 export const register = (form) => {
-   delete axios.defaults.headers.common["Authorization"];
-  return axios
+   delete API.defaults.headers.common["Authorization"];
+  return API
     .post(`${API_URL}/register`, form)
     .then((res) => res.data);
 };
@@ -39,8 +39,8 @@ export const register = (form) => {
 
 export const login = async (email, password) => {
  
-  delete axios.defaults.headers.common["Authorization"];
-  const res = await axios.post(`${API_URL}/login`, { email, password });
+  delete API.defaults.headers.common["Authorization"];
+  const res = await API.post(`${API_URL}/login`, { email, password });
 
   const { user, token } = res.data;
 
@@ -51,18 +51,18 @@ export const login = async (email, password) => {
 
 
 export const Forgotpassword = (email) => {
-  return axios
+  return API
     .post(`${API_URL}/forgot-password`, { email })
     .then((res) => res.data);
 };
 
 export const Resetpassword = (token, password) => {
-  return axios
+  return API
     .post(`${API_URL}/reset-password/${token}`, { password })
     .then((res) => res.data);
 };
 
 
 export const getMe = () => {
-  return axios.get(`${API_URL}/me`).then((res) => res.data);
+  return API.get(`${API_URL}/me`).then((res) => res.data);
 };

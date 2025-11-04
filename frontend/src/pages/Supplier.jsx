@@ -1,6 +1,4 @@
-// 
-
-import React, { useEffect, useState } from 'react';
+// import React, { useEffect, useState } from 'react';
 import { IoIosContact } from "react-icons/io";
 import { FaRegSave, FaSearch } from "react-icons/fa";
 import { MdClose, MdAdd, MdDeleteForever, MdEdit } from "react-icons/md";
@@ -11,6 +9,8 @@ import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addSupplier, deleteSupplier, fetchsuppliers, updateSupplier } from '../redux/supplierSlice';
 import { setAuthToken } from '../services/userService';
+import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import { useState,useEffect } from "react";
 
 const Supplier = () => {
   const dispatch = useDispatch();
@@ -147,6 +147,67 @@ const Supplier = () => {
       s.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Define table columns for reusable table
+  const tableColumns = [
+    {
+      key: "name",
+      header: "Supplier Name",
+      headerStyle: { width: "150px" }
+    },
+    {
+      key: "phone",
+      header: "Mobile",
+      headerStyle: { width: "130px" }
+    },
+    {
+      key: "gstin",
+      header: "GSTIN",
+      headerStyle: { width: "120px" },
+      render: (supplier) => supplier.gstin || "-"
+    },
+    {
+      key: "email",
+      header: "Email",
+      headerStyle: { width: "180px" },
+      render: (supplier) => supplier.email || "-"
+    },
+    {
+      key: "address",
+      header: "Address",
+      headerStyle: { width: "200px" },
+      render: (supplier) => supplier.address || "-"
+    },
+    {
+      key: "state_code",
+      header: "State",
+      headerStyle: { width: "100px" }
+    },
+    {
+      key: "opening_balance",
+      header: "Opening Balance",
+      headerStyle: { width: "140px" },
+      render: (supplier) => supplier.opening_balance ? `₹${supplier.opening_balance}` : "-"
+    }
+  ];
+
+  // Define table actions
+   const tableActions = createCustomRoleActions({
+      edit: { 
+        show: () => ["super_admin", "admin",].includes(role) // User can edit
+      },
+      delete: { 
+        show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+      }})
+    
+      // Handle table actions
+      const handleTableAction = (actionType, category) => {
+        if (actionType === "edit") {
+          handleEdit(category);
+        } else if (actionType === "delete") {
+          handleDelete(category._id);
+        }
+      };
+
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
@@ -257,64 +318,20 @@ const Supplier = () => {
         </div>
       )}
 
-      {/* Supplier Table */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="mb-3">Supplier Tree</h5>
-          <div className="mt-4 mb-2 input-group">
-            <input type="text" className="form-control" placeholder="Search supplier name, email, phone" value={search} onChange={(e) => setSearch(e.target.value)} />
-            <span className="input-group-text"><FaSearch /></span>
-          </div>
-
-          {status === "loading" ? (
-            <p>Loading...</p>
-          ) : (
-            <table className="table table-bordered table-striped">
-              <thead className="table-dark">
-                <tr>
-                  <th>Supplier Name</th>
-                  <th>Mobile</th>
-                  <th>GSTIN</th>
-                  <th>Email</th>
-                  <th>Address</th>
-                  <th>State</th>
-                  <th>Opening Balance</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredSuppliers.length === 0 ? (
-                  <tr><td colSpan="8" className="text-center">No suppliers found.</td></tr>
-                ) : (
-                  filteredSuppliers.map(s => (
-                    <tr key={s._id}>
-                      <td>{s.name}</td>
-                      <td>{s.phone}</td>
-                      <td>{s.gstin}</td>
-                      <td>{s.email}</td>
-                      <td>{s.address}</td>
-                      <td>{s.state_code}</td>
-                      <td>{s.opening_balance}</td>
-                      <td>
-                        {["super_admin", "admin"].includes(role) ? (
-                          <>
-                            <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(s)}><MdEdit /> Edit</button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(s._id)}>
-                              <MdDeleteForever /> Delete
-                            </button>
-                          </>
-                        ) : (
-                          <button className="btn btn-secondary btn-sm" disabled>View Only</button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+      {/* Reusable Table Component - Replaces the old table */}
+      <ReusableTable
+        data={filteredSuppliers}
+        columns={tableColumns}
+        loading={status === "loading"}
+        searchable={true}
+        searchTerm={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search supplier name, email, phone"
+        actions={tableActions}
+        onActionClick={handleTableAction}
+        emptyMessage="No suppliers found."
+        className="mt-4"
+      />
     </div>
   );
 };

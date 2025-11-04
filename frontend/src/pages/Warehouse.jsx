@@ -1,3 +1,5 @@
+
+
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { MdOutlineWarehouse, MdAdd, MdClose, MdEdit } from "react-icons/md";
@@ -8,6 +10,7 @@ import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addwarehouse, deletewarehouse, fetchwarehouses, updateWarehouse } from '../redux/warehouseSlice';
 import { setAuthToken } from '../services/userService';
+import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
 
 const Warehouse = () => {
   const dispatch = useDispatch();
@@ -163,8 +166,77 @@ const Warehouse = () => {
       w.email.toLowerCase().includes(search.toLowerCase())
   );
 
+  // Define table columns for reusable table
+  const tableColumns = [
+    {
+      key: "store_name",
+      header: "Warehouse / Store Name",
+      headerStyle: { width: "180px" }
+    },
+    {
+      key: "code",
+      header: "Code",
+      headerStyle: { width: "100px" }
+    },
+    {
+      key: "address",
+      header: "Address",
+      headerStyle: { width: "200px" },
+      render: (warehouse) => warehouse.address || "-"
+    },
+    {
+      key: "state_code",
+      header: "State",
+      headerStyle: { width: "100px" }
+    },
+    {
+      key: "contact",
+      header: "Contact",
+      headerStyle: { width: "150px" },
+      render: (warehouse) => warehouse.contact || "-"
+    },
+    {
+      key: "phone",
+      header: "Phone",
+      headerStyle: { width: "130px" }
+    },
+    {
+      key: "email",
+      header: "Email",
+      headerStyle: { width: "180px" },
+      render: (warehouse) => warehouse.email || "-"
+    },
+    {
+      key: "status",
+      header: "Status",
+      headerStyle: { width: "100px" },
+      render: (warehouse) => (
+        <span className={warehouse.status ? "text-success fw-bold" : "text-danger"}>
+          {warehouse.status ? "Active" : "Inactive"}
+        </span>
+      )
+    }
+  ];
+
+  const tableActions = createCustomRoleActions({
+     edit: { 
+       show: () => ["super_admin", "admin",].includes(role) // User can edit
+     },
+     delete: { 
+       show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+     }})
+   
+     // Handle table actions
+     const handleTableAction = (actionType, category) => {
+       if (actionType === "edit") {
+         handleEdit(category);
+       } else if (actionType === "delete") {
+         handleDelete(category._id);
+       }
+     };
+ 
   return (
-    <div className="container mt-4 bg-gradient-warning">
+    <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
         <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
           <MdOutlineWarehouse size={24} />
@@ -204,7 +276,7 @@ const Warehouse = () => {
               </div>
               <div className="modal-body">
                 <form className="row g-3" onSubmit={handleSubmit}>
-                  {/* Warehouse Form Fields (same as before) */}
+                  {/* Warehouse Form Fields */}
                   <div className="col-md-6">
                     <label className="form-label">Warehouse / Store Name <span className="text-danger">*</span></label>
                     <input type="text" className="form-control bg-light" placeholder="Enter warehouse/store name" name="store_name" value={form.store_name} onChange={handleChange} required />
@@ -321,80 +393,20 @@ const Warehouse = () => {
         </div>
       )}
 
-      {/* Table Section */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="mb-3">Warehouse List</h5>
-          <div className="mt-4 mb-2 input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search Warehouse name, email, phone"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <span className="input-group-text"><FaSearch /></span>
-          </div>
-
-          {status === "loading" ? (
-            <p>Loading...</p>
-          ) : (
-            <table className="table table-bordered table-striped">
-              <thead className="table-dark">
-                <tr>
-                  <th>Warehouse / Store Name</th>
-                  <th>Code</th>
-                  <th>Address</th>
-                  <th>State</th>
-                  <th>Contact</th>
-                  <th>Phone</th>
-                  <th>Email</th>
-                  <th>Status</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredwarehouse.length === 0 ? (
-                  <tr>
-                    <td colSpan="9" className="text-center">No warehouses found.</td>
-                  </tr>
-                ) : (
-                  filteredwarehouse.map((w) => (
-                    <tr key={w._id}>
-                      <td>{w.store_name}</td>
-                      <td>{w.code}</td>
-                      <td>{w.address}</td>
-                      <td>{w.state_code}</td>
-                      <td>{w.contact}</td>
-                      <td>{w.phone}</td>
-                      <td>{w.email}</td>
-                      <td className={w.status ? "text-success" : "text-danger"}>
-                        {w.status ? "Active" : "Inactive"}
-                      </td>
-                      <td>
-                        {["super_admin", "admin"].includes(role) ? (
-                          <>
-                            <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(w)}>
-                              <MdEdit /> Edit
-                            </button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(w._id)}>
-                              <MdDeleteForever /> Delete
-                            </button>
-                          </>
-                        ) : (
-                          <button className="btn btn-secondary btn-sm" disabled>
-                            View Only
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+      {/* Reusable Table Component - Replaces the old table */}
+      <ReusableTable
+        data={filteredwarehouse}
+        columns={tableColumns}
+        loading={status === "loading"}
+        searchable={true}
+        searchTerm={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search Warehouse name, email, phone"
+        actions={tableActions}
+        onActionClick={handleTableAction}
+        emptyMessage="No warehouses found."
+        className="mt-4"
+      />
     </div>
   );
 };

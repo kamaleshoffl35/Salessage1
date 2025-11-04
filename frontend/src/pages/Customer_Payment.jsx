@@ -1,15 +1,20 @@
+
+
 import React, { useEffect, useState } from 'react'
-import { MdAttachMoney, MdAdd, MdClose, MdDeleteForever, MdEdit } from "react-icons/md";
+import { MdAttachMoney, MdAdd, MdClose } from "react-icons/md";
 import { FaRegSave, FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from 'react-redux';
 import { fetchcustomers } from '../redux/customerSlice';
 import { addpayment, deletepayment, fetchpayments, updatePayment } from '../redux/customerpaymentSlice';
+import { fetchsales } from '../redux/saleSlice'; // Import sales slice
 import { setAuthToken } from '../services/userService';
+import ReusableTable, { createRoleBasedActions } from '../components/ReusableTable';
 
 const Customer_Payment = () => {
   const dispatch = useDispatch()
-  const { items: cus_payments } = useSelector((state) => state.cus_payments)
+  const { items: cus_payments, status } = useSelector((state) => state.cus_payments)
   const { items: customers } = useSelector((state) => state.customers)
+  const { items: sales } = useSelector((state) => state.sales) // Get sales data
 
   const user = JSON.parse(localStorage.getItem("user"))
   const role = user?.role || "user"
@@ -18,6 +23,8 @@ const Customer_Payment = () => {
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [editingPayment, setEditingPayment] = useState(null)
   const [search, setSearch] = useState("");
+  const [selectedCustomer, setSelectedCustomer] = useState(""); // Selected customer from dropdown
+  const [customerSales, setCustomerSales] = useState([]); // Filtered sales for selected customer
 
   const [form, setForm] = useState({
     customer_id: "",
@@ -37,7 +44,30 @@ const Customer_Payment = () => {
     setAuthToken(token)
     dispatch(fetchcustomers())
     dispatch(fetchpayments())
+    dispatch(fetchsales()) // Fetch sales data
   }, [dispatch])
+
+  // Filter sales when customer is selected
+  useEffect(() => {
+    if (selectedCustomer) {
+      const filtered = sales.filter(sale => {
+        // Handle both object and string customer_id formats
+        const saleCustomerId = typeof sale.customer_id === 'object' 
+          ? sale.customer_id._id 
+          : sale.customer_id;
+        return saleCustomerId === selectedCustomer;
+      });
+      setCustomerSales(filtered);
+    } else {
+      setCustomerSales([]);
+    }
+  }, [selectedCustomer, sales])
+
+  const handleCustomerChange = (e) => {
+    const customerId = e.target.value;
+    setSelectedCustomer(customerId);
+    setForm({ ...form, customer_id: customerId });
+  }
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -64,6 +94,7 @@ const Customer_Payment = () => {
         applied_invoice_id: "",
         notes: "",
       })
+      setSelectedCustomer(""); // Reset customer selection
       setShowPaymentForm(false)
       dispatch(fetchpayments())
     }
@@ -86,6 +117,7 @@ const Customer_Payment = () => {
 
   const handleEdit = (payment) => {
     setEditingPayment(payment._id)
+    setSelectedCustomer(payment.customer_id || "");
     setForm({
       customer_id: payment.customer_id || "",
       date: payment.date || new Date().toISOString().slice(0, 16),
@@ -101,6 +133,7 @@ const Customer_Payment = () => {
   const handleCloseForm = () => {
     setShowPaymentForm(false)
     setEditingPayment(null)
+    setSelectedCustomer(""); // Reset customer selection
     setForm({
       customer_id: "",
       date: new Date().toISOString().slice(0, 16),
@@ -112,170 +145,205 @@ const Customer_Payment = () => {
     })
   }
 
+  // Helper function to get customer name
+  const getCustomerName = (payment) => {
+    if (typeof payment.customer_id === "object" && payment.customer_id !== null) {
+      return payment.customer_id?.name || "Unknown Customer";
+    }
+    return customers.find((c) => c._id === payment.customer_id)?.name || "Unknown Customer";
+  };
+
+  // Helper function to get customer name for sales
+  const getSaleCustomerName = (sale) => {
+    if (typeof sale.customer_id === "object" && sale.customer_id !== null) {
+      return sale.customer_id?.name || "Unknown Customer";
+    }
+    return customers.find((c) => c._id === sale.customer_id)?.name || "Unknown Customer";
+  };
+
+  // Helper function to get product names for sales
+  const getProductNames = (sale) => {
+    if (!Array.isArray(sale.items) || sale.items.length === 0) {
+      return "No Items";
+    }
+
+    return sale.items.map((item, idx) => {
+      let productName = "Unknown Product";
+      if (item?.product_id) {
+        if (typeof item.product_id === "object" && item.product_id !== null) {
+          productName = item.product_id?.name || "Unknown Product";
+        } else {
+          const matchedProduct = useSelector(state => state.products.items).find((prod) => prod._id === item.product_id);
+          productName = matchedProduct?.name || "Unknown Product";
+        }
+      }
+      return `${productName} (${item?.qty || 0})`;
+    }).join(", ");
+  };
+
+  // Define table columns for customer sales
+  const salesTableColumns = [
+    {
+      key: "invoice_no",
+      header: "Invoice No",
+      headerStyle: { width: "120px" },
+      render: (sale) => sale.invoice_no || "N/A"
+    },
+    {
+      key: "date",
+      header: "Date",
+      headerStyle: { width: "100px" },
+      render: (sale) => sale.invoice_date_time ? new Date(sale.invoice_date_time).toLocaleDateString() : "N/A"
+    },
+    {
+      key: "products",
+      header: "Products",
+      headerStyle: { width: "200px" },
+      render: (sale) => getProductNames(sale)
+    },
+    {
+      key: "subtotal",
+      header: "Subtotal",
+      headerStyle: { width: "100px" },
+      render: (sale) => `₹${sale.subtotal?.toFixed(2) || "0.00"}`
+    },
+    {
+      key: "discount",
+      header: "Discount",
+      headerStyle: { width: "100px" },
+      render: (sale) => `₹${sale.discount_amount?.toFixed(2) || "0.00"}`
+    },
+    {
+      key: "tax",
+      header: "Tax",
+      headerStyle: { width: "100px" },
+      render: (sale) => `₹${sale.tax_amount?.toFixed(2) || "0.00"}`
+    },
+    {
+      key: "grand_total",
+      header: "Grand Total",
+      headerStyle: { width: "120px" },
+      render: (sale) => `₹${sale.grand_total?.toFixed(2) || "0.00"}`
+    },
+    {
+      key: "due_amount",
+      header: "Due Amount",
+      headerStyle: { width: "100px" },
+      render: (sale) => `₹${sale.due_amount?.toFixed(2) || "0.00"}`
+    }
+  ];
+
+  // Define table columns for payments
+  const paymentTableColumns = [
+    {
+      key: "customer",
+      header: "Customer",
+      headerStyle: { width: "150px" },
+      render: (payment) => getCustomerName(payment)
+    },
+    {
+      key: "date",
+      header: "Date",
+      headerStyle: { width: "160px" },
+      render: (payment) => payment.date ? new Date(payment.date).toLocaleString() : "N/A"
+    },
+    {
+      key: "amount",
+      header: "Amount",
+      headerStyle: { width: "100px" },
+      render: (payment) => payment.amount ? `₹${payment.amount}` : "₹0"
+    },
+    {
+      key: "mode",
+      header: "Payment Mode",
+      headerStyle: { width: "120px" },
+      render: (payment) => payment.mode || "N/A"
+    },
+    {
+      key: "reference_no",
+      header: "Ref No",
+      headerStyle: { width: "120px" },
+      render: (payment) => payment.reference_no || "-"
+    },
+    {
+      key: "applied_invoice_id",
+      header: "Invoice",
+      headerStyle: { width: "100px" },
+      render: (payment) => payment.applied_invoice_id || "-"
+    },
+    {
+      key: "notes",
+      header: "Notes",
+      headerStyle: { width: "150px" },
+      render: (payment) => payment.notes || "-"
+    }
+  ];
+
+  // Use common actions with role-based access
+  const tableActions = Object.values(createRoleBasedActions(role));
+
+  // Handle table actions
+  const handleTableAction = (actionType, payment) => {
+    if (actionType === "edit") {
+      handleEdit(payment);
+    } else if (actionType === "delete") {
+      if (window.confirm("Are you sure you want to delete this payment?")) {
+        handleDelete(payment._id);
+      }
+    }
+  };
+
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
         <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
           <MdAttachMoney size={24} />
         </span>
-        <b>CUSTOMER PAYMENT RECEIPT</b>
+        <b>CUSTOMER RECEIPTS</b>
       </h2>
 
-      {/* Action Buttons */}
+      {/* Customer Selection Dropdown */}
       <div className="row mb-4">
-        <div className="col-12">
-          <div className="d-flex gap-2">
-            {["super_admin", "admin"].includes(role) && (
-              <button
-                className="btn btn-primary d-flex align-items-center"
-                onClick={() => setShowPaymentForm(true)}
-              >
-                <MdAdd className="me-2" /> Add Payment
-              </button>
-            )}
-          </div>
+        <div className="col-md-6">
+          <label className="form-label">Select Customer</label>
+          <select 
+            className="form-select bg-light" 
+            value={selectedCustomer} 
+            onChange={handleCustomerChange}
+          >
+            <option value="">-- Select Customer --</option>
+            {customers.map(c => (
+              <option key={c._id} value={c._id}>
+                {c.name} - {c.phone}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* Popup Modal */}
-      {showPaymentForm && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
-                <h5 className="modal-title">{editingPayment ? "Edit Payment" : "Add New Payment"}</h5>
-                <button
-                  type="button"
-                  className="btn-close btn-close-white"
-                  onClick={handleCloseForm}
-                ></button>
+      {/* Customer Sales Table - Only show when customer is selected */}
+      {selectedCustomer && (
+        <div className="row mb-4">
+          <div className="col-12">
+            <div className="card">
+              <div className="card-header bg-primary text-white">
+                <h5 className="mb-0">Customer Sales History</h5>
               </div>
-              <div className="modal-body">
-                <form className="row g-3" onSubmit={handleSubmit}>
-                  <div className="col-md-6">
-                    <label className="form-label">Customer <span className="text-danger">*</span></label>
-                    <select className="form-select bg-light" name="customer_id" value={form.customer_id} onChange={handleChange} required>
-                      <option value="">-- Select Customer --</option>
-                      {customers.map(c => <option key={c._id} value={c._id}>{c.name}</option>)}
-                    </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Date <span className="text-danger">*</span></label>
-                    <input type="datetime-local" className="form-control bg-light" name="date" value={form.date} onChange={handleChange} required />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Amount (₹) <span className="text-danger">*</span></label>
-                    <input type="number" className="form-control bg-light" name="amount" value={form.amount} onChange={handleChange} placeholder="Enter amount" required />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Payment Mode <span className="text-danger">*</span></label>
-                    <select className="form-select bg-light" name="mode" value={form.mode} onChange={handleChange} required>
-                      <option value="">-- Select Mode --</option>
-                      <option>Cash</option>
-                      <option>UPI</option>
-                      <option>Bank Transfer</option>
-                    </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Reference No (UTR/Cheque)</label>
-                    <input type="text" className="form-control bg-light" name="reference_no" value={form.reference_no} onChange={handleChange} placeholder="Enter reference no" />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Invoice to Adjust</label>
-                    <select className="form-select bg-light" name="applied_invoice_id" value={form.applied_invoice_id} onChange={handleChange}>
-                      <option value="">-- Optional --</option>
-                      <option>INV-1001</option>
-                      <option>INV-1002</option>
-                      <option>INV-1003</option>
-                    </select>
-                  </div>
-
-                  <div className="col-12">
-                    <label className="form-label">Notes</label>
-                    <textarea className="form-control bg-light" rows="2" placeholder="Enter notes" name="notes" value={form.notes} onChange={handleChange}></textarea>
-                  </div>
-
-                  <div className="col-12 d-flex gap-2">
-                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
-                      <span className="text-warning me-2 d-flex align-items-center"><FaRegSave /></span>
-                      {editingPayment ? "Update Payment" : "Add Payment"}
-                    </button>
-                    <button type="button" className="btn btn-secondary px-4 d-flex align-items-center justify-content-center" onClick={handleCloseForm}>
-                      <MdClose className="me-2" /> Cancel
-                    </button>
-                  </div>
-                </form>
+              <div className="card-body">
+                <ReusableTable
+                  data={customerSales}
+                  columns={salesTableColumns}
+                  loading={status === "loading"}
+                  searchable={false}
+                  emptyMessage="No sales found for this customer."
+                  className="mt-0"
+                />
               </div>
             </div>
           </div>
         </div>
       )}
-
-      {/* Payment Table */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="mb-3">Payment Tree</h5>
-          <div className="mt-4 mb-2 input-group">
-            <input type="text" className="form-control" placeholder="Search Customer name" value={search} onChange={(e) => setSearch(e.target.value)} />
-            <span className="input-group-text"><FaSearch /></span>
-          </div>
-
-          <table className="table table-bordered table-striped mt-4">
-            <thead className="table-dark">
-              <tr>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Amount</th>
-                <th>Payment Mode</th>
-                <th>Ref No</th>
-                <th>Invoice</th>
-                <th>Notes</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredpayments.length === 0 ? (
-                <tr><td colSpan="8" className="text-center">No payments found.</td></tr>
-              ) : (
-                filteredpayments.map((p) => {
-                  const customerName = p.customer_id?.name || (customers.find(c => c._id === p.customer_id)?.name) || "Unknown Customer"
-                  const formattedDate = p.date ? new Date(p.date).toLocaleString() : ""
-                  return (
-                    <tr key={p._id}>
-                      <td>{customerName}</td>
-                      <td>{formattedDate}</td>
-                      <td>{p.amount}</td>
-                      <td>{p.mode}</td>
-                      <td>{p.reference_no}</td>
-                      <td>{p.applied_invoice_id}</td>
-                      <td>{p.notes}</td>
-                      <td>
-                        {["super_admin", "admin"].includes(role) ? (
-                          <>
-                            <button className="btn btn-warning btn-sm me-2" onClick={() => handleEdit(p)}>
-                              <MdEdit /> Edit
-                            </button>
-                            <button className="btn btn-danger btn-sm" onClick={() => handleDelete(p._id)}>
-                              <MdDeleteForever className="text-warning" /> Delete
-                            </button>
-                          </>
-                        ) : (
-                          <button className="btn btn-secondary btn-sm" disabled>View Only</button>
-                        )}
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+      
     </div>
   )
 }

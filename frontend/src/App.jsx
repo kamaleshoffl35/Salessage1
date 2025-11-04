@@ -98,8 +98,8 @@ function App() {
           <Route path="warehouses" element={<PrivateRoute roles={["super_admin", "admin","user"]}><Warehouse /></PrivateRoute>} />
           <Route path="purchases" element={<PrivateRoute roles={["super_admin", "admin","user"]}><Purchase /></PrivateRoute>} />
           <Route path="sales" element={<PrivateRoute roles={["super_admin", "admin", "user"]}><SalePOS /></PrivateRoute>} />
-          <Route path="cus_receipts" element={<PrivateRoute roles={["super_admin", "admin", "user"]}><Customer_Payment /></PrivateRoute>} />
-          <Route path="sub_receipts" element={<PrivateRoute roles={["super_admin", "admin","user"]}><Supplier_Payment /></PrivateRoute>} />
+          <Route path="cus_receipts" element={<PrivateRoute roles={["super_admin", "admin", ]}><Customer_Payment /></PrivateRoute>} />
+          <Route path="sub_receipts" element={<PrivateRoute roles={["super_admin", "admin",]}><Supplier_Payment /></PrivateRoute>} />
           <Route path="stocks" element={<PrivateRoute roles={["super_admin", "admin","user"]}><StockAdjustment /></PrivateRoute>} />
           <Route path="stockledger" element={<PrivateRoute roles={["super_admin", "admin","user"]}><StockLedger /></PrivateRoute>} />
           <Route path="expenses" element={<PrivateRoute roles={["super_admin", "admin","user"]}><Expenses /></PrivateRoute>} />

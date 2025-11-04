@@ -12,6 +12,8 @@ import { setAuthToken } from "../services/userService";
 import { updateCategory } from "../redux/categorySlice";
 import { MdEdit } from "react-icons/md";
 import { FaCartPlus } from "react-icons/fa";
+import ReusableTable,  {createCustomRoleActions, createRoleBasedActions} from "../components/ReusableTable"; // Import the reusable table
+
 const Category = () => {
   const dispatch = useDispatch()
   const { items: categories, status } = useSelector((state) => state.categories)
@@ -156,6 +158,52 @@ const Category = () => {
     setBrands([]);
   }
 
+  // Define table columns for reusable table
+  const tableColumns = [
+    {
+      key: "parental_id",
+      header: "Category ID",
+      headerStyle: { width: "120px" }
+    },
+    {
+      key: "name",
+      header: "Category Name",
+      headerStyle: { width: "150px" }
+    },
+    {
+      key: "subcategory",
+      header: "Subcategory",
+      render: (category) => category.subcategory || "-"
+    },
+    {
+      key: "brands",
+      header: "Brand",
+      render: (category) => category.brands?.join(", ") || "-"
+    },
+    {
+      key: "code",
+      header: "Category Code",
+      headerStyle: { width: "120px" }
+    }
+  ];
+
+const tableActions = createCustomRoleActions({
+   edit: { 
+     show: () => ["super_admin", "admin",].includes(role) // User can edit
+   },
+   delete: { 
+     show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+   }})
+
+  // Handle table actions
+  const handleTableAction = (actionType, category) => {
+    if (actionType === "edit") {
+      handleEdit(category);
+    } else if (actionType === "delete") {
+      handleDelete(category._id);
+    }
+  };
+
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
@@ -286,24 +334,23 @@ const Category = () => {
                     <label className="form-check-label">Status</label>
                   </div>
                   <div className="col-12 d-flex justify-content-end gap-2 mt-3">
-  <button
-    type="submit"
-    className="btn btn-primary d-flex align-items-center"
-  >
-    <FaCartPlus className="me-2 text-warning" />
-    {editingCategory ? "Update Category" : "Add Category"}
-  </button>
+                    <button
+                      type="submit"
+                      className="btn btn-primary d-flex align-items-center"
+                    >
+                      <FaCartPlus className="me-2 text-warning" />
+                      {editingCategory ? "Update Category" : "Add Category"}
+                    </button>
 
-  <button
-    type="button"
-    className="btn btn-secondary d-flex align-items-center"
-    onClick={handleCloseForm}
-  >
-    <MdClose className="me-2" />
-    Cancel
-  </button>
-</div>
-
+                    <button
+                      type="button"
+                      className="btn btn-secondary d-flex align-items-center"
+                      onClick={handleCloseForm}
+                    >
+                      <MdClose className="me-2" />
+                      Cancel
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -311,86 +358,22 @@ const Category = () => {
         </div>
       )}
 
-      {/* Always Visible Table */}
-      <div className="card shadow-sm">
-        <div className="card-body">
-          <h5 className="mb-3">Category Tree</h5>
-          <div className="mt-4 mb-2 input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder="Search Category code, Category name"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <span className="input-group-text"><FaSearch /></span>
-          </div>
-
-          {status === "loading" ? (
-            <p>Loading...</p>
-          ) : (
-            <table className="table table-bordered table-striped">
-              <thead className="table-dark">
-                <tr>
-                  <th className="fw-bold">Category ID</th>
-                  <th className="fw-bold">Category Name</th>
-                  <th className="fw-bold">Subcategory</th>
-                  <th className="fw-bold">Brand</th>
-                  <th className="fw-bold">Category Code</th>
-                  <th className="fw-bold">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredCategories.length === 0 ? (
-                  <tr>
-                    <td colSpan="6" className="text-center">
-                      No categories found.
-                    </td>
-                  </tr>
-                ) : (
-                  uniqueCategories.map((c) => (
-                    <tr key={c._id}>
-                      <td>{c.parental_id}</td>
-                      <td>{c.name}</td>
-                      <td>{c.subcategory || "-"}</td>
-                      <td>{c.brands?.join("") || "-"}</td>
-                      <td>{c.code}</td>
-                      <td>
-                        {["super_admin", "admin"].includes(role) ? (
-                          <>
-                            <button
-                              className="btn btn-warning btn-sm me-2"
-                              onClick={() => handleEdit(c)}
-                            >
-                              <MdEdit />
-                              Edit
-                            </button>
-                            <button
-                              className="btn btn-danger btn-sm"
-                              onClick={() => handleDelete(c._id)}
-                            >
-                              <span className="text-warning">
-                                <MdDeleteForever />
-                              </span>
-                              Delete
-                            </button>
-                          </>
-                        ) : (
-                          <button className="btn btn-secondary btn-sm" disabled>
-                            View Only
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          )}
-        </div>
-      </div>
+      {/* Reusable Table Component - Replaces the old table */}
+      <ReusableTable
+        data={uniqueCategories}
+        columns={tableColumns}
+        loading={status === "loading"}
+        searchable={true}
+        searchTerm={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search Category code, Category name"
+        actions={tableActions}
+        onActionClick={handleTableAction}
+        emptyMessage="No categories found."
+        className="mt-4"
+      />
     </div>
   );
-};
+};  
 
 export default Category;

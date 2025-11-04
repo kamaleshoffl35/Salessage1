@@ -25,3 +25,14 @@
   transform: translateY(-5px); /* lifts the card */
   box-shadow: 0 8px 20px rgba(0,0,0,0.2); /* adds shadow */
 }
+
+/* Make sure this is in your main CSS file */
+.table-dark {
+  background-color: #182235 !important;
+  color: white !important;
+}
+
+.table-dark th {
+  background-color: #182235 !important;
+  border-color: #2d3a52;
+}

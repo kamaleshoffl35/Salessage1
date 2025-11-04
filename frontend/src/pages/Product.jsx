@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts, addProduct, deleteProduct, updateProduct } from "../redux/productSlice";
@@ -11,6 +10,7 @@ import { fetchCategories } from "../redux/categorySlice";
 import { variants } from "../data/variants";
 import { setAuthToken } from "../services/userService";
 import { MdEdit } from "react-icons/md";
+import ReusableTable , {createCustomRoleActions, createRoleBasedActions} from "../components/ReusableTable"; // Import the reusable table
 
 const Product = () => {
   const dispatch = useDispatch();
@@ -47,6 +47,7 @@ const Product = () => {
   const [brands, setBrands] = useState([]);
   const [search, setSearch] = useState("");
   const [uniqueCategories, setUniqueCategories] = useState([]);
+  const [editingProduct, setEditingProduct] = useState(null);
 
   // Get unique categories
   useEffect(() => {
@@ -86,7 +87,6 @@ const Product = () => {
       }
       try {
         const res = await API.get(`/products/check-exists?name=${encodeURIComponent(name)}`);
-
         setForm((prev) => ({ ...prev, status: res.data.exists }));
       } catch (err) {
         console.error("Error checking product:", err);
@@ -182,7 +182,7 @@ const Product = () => {
       
       setSubcategories([]);
       setBrands([]);
-      setShowProductForm(false); // Close the popup after submission
+      setShowProductForm(false);
       
       // Refresh products to show the newly added product in table
       dispatch(fetchProducts());
@@ -190,8 +190,6 @@ const Product = () => {
       console.error("Error adding product:", err.response?.data || err.message);
     }
   };
-
-  const [editingProduct, setEditingProduct] = useState(null);
 
   const handleEdit = (product) => {
     setEditingProduct(product._id);
@@ -231,26 +229,28 @@ const Product = () => {
       status: product.status || false,
     });
 
-    setShowProductForm(true); // Open the form in edit mode
+    setShowProductForm(true);
   };
 
   const handleDelete = (id) => {
-    dispatch(deleteProduct(id));
+    if (window.confirm("Are you sure you want to delete this product?")) {
+      dispatch(deleteProduct(id));
+    }
   };
 
+  
+
   const filteredProducts = products.filter((p) => {
-  const categoryName =
-    typeof p.category_id === "object"
+    const categoryName = typeof p.category_id === "object"
       ? p.category_id?.name || ""
       : p.category_id || "";
 
-  return (
-    (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-    (p.sku || "").toLowerCase().includes(search.toLowerCase()) ||
-    categoryName.toLowerCase().includes(search.toLowerCase())
-  );
-});
-
+    return (
+      (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
+      (p.sku || "").toLowerCase().includes(search.toLowerCase()) ||
+      categoryName.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   // Reset form when closing popup
   const handleCloseForm = () => {
@@ -278,6 +278,75 @@ const Product = () => {
     setBrands([]);
   };
 
+  // Define table columns for reusable table
+  const tableColumns = [
+    {
+      key: "sku",
+      header: "SKU",
+      headerStyle: { width: "120px" }
+    },
+    {
+      key: "name",
+      header: "Name",
+      headerStyle: { width: "200px" }
+    },
+    {
+      key: "category",
+      header: "Category",
+      render: (product) => product.category_id?.name || product.category_id || ""
+    },
+    {
+      key: "brand_name",
+      header: "Brand",
+      render: (product) => product.brand_name || "-"
+    },
+    {
+      key: "unit_id",
+      header: "UoM",
+      headerStyle: { width: "80px" }
+    },
+    {
+      key: "tax_rate_id",
+      header: "Tax",
+      headerStyle: { width: "80px" }
+    },
+    {
+      key: "mrp",
+      header: "MRP",
+      headerStyle: { width: "100px" },
+      render: (product) => `₹${product.mrp}`
+    },
+    {
+      key: "purchase_price",
+      header: "Purchase",
+      headerStyle: { width: "100px" },
+      render: (product) => `₹${product.purchase_price}`
+    },
+    {
+      key: "sale_price",
+      header: "Sale",
+      headerStyle: { width: "100px" },
+      render: (product) => `₹${product.sale_price}`
+    }
+  ];
+
+  // Use common actions with role-based access
+ const tableActions = createCustomRoleActions({
+   edit: { 
+     show: () => ["super_admin", "admin",].includes(role) // User can edit
+   },
+   delete: { 
+     show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+   }})
+
+  // Handle table actions
+  const handleTableAction = (actionType, product) => {
+    if (actionType === "edit") {
+      handleEdit(product);
+    } else if (actionType === "delete") {
+      handleDelete(product._id);
+    }
+  };
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
@@ -293,7 +362,7 @@ const Product = () => {
           <div className="d-flex gap-2">
             {["super_admin", "admin"].includes(role) && (
               <button
-                className="btn btn-primary d-flex align-items-center"
+                className="btn  d-flex align-items-center text-white " style={{backgroundColor:"#182235"}}
                 onClick={() => setShowProductForm(true)}
               >
                 <MdAdd className="me-2" />
@@ -309,7 +378,7 @@ const Product = () => {
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header  text-white" style={{backgroundColor:"#182235"}}>
                 <h5 className="modal-title">
                   {editingProduct ? "Edit Product" : "Add New Product"}
                 </h5>
@@ -536,25 +605,24 @@ const Product = () => {
                     <label className="form-check-label">Active Status</label>
                   </div>
 
-                 <div className="col-12 d-flex justify-content-end gap-2 mt-3">
-  <button
-    type="submit"
-    className="btn btn-primary d-flex align-items-center"
-  >
-    <FaCartPlus className="me-2 text-warning" />
-    {editingProduct ? "Update Product" : "Add Product"}
-  </button>
+                  <div className="col-12 d-flex justify-content-end gap-2 mt-3">
+                    <button
+                      type="submit"
+                      className="btn text-white d-flex align-items-center" style={{backgroundColor:"#182235"}}
+                    >
+                      <FaCartPlus className="me-2 text-white" />
+                      {editingProduct ? "Update Product" : "Add Product"}
+                    </button>
 
-  <button
-    type="button"
-    className="btn btn-secondary d-flex align-items-center"
-    onClick={handleCloseForm}
-  >
-    <MdClose className="me-2" />
-    Cancel
-  </button>
-</div>
-
+                    <button
+                      type="button"
+                      className="btn btn-secondary d-flex align-items-center"
+                      onClick={handleCloseForm}
+                    >
+                      <MdClose className="me-2" />
+                      Cancel
+                    </button>
+                  </div>
                 </form>
               </div>
             </div>
@@ -562,94 +630,22 @@ const Product = () => {
         </div>
       )}
 
-      {/* Always Visible Table */}
-      <div className="card shadow-sm mt-4">
-        <div className="card-body">
-          <h5 className="mb-3">Product List</h5>
-          
-          <div className="mt-4 mb-2 input-group">
-            <input 
-              type="text" 
-              className="form-control" 
-              placeholder="Search by Name, SKU, Category" 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-            />
-            <span className="input-group-text">
-              <FaSearch />
-            </span>
-          </div>
-
-          {status === "loading" ? (
-            <p>Loading...</p>
-          ) : (
-            <div className="table-responsive">
-              <table className="table table-bordered table-striped">
-                <thead className="table-dark">
-                  <tr>
-                    <th>SKU</th>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Brand</th>
-                    <th>UoM</th>
-                    <th>Tax</th>
-                    <th>MRP</th>
-                    <th>Purchase</th>
-                    <th>Sale</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.length === 0 ? (
-                    <tr>
-                      <td colSpan="10" className="text-center">
-                        No products found.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredProducts.map((p) => (
-                      <tr key={p._id}>
-                        <td>{p.sku}</td>
-                        <td>{p.name}</td>
-                        <td>{p.category_id?.name || p.category_id || ""}</td>
-                        <td>{p.brand_name || ""}</td>
-                        <td>{p.unit_id}</td>
-                        <td>{p.tax_rate_id}</td>
-                        <td>{p.mrp}</td>
-                        <td>{p.purchase_price}</td>
-                        <td>{p.sale_price}</td>
-                        <td>
-                          {["super_admin", "admin"].includes(role) ? (
-                            <>
-                              <button
-                                className="btn btn-warning btn-sm me-2"
-                                onClick={() => handleEdit(p)}
-                              >
-                                <MdEdit />
-                                Edit
-                              </button>
-                              <button
-                                className="btn btn-danger btn-sm"
-                                onClick={() => handleDelete(p._id)}
-                              >
-                                <MdDeleteForever /> Delete
-                              </button>
-                            </>
-                          ) : (
-                            <button className="btn btn-secondary btn-sm" disabled>
-                              View Only
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      </div>
+      {/* Reusable Table Component - Replaces the old table */}
+      <ReusableTable
+        data={filteredProducts}
+        columns={tableColumns}
+        
+        loading={status === "loading"}
+        searchable={true}
+        searchTerm={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by Name, SKU, Category"
+        actions={tableActions}
+        onActionClick={handleTableAction}
+        emptyMessage="No products found."
+        className="mt-4"
+          headerClassName="table-dark"
+      />
     </div>
   );
 };
