@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfitLoss } from "../redux/profitlossSlice"; 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -294,23 +294,7 @@ const salesPurchaseData = useMemo(()=>{
 </div>
 
 <div className="card shadow-lg mt-4">
-  {/* <div className="card-body">
-    <h5 className="fw-bold mb-3">📊 SALES vs PURCHASES</h5>
-    <ResponsiveContainer width="100%" height={300}>
-      <BarChart
-        data={salesPurchaseData}
-        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
-      >
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-        <Bar dataKey="Sales" fill="#4d6f99ff" radius={[10, 10, 0, 0]} />
-        <Bar dataKey="Purchases" fill="#82ca9d" radius={[10, 10, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  </div> */}
+  
   <div className="card shadow-lg mt-4">
         <div className="card-body">
           <h5 className="fw-bold mb-3">📈 SALES vs PURCHASES</h5>

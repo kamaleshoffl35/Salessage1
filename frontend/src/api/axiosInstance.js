@@ -1,7 +1,6 @@
-// src/api/axiosInstance.js
 import axios from "axios";
 
-const API_BASE_URL = "http://localhost:5000/api"; // your backend base URL
+const API_BASE_URL = "http://localhost:5000/api"; 
 
 const API = axios.create({
   baseURL: API_BASE_URL,
@@ -9,8 +8,6 @@ const API = axios.create({
     "Content-Type": "application/json",
   },
 });
-
-// ✅ Request Interceptor: Attach token automatically
 API.interceptors.request.use(
   (config) => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -21,8 +18,6 @@ API.interceptors.request.use(
   },
   (error) => Promise.reject(error)
 );
-
-// ✅ Response Interceptor: Handle unauthorized (401) globally
 API.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -1,14 +1,14 @@
-// import 'bootstrap/dist/css/bootstrap.min.css';
-import { MdDeleteForever, MdEdit, MdClose, MdAdd } from 'react-icons/md';
+
+import { MdClose, MdAdd } from 'react-icons/md';
 import { GiMoneyStack } from "react-icons/gi";
-import { FaSearch, FaRegSave } from 'react-icons/fa';
+import { FaRegSave } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+
 import { useDispatch, useSelector } from "react-redux";
 import { fetchwarehouses } from '../redux/warehouseSlice';
 import { addexpense, deleteexpense, fetchexpenses, updateexpense } from '../redux/expenseSlice';
 import { setAuthToken } from '../services/userService';
-import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions} from '../components/ReusableTable'; // Import the reusable table
 
 const Expenses = () => {
   const dispatch = useDispatch();
@@ -17,7 +17,6 @@ const Expenses = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role;
-  const token = user?.token;
 
   const [form, setForm] = useState({
     expenseDate: "",
@@ -54,8 +53,6 @@ const Expenses = () => {
         await dispatch(addexpense(form)).unwrap();
         console.log("Expense Added Successfully");
       }
-
-      // Reset form
       setForm({
         expenseDate: "",
         warehouseId: "",
@@ -112,7 +109,7 @@ const Expenses = () => {
     );
   });
 
-  // Helper function to get warehouse name
+ 
   const getWarehouseName = (expense) => {
     if (typeof expense.warehouseId === "object" && expense.warehouseId !== null) {
       return expense.warehouseId?.store_name || "Unknown Warehouse";
@@ -120,7 +117,7 @@ const Expenses = () => {
     return warehouses.find((w) => w._id === expense.warehouseId)?.store_name || "Unknown Warehouse";
   };
 
-  // Define table columns for reusable table
+
   const tableColumns = [
     {
       key: "expenseDate",
@@ -156,13 +153,11 @@ const Expenses = () => {
 
   const tableActions = createCustomRoleActions({
      edit: { 
-       show: () => ["super_admin", "admin",].includes(role) // User can edit
+       show: () => ["super_admin", "admin",].includes(role) 
      },
      delete: { 
-       show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+       show: () => ["super_admin", "admin"].includes(role)
      }})
-    
-      // Handle table actions
       const handleTableAction = (actionType, category) => {
         if (actionType === "edit") {
           handleEdit(category);
@@ -179,13 +174,11 @@ const Expenses = () => {
         </span>
         <b>EXPENSES</b>
       </h2>
-
-      {/* Action Buttons */}
       <div className="row mb-4">
         <div className="col-12">
           {["super_admin", "admin"].includes(role) && (
             <button
-              className="btn btn-primary d-flex align-items-center"
+              className="btn add text-white d-flex align-items-center"
               onClick={() => setShowExpenseForm(true)}
             >
               <MdAdd className="me-2" /> Add Expense
@@ -193,13 +186,11 @@ const Expenses = () => {
           )}
         </div>
       </div>
-
-      {/* Expense Modal */}
       {showExpenseForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header  text-white">
                 <h5 className="modal-title">{editingExpense ? "Edit Expense" : "Add Expense"}</h5>
                 <button type="button" className="btn-close btn-close-white" onClick={handleCloseForm}></button>
               </div>
@@ -276,8 +267,8 @@ const Expenses = () => {
                   </div>
 
                   <div className="col-12 d-flex justify-content-end gap-2 mt-3">
-                    <button type="submit" className="btn btn-primary d-flex align-items-center">
-                      <FaRegSave className="me-2 text-warning" />
+                    <button type="submit" className="btn add text-white d-flex align-items-center">
+                      <FaRegSave className="me-2 text-white" />
                       {editingExpense ? "Update Expense" : "Add Expense"}
                     </button>
                     <button
@@ -295,7 +286,6 @@ const Expenses = () => {
         </div>
       )}
 
-      {/* Reusable Table Component - Replaces the old table */}
       <ReusableTable
         data={filteredExpenses}
         columns={tableColumns}

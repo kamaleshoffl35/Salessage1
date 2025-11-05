@@ -1,16 +1,13 @@
 
 
-import axios from "axios";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { MdAdd, MdOutlineCategory, MdClose } from "react-icons/md";
-import { RiFunctionAddLine } from "react-icons/ri";
-import { MdDeleteForever } from "react-icons/md";
-import { FaSearch } from "react-icons/fa";
+
 import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories, addCategory, deleteCategory } from "../redux/categorySlice";
 import { setAuthToken } from "../services/userService";
 import { updateCategory } from "../redux/categorySlice";
-import { MdEdit } from "react-icons/md";
+
 import { FaCartPlus } from "react-icons/fa";
 import ReusableTable,  {createCustomRoleActions, createRoleBasedActions} from "../components/ReusableTable"; // Import the reusable table
 
@@ -20,7 +17,7 @@ const Category = () => {
 
   const user = JSON.parse(localStorage.getItem("user"))
   const role = user?.role || "user"
-  const token = user?.token
+
 
   const [showCategoryForm, setShowCategoryForm] = useState(false)
   const [form, setForm] = useState({
@@ -77,10 +74,10 @@ const Category = () => {
       if (editingCategory) {
         await dispatch(updateCategory({ id: editingCategory, updatedData: payload })).unwrap();
         setEditingCategory(null);
-        console.log("✅ Category Updated Successfully");
+        console.log("Category Updated Successfully");
       } else {
         await dispatch(addCategory(payload)).unwrap();
-        console.log("✅ Category Added Successfully");
+        console.log("Category Added Successfully");
       }
 
       dispatch(fetchCategories());
@@ -219,7 +216,7 @@ const tableActions = createCustomRoleActions({
           <div className="d-flex gap-2">
             {["super_admin", "admin"].includes(role) && (
               <button
-                className="btn btn-primary d-flex align-items-center"
+                className="btn add text-white d-flex align-items-center" 
                 onClick={() => setShowCategoryForm(true)}
               >
                 <MdAdd className="me-2" />
@@ -235,7 +232,7 @@ const tableActions = createCustomRoleActions({
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header  text-white"  >
                 <h5 className="modal-title">
                   {editingCategory ? "Edit Category" : "Add New Category"}
                 </h5>
@@ -336,9 +333,9 @@ const tableActions = createCustomRoleActions({
                   <div className="col-12 d-flex justify-content-end gap-2 mt-3">
                     <button
                       type="submit"
-                      className="btn btn-primary d-flex align-items-center"
+                      className="btn add text-white d-flex align-items-center" 
                     >
-                      <FaCartPlus className="me-2 text-warning" />
+                      <FaCartPlus className="me-2 text-white" />
                       {editingCategory ? "Update Category" : "Add Category"}
                     </button>
 

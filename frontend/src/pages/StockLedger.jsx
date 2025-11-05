@@ -1,14 +1,15 @@
 
+
 import 'bootstrap/dist/css/bootstrap.min.css';
 import { useState, useEffect } from 'react';
-import { MdOutlineInventory2, MdEdit, MdDeleteForever, MdClose, MdAdd } from 'react-icons/md';
-import { FaSearch, FaRegSave } from 'react-icons/fa';
+import { MdOutlineInventory2, MdClose, MdAdd } from 'react-icons/md';
+import {  FaRegSave } from 'react-icons/fa';
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from '../redux/productSlice';
 import { fetchwarehouses } from '../redux/warehouseSlice';
 import { addstock, deletestock, fetchstocks, updatestock } from '../redux/stockledgerSlice';
 import { setAuthToken } from '../services/userService';
-import ReusableTable,{createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable,{createCustomRoleActions} from '../components/ReusableTable'; 
 
 const StockLedger = () => {
   const dispatch = useDispatch();
@@ -136,7 +137,6 @@ const StockLedger = () => {
     );
   });
 
-  // Helper function to get product name
   const getProductName = (stock) => {
     if (typeof stock.productId === "object" && stock.productId !== null) {
       return stock.productId?.name || "Unknown Product";
@@ -144,7 +144,7 @@ const StockLedger = () => {
     return products.find((p) => p._id === stock.productId)?.name || "Unknown Product";
   };
 
-  // Helper function to get warehouse name
+ 
   const getWarehouseName = (stock) => {
     if (typeof stock.warehouseId === "object" && stock.warehouseId !== null) {
       return stock.warehouseId?.store_name || "Unknown Warehouse";
@@ -152,7 +152,7 @@ const StockLedger = () => {
     return warehouses.find((w) => w._id === stock.warehouseId)?.store_name || "Unknown Warehouse";
   };
 
-  // Define table columns for reusable table
+ 
   const tableColumns = [
     {
       key: "product",
@@ -212,13 +212,13 @@ const StockLedger = () => {
 
  const tableActions = createCustomRoleActions({
     edit: { 
-      show: () => ["super_admin", "admin",].includes(role) // User can edit
+      show: () => ["super_admin", "admin",].includes(role) 
     },
     delete: { 
-      show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+      show: () => ["super_admin", "admin"].includes(role) 
     }})
   
-    // Handle table actions
+   
     const handleTableAction = (actionType, category) => {
       if (actionType === "edit") {
         handleEdit(category);
@@ -236,12 +236,11 @@ const StockLedger = () => {
         <b>STOCK LEDGER</b>
       </h2>
 
-      {/* Add Button */}
       <div className="row mb-4">
         <div className="col-12">
           {["super_admin"].includes(role) && (
             <button 
-              className="btn btn-primary d-flex align-items-center" 
+              className="btn add text-white d-flex align-items-center" 
               onClick={openModal}
             >
               <MdAdd className="me-2" />
@@ -251,7 +250,7 @@ const StockLedger = () => {
         </div>
       </div>
 
-      {/* Modal */}
+      
       <div
         className={`modal fade ${showModal ? "show d-block" : ""}`}
         style={{ backgroundColor: showModal ? "rgba(0,0,0,0.5)" : "transparent" }}
@@ -259,7 +258,7 @@ const StockLedger = () => {
       >
         <div className="modal-dialog modal-lg">
           <div className="modal-content">
-            <div className="modal-header bg-primary text-white">
+            <div className="modal-header  text-white">
               <h5 className="modal-title">
                 {editingStockLedger ? "Edit Stock Ledger" : "Add Stock Ledger"}
               </h5>
@@ -395,26 +394,32 @@ const StockLedger = () => {
                 </div>
               </div>
 
-              <div className="modal-footer d-flex justify-content-between">
-                <button
-                  type="button"
-                  className="btn btn-secondary d-flex align-items-center"
-                  onClick={() => setShowModal(false)}
-                >
-                  <MdClose className="me-2" />
-                  Cancel
-                </button>
-                <button type="submit" className="btn btn-primary d-flex align-items-center">
-                  <FaRegSave className="me-2" />
-                  {editingStockLedger ? "Update Ledger" : "Save Ledger"}
-                </button>
+              
+              <div className="modal-footer mt-3 pt-3 border-top">
+                <div className="d-flex gap-2">
+                  <button 
+                    type="submit" 
+                    className="btn add text-white px-4 d-flex align-items-center justify-content-center"
+                  >
+                    <FaRegSave className="me-2 text-white" />
+                    {editingStockLedger ? "Update Ledger" : "Save Ledger"}
+                  </button> 
+                  <button
+                    type="button"
+                    className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
+                    onClick={() => setShowModal(false)}
+                  >
+                    <MdClose className="me-2" />
+                    Cancel
+                  </button>
+                </div>
               </div>
             </form>
           </div>
         </div>
       </div>
 
-      {/* Reusable Table Component - Replaces the old table */}
+  
       <ReusableTable
         data={filteredStocks}
         columns={tableColumns}

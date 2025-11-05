@@ -1,8 +1,8 @@
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+
 import { BiPurchaseTag } from "react-icons/bi";
-import { MdDeleteForever, MdAdd, MdClose, MdEdit } from "react-icons/md";
+import { MdDeleteForever, MdAdd, MdClose,} from "react-icons/md";
 import { FaRegSave, FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { addpurchase, deletepurchase, fetchpurchases, updatePurchase } from "../redux/purchaseSlice";
@@ -10,7 +10,7 @@ import { fetchProducts } from "../redux/productSlice";
 import { fetchwarehouses } from "../redux/warehouseSlice";
 import { fetchsuppliers } from "../redux/supplierSlice";
 import { setAuthToken } from "../services/userService";
-import ReusableTable,{createCustomRoleActions, createRoleBasedActions} from "../components/ReusableTable"; // Import the reusable table
+import ReusableTable,{createCustomRoleActions} from "../components/ReusableTable"; // Import the reusable table
 
 const Purchase = () => {
   const dispatch = useDispatch()
@@ -21,7 +21,7 @@ const Purchase = () => {
 
   const user = JSON.parse(localStorage.getItem("user"))
   const role = user?.role || "user"
-  const token = user?.token
+
 
   const [purchase, setPurchase] = useState({
     supplier_id: "",
@@ -115,7 +115,7 @@ const Purchase = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // 🧮 Calculate totals
+     
       let subtotal = 0;
       purchase.items.forEach(item => {
         const lineTotal =
@@ -138,18 +138,15 @@ const Purchase = () => {
         grand_total,
         due_amount,
       };
-
-      // ✅ Add or Update logic
       if (editingPurchase) {
         await dispatch(updatePurchase({ id: editingPurchase, updatedData: purchaseData })).unwrap();
         setEditingPurchase(null);
-        console.log("✅ Purchase updated successfully!");
+        console.log("Purchase updated successfully!");
       } else {
         await dispatch(addpurchase(purchaseData)).unwrap();
-        console.log("✅ Purchase added successfully!");
+        console.log("Purchase added successfully!");
       }
 
-      // 🧹 Reset form
       setPurchase({
         supplier_id: "",
         invoice_no: "",
@@ -180,7 +177,7 @@ const Purchase = () => {
       });
 
       setShowPurchaseForm(false);
-      // 🔁 Refresh table
+      
       dispatch(fetchpurchases());
     } catch (err) {
       console.error("❌ Error saving purchase:", err.response?.data || err.message);
@@ -253,16 +250,12 @@ const Purchase = () => {
       notes: ""
     });
   };
-
-  // Helper function to get supplier name
   const getSupplierName = (purchase) => {
     if (typeof purchase.supplier_id === "object" && purchase.supplier_id !== null) {
       return purchase.supplier_id?.name || "Unnamed Supplier";
     }
     return suppliers.find((s) => s._id === purchase.supplier_id)?.name || "Unknown Supplier";
-  };
-
-  // Helper function to get warehouse name
+  }
   const getWarehouseName = (purchase) => {
     if (typeof purchase.warehouse_id === "object" && purchase.warehouse_id !== null) {
       return purchase.warehouse_id?.store_name || "Unnamed Warehouse";
@@ -270,7 +263,6 @@ const Purchase = () => {
     return warehouses.find((w) => w._id === purchase.warehouse_id)?.store_name || "Unknown Warehouse";
   };
 
-  // Helper function to get product names
   const getProductNames = (purchase) => {
     if (!Array.isArray(purchase.items) || purchase.items.length === 0) {
       return "No Items";
@@ -290,7 +282,6 @@ const Purchase = () => {
     }).join(", ");
   };
 
-  // Define table columns for reusable table
   const tableColumns = [
     {
       key: "supplier",
@@ -362,13 +353,13 @@ const Purchase = () => {
 
   const tableActions = createCustomRoleActions({
      edit: { 
-       show: () => ["super_admin", "admin",].includes(role) // User can edit
+       show: () => ["super_admin", "admin",].includes(role) 
      },
      delete: { 
-       show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+       show: () => ["super_admin", "admin"].includes(role) 
      }})
     
-      // Handle table actions
+
       const handleTableAction = (actionType, category) => {
         if (actionType === "edit") {
           handleEdit(category);
@@ -386,12 +377,12 @@ const Purchase = () => {
         <b>PURCHASE MASTER</b>
       </h2>
 
-      {/* Add Button */}
+      
       <div className="row mb-4">
         <div className="col-12">
           {["super_admin", "admin"].includes(role) && (
             <button
-              className="btn btn-primary d-flex align-items-center"
+              className="btn add text-white d-flex align-items-center" 
               onClick={() => setShowPurchaseForm(true)}
             >
               <MdAdd className="me-2" />
@@ -401,12 +392,12 @@ const Purchase = () => {
         </div>
       </div>
 
-      {/* Purchase Modal */}
+     
       {showPurchaseForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-xl modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header text-white">
                 <h5 className="modal-title">
                   {editingPurchase ? "Edit Purchase" : "Add New Purchase"}
                 </h5>
@@ -480,8 +471,8 @@ const Purchase = () => {
                                 <input type="number" name="line_total" value={((Number(item.qty) || 0) * (Number(item.unit_price) || 0) - (Number(item.discount) || 0) + (Number(item.tax) || 0)).toFixed(2)} className="form-control" disabled />
                               </td>
                               <td>
-                                <button type="button" className="btn btn-danger btn-sm" onClick={() => removeItem(index)}>
-                                  <MdDeleteForever /> Delete
+                                <button type="button" className="btn btn-sm" onClick={() => removeItem(index)}>
+                                  <MdDeleteForever className="text-danger" /> 
                                 </button>
                               </td>
                             </tr>
@@ -489,7 +480,7 @@ const Purchase = () => {
                         </tbody>
                       </table>
                     </div>
-                    <button type="button" className="btn btn-primary btn-sm" onClick={addItem}>+ Add Item</button>
+                    <button type="button" className="btn add text-white  btn-sm" onClick={addItem}>+ Add Item</button>
                   </div>
 
                   <div className="col-md-6">
@@ -535,8 +526,8 @@ const Purchase = () => {
                     <textarea name="notes" className="form-control bg-light" rows="2" value={purchase.notes} onChange={handleChange}></textarea>
                   </div>
                   <div className="col-12 d-flex gap-2">
-                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
-                      <FaRegSave className="me-2 text-warning" />
+                    <button type="submit" className="btn add text-white px-4 d-flex align-items-center justify-content-center">
+                      <FaRegSave className="me-2 text-white" />
                       {editingPurchase ? "Update Purchase" : "Save Purchase"}
                     </button>
                     <button
@@ -555,7 +546,7 @@ const Purchase = () => {
         </div>
       )}
 
-      {/* Reusable Table Component - Replaces the old table */}
+      
       <ReusableTable
         data={filteredpurchase}
         columns={tableColumns}

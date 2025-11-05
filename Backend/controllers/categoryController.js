@@ -21,15 +21,6 @@ exports.addCategory=async(req,res)=>{
   try {
     const {parental_id,name,code,subcategory,brands = [],status}=req.body;
 
-//     let existing=await Category.findOne({name});
-
-//     if (existing) {
-//   const mergedBrands = Array.from(new Set([...existing.brands, ...brands]));
-//   existing.brands = mergedBrands;
-//   await existing.save();
-//   return res.status(200).json(existing); 
-// }
-
     const category = new Category({parental_id,name,code,subcategory,brands,status,created_by_role:req.user.role});
 
     await category.save();

@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { FaRegSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";

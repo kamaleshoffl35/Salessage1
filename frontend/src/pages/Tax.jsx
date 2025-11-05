@@ -1,17 +1,15 @@
 
 
 
-import React, { useEffect, useState } from 'react'
+import  { useEffect, useState } from 'react'
 import { MdOutlineAttachMoney, MdAdd, MdClose } from "react-icons/md";
 import { FaRegSave } from "react-icons/fa";
-import axios from 'axios';
-import { MdDeleteForever } from "react-icons/md";
-import { FaSearch } from "react-icons/fa";
+
 import { useDispatch, useSelector } from 'react-redux';
 import { addtax, deletetax, fetchtaxes, updatetax } from '../redux/taxSlice';
 import { setAuthToken } from '../services/userService';
-import { MdEdit } from "react-icons/md";
-import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+
+import ReusableTable, {createCustomRoleActions, } from '../components/ReusableTable'; // Import the reusable table
 
 const Tax = () => {
     const dispatch = useDispatch()
@@ -19,7 +17,7 @@ const Tax = () => {
 
     const user = JSON.parse(localStorage.getItem("user"))
     const role = user?.role || "user"
-    const token = user?.token
+
 
     const [showTaxForm, setShowTaxForm] = useState(false)
     const [form, setForm] = useState({
@@ -112,7 +110,6 @@ const Tax = () => {
         })
     }
 
-    // Define table columns for reusable table
     const tableColumns = [
         {
             key: "name",
@@ -157,13 +154,12 @@ const Tax = () => {
 
     const tableActions = createCustomRoleActions({
        edit: { 
-         show: () => ["super_admin", "admin",].includes(role) // User can edit
+         show: () => ["super_admin", "admin",].includes(role) 
        },
        delete: { 
-         show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+         show: () => ["super_admin", "admin"].includes(role) 
        }})
 
-  // Handle table actions
   const handleTableAction = (actionType, category) => {
     if (actionType === "edit") {
       handleEdit(category);
@@ -180,13 +176,12 @@ const Tax = () => {
                 <b>TAX MASTER</b>
             </h2>
 
-            {/* Action Buttons - Above the tax area */}
             <div className="row mb-4">
                 <div className="col-12">
                     <div className="d-flex gap-2">
                         {["super_admin", "admin"].includes(role) && (
                             <button
-                                className="btn btn-primary d-flex align-items-center"
+                                className="btn add text-white d-flex align-items-center"
                                 onClick={() => setShowTaxForm(true)}
                             >
                                 <MdAdd className="me-2" />
@@ -197,12 +192,11 @@ const Tax = () => {
                 </div>
             </div>
 
-            {/* Tax Form Popup/Modal */}
             {showTaxForm && (
                 <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
                     <div className="modal-dialog modal-lg modal-dialog-centered">
                         <div className="modal-content">
-                            <div className="modal-header bg-primary text-white">
+                            <div className="modal-header  text-white" style={{backgroundColor:"#182235"}}>
                                 <h5 className="modal-title">
                                     {editingTax ? "Edit Tax" : "Add New Tax"}
                                 </h5>
@@ -250,8 +244,8 @@ const Tax = () => {
                                         <label className="form-check-label">Inclusive Tax</label>
                                     </div>
                                     <div className="col-12 d-flex gap-2">
-                                        <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
-                                            <span className="text-warning me-2 d-flex align-items-center">
+                                        <button type="submit" className="btn add text-white px-4 d-flex align-items-center justify-content-center"  >
+                                            <span className="text-white me-2 d-flex align-items-center">
                                                 <FaRegSave />
                                             </span>
                                             {editingTax ? "Update Tax" : "Add Tax"}
@@ -273,8 +267,6 @@ const Tax = () => {
                     </div>
                 </div>
             )}
-
-            {/* Reusable Table Component - Replaces the old table */}
            <ReusableTable
         data={filteredtaxes}
         columns={tableColumns}

@@ -1,15 +1,15 @@
 
-import React, { useState, useEffect } from "react";
-import axios from "axios";
+import { useState, useEffect } from "react";
+
 import { PiShippingContainer } from "react-icons/pi";
-import { MdDelete, MdDeleteForever, MdEdit, MdClose, MdAdd } from "react-icons/md";
-import { FaSave, FaSearch } from "react-icons/fa";
+import { MdDelete,MdClose, MdAdd } from "react-icons/md";
+import { FaSave, } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchwarehouses } from "../redux/warehouseSlice";
 import { fetchProducts } from "../redux/productSlice";
 import { addstock, deletestock, fetchstocks, updateStock } from "../redux/stockadjSlice";
 import { setAuthToken } from "../services/userService";
-import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions,} from '../components/ReusableTable'; // Import the reusable table
 
 const StockAdjustment = () => {
   const dispatch = useDispatch();
@@ -19,7 +19,7 @@ const StockAdjustment = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "user";
-  const token = user?.token;
+ 
 
   const [form, setForm] = useState({
     warehouse_id: "",
@@ -146,7 +146,6 @@ const StockAdjustment = () => {
     );
   });
 
-  // Helper function to get warehouse name
   const getWarehouseName = (stock) => {
     if (typeof stock.warehouse_id === "object" && stock.warehouse_id !== null) {
       return stock.warehouse_id?.store_name || "Unknown Warehouse";
@@ -154,7 +153,6 @@ const StockAdjustment = () => {
     return warehouses.find((w) => w._id === stock.warehouse_id)?.store_name || "Unknown Warehouse";
   };
 
-  // Helper function to get product details
   const getProductDetails = (stock) => {
     if (!Array.isArray(stock.items) || stock.items.length === 0) {
       return "No Items";
@@ -174,7 +172,6 @@ const StockAdjustment = () => {
     }).join("; ");
   };
 
-  // Define table columns for reusable table
   const tableColumns = [
     {
       key: "warehouse",
@@ -209,13 +206,12 @@ const StockAdjustment = () => {
   ];
  const tableActions = createCustomRoleActions({
     edit: { 
-      show: () => ["super_admin", "admin",].includes(role) // User can edit
+      show: () => ["super_admin", "admin",].includes(role) 
     },
     delete: { 
-      show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+      show: () => ["super_admin", "admin"].includes(role) 
     }})
-  
-    // Handle table actions
+ 
     const handleTableAction = (actionType, category) => {
       if (actionType === "edit") {
         handleEdit(category);
@@ -233,12 +229,11 @@ const StockAdjustment = () => {
         <b>STOCK ADJUSTMENT</b>
       </h2>
 
-      {/* Add Button */}
       <div className="row mb-4">
         <div className="col-12">
           {["super_admin", "admin"].includes(role) && (
             <button
-              className="btn btn-primary d-flex align-items-center"
+              className="btn add text-white d-flex align-items-center" 
               onClick={() => {
                 setEditingStockAdjustment(null);
                 setForm({
@@ -258,12 +253,12 @@ const StockAdjustment = () => {
         </div>
       </div>
 
-      {/* Modal */}
+     
       {showModal && (
         <div className="modal fade show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header  text-white">
                 <h5 className="modal-title">
                   {editingStockAdjustment ? "Edit Stock Adjustment" : "Add Stock Adjustment"}
                 </h5>
@@ -339,7 +334,6 @@ const StockAdjustment = () => {
                     </div>
                   </div>
 
-                  {/* Items Table */}
                   <table className="table table-bordered align-middle">
                     <thead className="table-dark">
                       <tr>
@@ -403,7 +397,7 @@ const StockAdjustment = () => {
                           <td>
                             <button
                               type="button"
-                              className="btn btn-danger btn-sm"
+                              className="btn text-danger btn-sm"
                               onClick={() => removeItem(index)}
                             >
                               <MdDelete />
@@ -415,7 +409,7 @@ const StockAdjustment = () => {
                   </table>
                   <button
                     type="button"
-                    className="btn btn-secondary mb-3"
+                    className="btn add text-white mb-3"
                     onClick={addItem}
                   >
                     + Add Row
@@ -432,7 +426,7 @@ const StockAdjustment = () => {
                     </button>
                     <button 
                       type="submit" 
-                      className="btn btn-primary d-flex align-items-center"
+                      className="btn add text-white d-flex align-items-center"
                     >
                       <FaSave className="me-2" />
                       {editingStockAdjustment ? "Update Adjustment" : "Save Adjustment"}
@@ -445,7 +439,7 @@ const StockAdjustment = () => {
         </div>
       )}
 
-      {/* Reusable Table Component - Replaces the old table */}
+     
       <ReusableTable
         data={filteredstocks}
         columns={tableColumns}

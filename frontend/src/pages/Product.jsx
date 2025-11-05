@@ -1,16 +1,16 @@
 
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts, addProduct, deleteProduct, updateProduct } from "../redux/productSlice";
-import { MdProductionQuantityLimits, MdDeleteForever, MdClose, MdAdd } from "react-icons/md";
-import { FaCartPlus, FaSearch } from "react-icons/fa";
+import { MdProductionQuantityLimits,  MdClose, MdAdd } from "react-icons/md";
+import { FaCartPlus } from "react-icons/fa";
 import API from "../api/axiosInstance";
 import { fetchCategories } from "../redux/categorySlice";
 import { variants } from "../data/variants";
 import { setAuthToken } from "../services/userService";
-import { MdEdit } from "react-icons/md";
-import ReusableTable , {createCustomRoleActions, createRoleBasedActions} from "../components/ReusableTable"; // Import the reusable table
+
+import ReusableTable , {createCustomRoleActions} from "../components/ReusableTable"; 
 
 const Product = () => {
   const dispatch = useDispatch();
@@ -21,7 +21,6 @@ const Product = () => {
   const role = user?.role || "user";
   const token = user?.token;
 
-  // State for modal/popup
   const [showProductForm, setShowProductForm] = useState(false);
 
   const [form, setForm] = useState({
@@ -49,7 +48,6 @@ const Product = () => {
   const [uniqueCategories, setUniqueCategories] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
 
-  // Get unique categories
   useEffect(() => {
     if (categories.length > 0) {
       const unique = categories.reduce((acc, category) => {
@@ -77,7 +75,7 @@ const Product = () => {
     dispatch(fetchProducts());
   }, [dispatch]);
 
-  // Check product existence
+ 
   useEffect(() => {
     const checkProduct = async () => {
       const name = form.name.trim();
@@ -98,7 +96,6 @@ const Product = () => {
     return () => clearTimeout(delayDebounce);
   }, [form.name]);
 
-  // Handle category change
   const handleCategoryChange = async (e) => {
     const selectedCategoryId = e.target.value;
     const selectedCategory = uniqueCategories.find(cat => cat._id === selectedCategoryId);
@@ -149,47 +146,60 @@ const Product = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingProduct) {
-        await dispatch(updateProduct({ id: editingProduct, updatedData: form })).unwrap();
-        setEditingProduct(null);
-        console.log("Product Updated Successfully");
-      } else {
-        await dispatch(addProduct(form)).unwrap();
-        console.log("Product added Successfully");
-      }
+  e.preventDefault();
 
-      // Reset form and close popup
-      setForm({
-        name: "",
-        sku: "",
-        category_id: "",
-        category_name: "",
-        brand_name: "",
-        unit_id: "Kg",
-        hsn_code: "",
-        tax_rate_id: "18%",
-        mrp: "",
-        purchase_price: "",
-        sale_price: "",
-        min_stock: "",
-        barcode: "",
-        is_batch_tracked: false,
-        is_serial_tracked: false,
-        status: true,
-      });
-      
-      setSubcategories([]);
-      setBrands([]);
-      setShowProductForm(false);
-      
-      // Refresh products to show the newly added product in table
-      dispatch(fetchProducts());
-    } catch (err) {
-      console.error("Error adding product:", err.response?.data || err.message);
+  if (
+    !form.name.trim() ||
+    !form.sku.trim() ||
+    !form.category_id ||
+    !form.tax_rate_id ||
+    !form.mrp ||
+    !form.purchase_price ||
+    !form.sale_price
+  ) {
+    alert("⚠️ Please fill in all required fields before submitting!");
+    return; 
+  }
+
+  try {
+    if (editingProduct) {
+      await dispatch(updateProduct({ id: editingProduct, updatedData: form })).unwrap();
+      setEditingProduct(null);
+      console.log("Product Updated Successfully");
+    } else {
+      await dispatch(addProduct(form)).unwrap();
+      console.log("Product added Successfully");
     }
-  };
+
+  
+    setForm({
+      name: "",
+      sku: "",
+      category_id: "",
+      category_name: "",
+      brand_name: "",
+      unit_id: "Kg",
+      hsn_code: "",
+      tax_rate_id: "18%",
+      mrp: "",
+      purchase_price: "",
+      sale_price: "",
+      min_stock: "",
+      barcode: "",
+      is_batch_tracked: false,
+      is_serial_tracked: false,
+      status: true,
+    });
+
+    setSubcategories([]);
+    setBrands([]);
+    setShowProductForm(false);
+    dispatch(fetchProducts());
+  } catch (err) {
+    console.error("Error adding product:", err.response?.data || err.message);
+  }
+};
+
 
   const handleEdit = (product) => {
     setEditingProduct(product._id);
@@ -252,7 +262,7 @@ const Product = () => {
     );
   });
 
-  // Reset form when closing popup
+
   const handleCloseForm = () => {
     setShowProductForm(false);
     setEditingProduct(null);
@@ -278,7 +288,6 @@ const Product = () => {
     setBrands([]);
   };
 
-  // Define table columns for reusable table
   const tableColumns = [
     {
       key: "sku",
@@ -330,16 +339,13 @@ const Product = () => {
     }
   ];
 
-  // Use common actions with role-based access
  const tableActions = createCustomRoleActions({
    edit: { 
-     show: () => ["super_admin", "admin",].includes(role) // User can edit
+     show: () => ["super_admin", "admin",].includes(role) 
    },
    delete: { 
-     show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+     show: () => ["super_admin", "admin"].includes(role) 
    }})
-
-  // Handle table actions
   const handleTableAction = (actionType, product) => {
     if (actionType === "edit") {
       handleEdit(product);
@@ -355,14 +361,13 @@ const Product = () => {
         </span>
         <b>PRODUCT MASTER</b>
       </h2>
-      
-      {/* Action Buttons - Above the product area */}
+    
       <div className="row mb-4">
         <div className="col-12">
           <div className="d-flex gap-2">
             {["super_admin", "admin"].includes(role) && (
               <button
-                className="btn  d-flex align-items-center text-white " style={{backgroundColor:"#182235"}}
+                className="btn add  d-flex align-items-center text-white " 
                 onClick={() => setShowProductForm(true)}
               >
                 <MdAdd className="me-2" />
@@ -372,13 +377,11 @@ const Product = () => {
           </div>
         </div>
       </div>
-
-      {/* Product Form Popup/Modal */}
       {showProductForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header  text-white" style={{backgroundColor:"#182235"}}>
+              <div className="modal-header  text-white" >
                 <h5 className="modal-title">
                   {editingProduct ? "Edit Product" : "Add New Product"}
                 </h5>
@@ -608,7 +611,7 @@ const Product = () => {
                   <div className="col-12 d-flex justify-content-end gap-2 mt-3">
                     <button
                       type="submit"
-                      className="btn text-white d-flex align-items-center" style={{backgroundColor:"#182235"}}
+                      className="btn add text-white d-flex align-items-center"
                     >
                       <FaCartPlus className="me-2 text-white" />
                       {editingProduct ? "Update Product" : "Add Product"}
@@ -629,8 +632,6 @@ const Product = () => {
           </div>
         </div>
       )}
-
-      {/* Reusable Table Component - Replaces the old table */}
       <ReusableTable
         data={filteredProducts}
         columns={tableColumns}

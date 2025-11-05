@@ -1,7 +1,5 @@
-import React, { useEffect, useState } from "react";
+import  { useEffect, useState } from "react";
 import { FaSearch } from "react-icons/fa";
-import { MdPictureAsPdf } from "react-icons/md";
-import { FaFileExcel } from "react-icons/fa6";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProfitLoss } from "../../redux/profitlossSlice";
 import { fetchwarehouses } from "../../redux/warehouseSlice";
@@ -215,11 +213,7 @@ const handlePrint = () => {
                 </tbody>
               </table>
 
-              {/* <div className="mt-3">
-                <button className="btn btn-danger me-2" onClick={handleExportPdf}><MdPictureAsPdf /> Export PDF</button>
-                <button className="btn btn-success me-2" onClick={handleExportExcel}> <FaFileExcel /> Export Excel</button>
-                <button className="btn btn-secondary" onClick={handlePrint}>🖨️ Print </button>
-              </div> */}
+              
             </div>
           </div>
         </>

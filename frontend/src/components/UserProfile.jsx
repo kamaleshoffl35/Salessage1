@@ -46,11 +46,6 @@ if (stored && token) {
     navigate("/login");
   };
 
-  // const handleProfile = () => {
-  //   setOpen(false);
-  //   navigate("/profile");
-  // };
-
   const [showProfile, setShowProfile] = useState(false);
 
 

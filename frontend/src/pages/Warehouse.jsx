@@ -1,16 +1,14 @@
 
 
-import axios from 'axios';
-import React, { useEffect, useState } from 'react';
-import { MdOutlineWarehouse, MdAdd, MdClose, MdEdit } from "react-icons/md";
-import { FaRegSave, FaSearch } from "react-icons/fa";
-import { MdDeleteForever } from "react-icons/md";
+import { useEffect, useState } from 'react';
+import { MdOutlineWarehouse, MdAdd, MdClose, } from "react-icons/md";
+import { FaRegSave,  } from "react-icons/fa";
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addwarehouse, deletewarehouse, fetchwarehouses, updateWarehouse } from '../redux/warehouseSlice';
 import { setAuthToken } from '../services/userService';
-import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions,} from '../components/ReusableTable'; // Import the reusable table
 
 const Warehouse = () => {
   const dispatch = useDispatch();
@@ -45,7 +43,7 @@ const Warehouse = () => {
     dispatch(fetchwarehouses());
   }, [dispatch]);
 
-  // Country → States
+
   const updateStates = (countryCode) => {
     if (countryCode) {
       try {
@@ -166,7 +164,6 @@ const Warehouse = () => {
       w.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Define table columns for reusable table
   const tableColumns = [
     {
       key: "store_name",
@@ -220,13 +217,13 @@ const Warehouse = () => {
 
   const tableActions = createCustomRoleActions({
      edit: { 
-       show: () => ["super_admin", "admin",].includes(role) // User can edit
+       show: () => ["super_admin", "admin",].includes(role) 
      },
      delete: { 
-       show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+       show: () => ["super_admin", "admin"].includes(role) 
      }})
    
-     // Handle table actions
+    
      const handleTableAction = (actionType, category) => {
        if (actionType === "edit") {
          handleEdit(category);
@@ -244,12 +241,12 @@ const Warehouse = () => {
         <b>WAREHOUSE MASTER</b>
       </h2>
 
-      {/* Add Button */}
+  
       <div className="row mb-4">
         <div className="col-12">
           {["super_admin", "admin"].includes(role) && (
             <button
-              className="btn btn-primary d-flex align-items-center"
+              className="btn add text-white d-flex align-items-center" 
               onClick={() => setShowWarehouseForm(true)}
             >
               <MdAdd className="me-2" />
@@ -259,12 +256,11 @@ const Warehouse = () => {
         </div>
       </div>
 
-      {/* Warehouse Modal */}
       {showWarehouseForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header  text-white">
                 <h5 className="modal-title">
                   {editingWarehouse ? "Edit Warehouse" : "Add New Warehouse"}
                 </h5>
@@ -276,7 +272,7 @@ const Warehouse = () => {
               </div>
               <div className="modal-body">
                 <form className="row g-3" onSubmit={handleSubmit}>
-                  {/* Warehouse Form Fields */}
+                  
                   <div className="col-md-6">
                     <label className="form-label">Warehouse / Store Name <span className="text-danger">*</span></label>
                     <input type="text" className="form-control bg-light" placeholder="Enter warehouse/store name" name="store_name" value={form.store_name} onChange={handleChange} required />
@@ -372,10 +368,9 @@ const Warehouse = () => {
                     </div>
                   </div>
 
-                  {/* Modal Buttons */}
                   <div className="col-12 d-flex gap-2">
-                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
-                      <span className="text-warning me-2 d-flex align-items-center"><FaRegSave /></span>
+                    <button type="submit" className="btn add text-white px-4 d-flex align-items-center justify-content-center" >
+                      <span className=" me-2 d-flex align-items-center" ><FaRegSave /></span>
                       {editingWarehouse ? "Update Warehouse" : "Save Warehouse"}
                     </button>
                     <button
@@ -393,7 +388,6 @@ const Warehouse = () => {
         </div>
       )}
 
-      {/* Reusable Table Component - Replaces the old table */}
       <ReusableTable
         data={filteredwarehouse}
         columns={tableColumns}

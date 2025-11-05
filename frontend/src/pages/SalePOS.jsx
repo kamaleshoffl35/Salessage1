@@ -1,9 +1,9 @@
 
 
-import React, { useState, useEffect } from 'react';
-import {  MdAdd, MdClose, MdEdit, MdDeleteForever } from "react-icons/md";
+import { useState, useEffect } from 'react';
+import {  MdAdd, MdClose,  MdDeleteForever } from "react-icons/md";
 import { TbFileInvoice } from "react-icons/tb";
-import { FaRegSave, FaWhatsapp, FaSearch } from "react-icons/fa";
+import { FaRegSave, FaWhatsapp, } from "react-icons/fa";
 import { TfiHandStop } from "react-icons/tfi";
 import { useDispatch, useSelector } from 'react-redux';
 import { addSale, deleteSale, fetchsales, updateSale } from '../redux/saleSlice';
@@ -13,7 +13,7 @@ import { fetchcustomers } from '../redux/customerSlice';
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../assets/img/image_360.png";
-import ReusableTable, {createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createRoleBasedActions} from '../components/ReusableTable';
 
 const SalePOS = () => {
   const dispatch = useDispatch();
@@ -24,7 +24,7 @@ const SalePOS = () => {
 
   const user = JSON.parse(localStorage.getItem("user"))
   const role = user?.role
-  const token=user?.token
+  
 
   const [form, setForm] = useState({
     invoice_no: "",
@@ -61,8 +61,7 @@ const SalePOS = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    
-    // When customer is selected, automatically populate the phone number
+  
     if (name === "customer_id") {
       const selectedCustomer = customers.find(c => c._id === value);
       setForm((prev) => ({ 
@@ -173,8 +172,6 @@ const SalePOS = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Debug: Check what data is being sent
     console.log("Submitting form data:", form);
     
     try {
@@ -191,7 +188,6 @@ const SalePOS = () => {
       generateInvoicePDF(savedSale || form);
       await dispatch(fetchsales()); 
       
-      // Reset form
       setForm({
         invoice_no: "INV" + Math.floor(1000 + Math.random() * 9000),
         invoice_date_time: new Date().toISOString().slice(0, 10),
@@ -275,7 +271,6 @@ const SalePOS = () => {
   const generateInvoicePDF = (saleData) => {
     const doc = new jsPDF();
 
-    // ======= Pharmacy Header =======
     const pharmacyName = "Vyoobam Pharmacy";
     const pharmacyAddress = "No.12, Main Road, Kumbakonam, Tamil Nadu - 641001";
     const pharmacyContact = "+91 98765 43210  |  Reg No: TN-PH-04567";
@@ -293,7 +288,6 @@ const SalePOS = () => {
     doc.text(pharmacyContact, 105, 31, { align: "center" });
     doc.text(pharmacyEmail, 105, 36, { align: "center" });
 
-    // ======= Invoice Info =======
     doc.setFontSize(12);
     doc.text(`Invoice No: ${saleData.invoice_no}`, 14, 50);
     doc.text(
@@ -312,7 +306,7 @@ const SalePOS = () => {
     const customerPhone = saleData.customer_phone || customer?.phone || "N/A";
     doc.text(`Phone: ${customerPhone}`, 150, 58);
 
-    // ======= Items Table =======
+    
     const tableData = saleData.items.map((item, i) => {
       const product =
         typeof item.product_id === "object"
@@ -340,7 +334,7 @@ const SalePOS = () => {
 
     const finalY = doc.lastAutoTable.finalY + 10;
 
-    // ======= Totals Section =======
+ 
     doc.setFontSize(11);
     doc.text(`Subtotal: ₹${saleData.subtotal.toFixed(2)}`, 140, finalY);
     doc.text(`Discount: ₹${saleData.discount_amount.toFixed(2)}`, 140, finalY + 6);
@@ -351,7 +345,6 @@ const SalePOS = () => {
     doc.text(`Paid: ₹${saleData.paid_amount.toFixed(2)}`, 140, finalY + 26);
     doc.text(`Due: ₹${saleData.due_amount.toFixed(2)}`, 140, finalY + 32);
 
-    // ======= Footer Section =======
     const footerY = finalY + 50;
     doc.setFontSize(10);
     doc.text("Thank you for choosing Vyoobam Pharmacy!", 105, footerY, {
@@ -361,11 +354,10 @@ const SalePOS = () => {
       align: "center",
     });
 
-    // Save the PDF
+   
     doc.save(`${saleData.invoice_no}.pdf`);
   };
 
-  // Helper function to get customer name
   const getCustomerName = (sale) => {
     if (typeof sale.customer_id === "object" && sale.customer_id !== null) {
       return sale.customer_id?.name || "Unknown Customer";
@@ -373,12 +365,11 @@ const SalePOS = () => {
     return customers.find((c) => c._id === sale.customer_id)?.name || "Unknown Customer";
   };
 
-  // Helper function to get customer phone
   const getCustomerPhone = (sale) => {
     return sale.customer_phone || sale.customer_id?.phone || "N/A";
   };
 
-  // Helper function to get product names
+
   const getProductNames = (sale) => {
     if (!Array.isArray(sale.items) || sale.items.length === 0) {
       return "No Items";
@@ -398,7 +389,6 @@ const SalePOS = () => {
     }).join(", ");
   };
 
-  // Define table columns for reusable table
   const tableColumns = [
     {
       key: "customer",
@@ -476,7 +466,6 @@ const SalePOS = () => {
 
    const tableActions = Object.values(createRoleBasedActions(role));
     
-      // Handle table actions
       const handleTableAction = (actionType, category) => {
         if (actionType === "edit") {
           handleEdit(category);
@@ -484,6 +473,16 @@ const SalePOS = () => {
           handleDelete(category._id);
         }
       };
+
+      const removeItem = (index) => {
+    if (form.items.length === 1) {
+      alert("At least one item is required.");
+      return;
+    }
+    const items = [...form.items];
+    items.splice(index, 1);
+    setShowSaleForm({ ...form, items });
+  };
 
   return (
     <div className="container mt-4">
@@ -493,12 +492,10 @@ const SalePOS = () => {
         </span>
         <b>SALES/INVOICE MASTER</b>
       </h2>
-
-      {/* Add Button */}
       <div className="row mb-4">
         <div className="col-12">
           <button
-            className="btn btn-primary d-flex align-items-center"
+            className="btn add text-white d-flex align-items-center"
             onClick={() => setShowSaleForm(true)}
           >
             <MdAdd className="me-2" />
@@ -507,12 +504,11 @@ const SalePOS = () => {
         </div>
       </div>
 
-      {/* Sale Modal */}
       {showSaleForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-xl modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header text-white">
                 <h5 className="modal-title">
                   {editingSale ? "Edit Sale" : "New Sale"}
                 </h5>
@@ -537,7 +533,6 @@ const SalePOS = () => {
                       </select>
                     </div>
                     
-                    {/* Display customer phone number */}
                     <div className="col-md-6">
                       <label>Customer Phone</label>
                       <input 
@@ -574,7 +569,7 @@ const SalePOS = () => {
                     </div>
                   </div>
 
-                  {/* Sale Items */}
+               
                   <h5 className="mt-4">Sale Items</h5>
                   <div className="table-responsive">
                     <table className="table table-bordered table-striped">
@@ -586,6 +581,7 @@ const SalePOS = () => {
                           <th style={{ width: "120px" }}>Discount %</th>
                           <th style={{ width: "150px" }}>Tax</th>
                           <th style={{ width: "120px" }}>Line Total</th>
+                          <th style={{ width: "120px" }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -615,14 +611,18 @@ const SalePOS = () => {
                             <td>
                               <input type="text" value={item.line_total.toFixed(2)} readOnly className="form-control bg-light"/>
                             </td>
+                            <td>
+                                                            <button type="button" className="btn btn-sm" onClick={() => removeItem(index)}>
+                                                              <MdDeleteForever className="text-danger" /> 
+                                                            </button>
+                                                          </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   </div>
-                  <button type="button" onClick={addItem} className="btn btn-outline-primary mt-2">+ Add Item </button>
-                  
-                  {/* Totals Section */}
+                  <button type="button" onClick={addItem} className="btn add text-white mt-2">+ Add Item </button>
+                 
                   <div className="mt-4 row">
                     <div className="col-md-6">
                       <div className="card">
@@ -638,9 +638,8 @@ const SalePOS = () => {
                     </div>
                   </div>
 
-                  {/* Action Buttons */}
                   <div className="d-flex flex-wrap gap-2 mt-4">
-                    <button type="submit" className="btn btn-primary px-4 d-flex align-items-center justify-content-center">
+                    <button type="submit" className="btn  add text-white px-4 d-flex align-items-center justify-content-center">
                       <FaRegSave className="me-2" />
                       {editingSale ? "Update Sale" : "Save & Print"}
                     </button>
@@ -668,7 +667,6 @@ const SalePOS = () => {
         </div>
       )}
 
-      {/* Reusable Table Component - Replaces the old table */}
       <ReusableTable
         data={filteredsales}
         columns={tableColumns}

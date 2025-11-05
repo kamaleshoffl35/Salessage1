@@ -1,15 +1,15 @@
 // import React, { useEffect, useState } from 'react';
 import { IoIosContact } from "react-icons/io";
-import { FaRegSave, FaSearch } from "react-icons/fa";
-import { MdClose, MdAdd, MdDeleteForever, MdEdit } from "react-icons/md";
-import axios from 'axios';
+import { FaRegSave,} from "react-icons/fa";
+import { MdClose, MdAdd,  } from "react-icons/md";
+
 import 'react-phone-input-2/lib/style.css';
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addSupplier, deleteSupplier, fetchsuppliers, updateSupplier } from '../redux/supplierSlice';
 import { setAuthToken } from '../services/userService';
-import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions, } from '../components/ReusableTable'; // Import the reusable table
 import { useState,useEffect } from "react";
 
 const Supplier = () => {
@@ -18,7 +18,7 @@ const Supplier = () => {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "user";
-  const token = user?.token;
+ 
 
   const [form, setForm] = useState({
     name: "",
@@ -147,7 +147,6 @@ const Supplier = () => {
       s.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  // Define table columns for reusable table
   const tableColumns = [
     {
       key: "name",
@@ -190,16 +189,15 @@ const Supplier = () => {
     }
   ];
 
-  // Define table actions
    const tableActions = createCustomRoleActions({
       edit: { 
-        show: () => ["super_admin", "admin",].includes(role) // User can edit
+        show: () => ["super_admin", "admin",].includes(role)
       },
       delete: { 
-        show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+        show: () => ["super_admin", "admin"].includes(role) 
       }})
     
-      // Handle table actions
+      
       const handleTableAction = (actionType, category) => {
         if (actionType === "edit") {
           handleEdit(category);
@@ -217,12 +215,11 @@ const Supplier = () => {
         <b>SUPPLIER MASTER</b>
       </h2>
 
-      {/* Add Button */}
       {["super_admin", "admin"].includes(role) && (
         <div className="row mb-4">
           <div className="col-12">
             <button
-              className="btn btn-primary d-flex align-items-center"
+              className="btn add text-white d-flex align-items-center" 
               onClick={() => setShowSupplierForm(true)}
             >
               <MdAdd className="me-2" />
@@ -232,12 +229,11 @@ const Supplier = () => {
         </div>
       )}
 
-      {/* Supplier Modal */}
       {showSupplierForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header  text-white">
                 <h5 className="modal-title">{editingSupplier ? "Edit Supplier" : "Add New Supplier"}</h5>
                 <button
                   type="button"
@@ -303,13 +299,14 @@ const Supplier = () => {
                   </div>
 
                   <div className="col-12 d-flex gap-2">
+                     <button type="submit" className="btn add text-white px-4" >
+                      <FaRegSave className="me-2 text-white" />
+                      {editingSupplier ? "Update Supplier" : "Add Supplier"}
+                    </button>
                     <button type="button" className="btn btn-secondary px-4" onClick={handleCloseForm}>
                       <MdClose className="me-2" /> Cancel
                     </button>
-                    <button type="submit" className="btn btn-primary px-4">
-                      <FaRegSave className="me-2 text-warning" />
-                      {editingSupplier ? "Update Supplier" : "Add Supplier"}
-                    </button>
+                   
                   </div>
                 </form>
               </div>
@@ -318,7 +315,6 @@ const Supplier = () => {
         </div>
       )}
 
-      {/* Reusable Table Component - Replaces the old table */}
       <ReusableTable
         data={filteredSuppliers}
         columns={tableColumns}

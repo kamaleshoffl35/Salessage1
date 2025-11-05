@@ -36,3 +36,14 @@
   background-color: #182235 !important;
   border-color: #2d3a52;
 }
+
+.modal-header{
+  background-color:#182235
+}
+
+.add{
+  background-color:#182235
+}
+.add:hover{
+   background-color:#182235
+}

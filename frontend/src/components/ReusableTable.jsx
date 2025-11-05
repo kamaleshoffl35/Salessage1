@@ -1,9 +1,5 @@
-// components/ReusableTable.js
-import React from "react";
-import { MdEdit, MdDeleteForever } from "react-icons/md";
-import { MdDoNotDisturbAlt } from "react-icons/md";
 
-// Common Actions Configuration
+import { MdEdit, MdDeleteForever } from "react-icons/md";
 export const COMMON_ACTIONS = {
   EDIT: {
     type: "edit",
@@ -15,7 +11,6 @@ export const COMMON_ACTIONS = {
   },
 };
 
-// Helper function to create role-based actions
 export const createRoleBasedActions = (role, allowedRoles = ["super_admin", "admin", "user"]) => {
   const showAction = allowedRoles.includes(role);
   

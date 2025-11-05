@@ -1,12 +1,12 @@
 
 
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import logo from "../assets/Logo.png";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { MdProductionQuantityLimits, MdOutlineCategory, MdOutlineAttachMoney, MdOutlineWarehouse, MdAttachMoney, MdOutlineInventory2 } from "react-icons/md";
-import { LiaWeightSolid } from "react-icons/lia";
+
 import { IoIosContact } from "react-icons/io";
 import { BiPurchaseTag } from "react-icons/bi";
 import { TbFileInvoice, TbReportSearch } from "react-icons/tb";
@@ -14,7 +14,7 @@ import { GiTakeMyMoney, GiMoneyStack } from "react-icons/gi";
 import { PiShippingContainer } from "react-icons/pi";
 import { FaArrowLeft } from "react-icons/fa";
 import UserProfile from "../components/UserProfile";
-import { isSuperAdmin, isAdmin, isEntryUser } from "../utils/auth";
+
 import DashboardSummary from "./DashboardSummary";
 
 export default function Dashboard() {

@@ -1,17 +1,15 @@
 
 
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { IoIosContact } from "react-icons/io";
-import { FaRegSave, FaSearch } from "react-icons/fa";
-import { MdClose, MdAdd, MdDeleteForever, MdEdit } from "react-icons/md";
-import { FcCancel } from "react-icons/fc";
-import axios from 'axios';
+import { FaRegSave} from "react-icons/fa";
+import { MdClose, MdAdd } from "react-icons/md";
 import 'react-phone-input-2/lib/style.css';
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addcustomer, deletecustomer, fetchcustomers, updatecustomer } from '../redux/customerSlice';
-import ReusableTable, {createCustomRoleActions, createRoleBasedActions} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions} from '../components/ReusableTable'; // Import the reusable table
 
 const Customer = () => {
   const dispatch = useDispatch();
@@ -19,7 +17,7 @@ const Customer = () => {
   
 const user = JSON.parse(localStorage.getItem("user"))
     const role = user?.role || "user"
-    const token = user?.token
+
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -160,8 +158,6 @@ const user = JSON.parse(localStorage.getItem("user"))
       opening_balance: "",
     });
   };
-
-  // Define table columns for reusable table
   const tableColumns = [
     {
       key: "name",
@@ -209,18 +205,15 @@ const user = JSON.parse(localStorage.getItem("user"))
       render: (customer) => customer.opening_balance ? `₹${customer.opening_balance}` : "-"
     }
   ];
-
-  // Define table actions
   const tableActions = createCustomRoleActions({
   edit: { 
-    show: () => ["super_admin", "admin", "user"].includes(role) // User can edit
+    show: () => ["super_admin", "admin", "user"].includes(role) 
   },
   delete: { 
-    show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
+    show: () => ["super_admin", "admin"].includes(role)
   }
 });
-  
-    // Handle table actions
+
     const handleTableAction = (actionType, category) => {
       if (actionType === "edit") {
         handleEdit(category);
@@ -236,12 +229,10 @@ const user = JSON.parse(localStorage.getItem("user"))
         </span>
         <b>CUSTOMER MASTER</b>
       </h2>
-
-      {/* Action Buttons */}
       <div className="row mb-4">
         <div className="col-12">
           <button
-            className="btn btn-primary d-flex align-items-center"
+            className="btn add text-white d-flex align-items-center" 
             onClick={() => setShowCustomerForm(true)}
           >
             <MdAdd className="me-2" />
@@ -249,13 +240,11 @@ const user = JSON.parse(localStorage.getItem("user"))
           </button>
         </div>
       </div>
-
-      {/* Customer Modal */}
       {showCustomerForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
-              <div className="modal-header bg-primary text-white">
+              <div className="modal-header  text-white">
                 <h5 className="modal-title">{editingCustomer ? "Edit Customer" : "Add New Customer"}</h5>
                 <button
                   type="button"
@@ -339,6 +328,13 @@ const user = JSON.parse(localStorage.getItem("user"))
 
                   <div className="col-12 d-flex gap-2">
                     <button
+                      type="submit"
+                      className="btn add text-white px-4 d-flex align-items-center justify-content-center"
+                    >
+                      <FaRegSave className="me-2 text-white" />
+                      {editingCustomer ? "Update Customer" : "Add Customer"}
+                    </button>
+                    <button
                       type="button"
                       className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                       onClick={handleCloseForm}
@@ -346,13 +342,7 @@ const user = JSON.parse(localStorage.getItem("user"))
                       <MdClose className="me-2" />
                       Cancel
                     </button>
-                    <button
-                      type="submit"
-                      className="btn btn-primary px-4 d-flex align-items-center justify-content-center"
-                    >
-                      <FaRegSave className="me-2 text-warning" />
-                      {editingCustomer ? "Update Customer" : "Add Customer"}
-                    </button>
+                    
                   </div>
                 </form>
               </div>
@@ -360,8 +350,6 @@ const user = JSON.parse(localStorage.getItem("user"))
           </div>
         </div>
       )}
-
-      {/* Reusable Table Component - Replaces the old table */}
        <ReusableTable
         data={filteredCustomers}
         columns={tableColumns}
