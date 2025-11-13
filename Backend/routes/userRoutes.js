@@ -9,7 +9,8 @@ router.post("/login", login);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password/:token", resetPassword);
 
-router.post("/register", protect, authorize("super_admin"), register); 
+// router.post("/register", protect, authorize("super_admin"), register); 
+router.post("/register", register);
 router.get("/me", protect, getMe);
 router.get("/", protect, authorize("super_admin", "admin"), listUsers);
 router.get("/:id", protect, authorize("super_admin", "admin"), getUserById);
