@@ -1,17 +1,15 @@
-const User = require("../models/User");
+// const User = require("../models/User");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { protect, authorize } = require("../middleware/auth");
 
-
 const generateToken = (user) => {
   return jwt.sign(
     { id: user._id, email: user.email, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: "1h" },
-   
+    { expiresIn: "1h" }
   );
 };
 
@@ -20,7 +18,9 @@ exports.register = async (req, res) => {
     const { name, email, password, phone, role, avatar, address } = req.body;
 
     if (!name || !email || !password)
-      return res.status(400).json({ error: "Name, email and password required" });
+      return res
+        .status(400)
+        .json({ error: "Name, email and password required" });
 
     const emailNormalized = email.trim().toLowerCase();
     const exists = await User.findOne({ email: emailNormalized });
@@ -31,13 +31,13 @@ exports.register = async (req, res) => {
       email: emailNormalized,
       password,
       phone,
-      role: role || "user", 
+      role: role || "user",
       avatar,
       address,
     });
 
     await user.save();
-    const token = generateToken(user); 
+    const token = generateToken(user);
 
     const userObj = user.toObject();
     delete userObj.password;
@@ -47,7 +47,6 @@ exports.register = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 exports.login = async (req, res) => {
   try {
@@ -63,19 +62,24 @@ exports.login = async (req, res) => {
     if (!ok) return res.status(400).json({ error: "Invalid credentials" });
 
     const userObj = user.toObject();
-    delete userObj.password; 
+    delete userObj.password;
     const token = generateToken(user);
-     res.cookie("token",generateToken, {httpOnly:true, maxAge:300000,samesite:"lax",secure:false})
+
+    res.cookie("token", generateToken, {
+      httpOnly: true,
+      maxAge: 300000,
+      samesite: "lax",
+      secure: false,
+    });
 
     res.json({
       user: userObj,
-      token, 
+      token,
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 
 exports.getUserById = async (req, res) => {
   try {
@@ -99,7 +103,6 @@ exports.getMe = async (req, res) => {
   }
 };
 
-
 exports.updateUser = async (req, res) => {
   try {
     const id = req.params.id;
@@ -110,7 +113,10 @@ exports.updateUser = async (req, res) => {
       update.password = await bcrypt.hash(update.password, salt);
     }
 
-    const user = await User.findByIdAndUpdate(id, update, { new: true }).select("-password");
+    const user = await User.findByIdAndUpdate(id, update, {
+      new: true,
+    }).select("-password");
+
     if (!user) return res.status(404).json({ error: "User not found" });
 
     res.json(user);
@@ -131,40 +137,79 @@ exports.listUsers = async (req, res) => {
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email) return res.status(400).json({ error: "Email required" });
+    if (!email) {
+      return res.status(400).json({ error: "Email required" });
+    }
 
     const emailNormalized = email.trim().toLowerCase();
     const user = await User.findOne({ email: emailNormalized });
-    if (!user) return res.status(404).json({ error: "User not found" });
 
+    const successMessage = {
+      message: "If this email exists, a password reset link has been sent.",
+    };
+
+    if (!user) {
+      return res.json(successMessage);
+    }
+
+    // Generate reset token
     const token = crypto.randomBytes(32).toString("hex");
     user.resetPasswordToken = token;
-    user.resetPasswordExpires = Date.now() + 3600000; 
+    user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
     await user.save();
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    const resetLink = `http://localhost:5173/reset-password/${token}`;
-
-    await transporter.sendMail({
+    const resetLink = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    const mailOptions = {
       from: `"Billing App" <${process.env.EMAIL_USER}>`,
       to: user.email,
       subject: "Password Reset Request",
-      html: `<p>You requested a password reset. Click here:</p>
-             <a href="${resetLink}">${resetLink}</a>
-             <p>Expires in 1 hour.</p>`,
-    });
+      html: `
+        <p>You requested a password reset. Click the link below:</p>
+        <a href="${resetLink}">${resetLink}</a>
+        <p>This link will expire in 1 hour.</p>
+      `,
+    };
 
-    res.json({ message: "Password reset link sent to email" });
+    // -------------------------
+    //  SMTP Transport + Debugging
+    // -------------------------
+    let transporter;
+    try {
+      transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER,
+          pass: process.env.EMAIL_PASS,
+        },
+      });
+
+      transporter.verify((err, success) => {
+        if (err) {
+          console.log("SMTP ERROR:", err);
+        } else {
+          console.log("SMTP OK:", success);
+        }
+      });
+    } catch (err) {
+      console.log("Transport creation error:", err.message);
+    }
+
+    // Send the email
+    if (transporter) {
+      try {
+        await transporter.sendMail(mailOptions);
+        console.log("Email sent successfully to:", user.email);
+      } catch (mailErr) {
+        console.error("EMAIL SENDING FAILED:", mailErr);
+      }
+    }
+
+    return res.json(successMessage);
   } catch (err) {
-    console.error("Forgot password error:", err);
-    res.status(500).json({ error: "Server error" });
+    console.error("Forgot password unexpected error:", err);
+    return res.json({
+      message: "If this email exists, a password reset link has been sent.",
+    });
   }
 };
 
@@ -173,14 +218,20 @@ exports.resetPassword = async (req, res) => {
     const { token } = req.params;
     const { password } = req.body;
 
+    if (!password)
+      return res.status(400).json({ error: "Password is required" });
+
     const user = await User.findOne({
       resetPasswordToken: token,
       resetPasswordExpires: { $gt: Date.now() },
     });
 
-    if (!user) return res.status(400).json({ error: "Invalid or expired token" });
+    if (!user)
+      return res.status(400).json({ error: "Invalid or expired token" });
 
-    user.password = password; 
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(password, salt);
+
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
 
