@@ -14,7 +14,8 @@ import ReusableTable, {createCustomRoleActions, } from '../components/ReusableTa
 const Tax = () => {
     const dispatch = useDispatch()
     const { items: taxes, status } = useSelector((state) => state.taxes)
-
+const [searchTaxname, setSearchTaxname]=useState("")
+const [searchcgst,setSearchcgst]=useState("")
     const user = JSON.parse(localStorage.getItem("user"))
     const role = user?.role || "user"
 
@@ -72,10 +73,15 @@ const Tax = () => {
         }
     }
 
-    const [search, setSearch] = useState("");
+
     const filteredtaxes = taxes.filter(
-        (t) =>
-            t.name.toLowerCase().includes(search.toLowerCase())
+        (t) =>{
+            const name=t.name?.toLowerCase() || ""
+         const cgst_percent = String(t.cgst_percent || "").toLowerCase();
+            const matchName =searchTaxname.trim()==="" || name.includes(searchTaxname.toLowerCase())
+            const matchcgst =searchcgst.trim()===""|| cgst_percent.includes(searchcgst.toLowerCase())
+            return matchName && matchcgst
+        }
     );
 
     const handleDelete = async (id) => {
@@ -169,11 +175,9 @@ const Tax = () => {
   };
     return (
         <div className="container mt-4">
-            <h2 className="mb-4 d-flex align-items-center fs-5">
-                <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-                    <MdOutlineAttachMoney size={24} />
-                </span>
-                <b>TAX MASTER</b>
+            <h2 className="mb-4 d-flex align-items-center fs-3">
+               
+                <b>Taxes</b>
             </h2>
 
             <div className="row mb-4">
@@ -184,7 +188,7 @@ const Tax = () => {
                                 className="btn add text-white d-flex align-items-center"
                                 onClick={() => setShowTaxForm(true)}
                             >
-                                <MdAdd className="me-2" />
+                               
                                 Add Tax
                             </button>
                         )}
@@ -245,9 +249,7 @@ const Tax = () => {
                                     </div>
                                     <div className="col-12 d-flex gap-2">
                                         <button type="submit" className="btn add text-white px-4 d-flex align-items-center justify-content-center"  >
-                                            <span className="text-white me-2 d-flex align-items-center">
-                                                <FaRegSave />
-                                            </span>
+                                           
                                             {editingTax ? "Update Tax" : "Add Tax"}
                                         </button>
                                         <button
@@ -255,9 +257,7 @@ const Tax = () => {
                                             className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                                             onClick={handleCloseForm}
                                         >
-                                            <span className='me-2 d-flex align-items-center'>
-                                                <MdClose />
-                                            </span>
+                                       
                                             Cancel
                                         </button>
                                     </div>
@@ -272,13 +272,21 @@ const Tax = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search Category code, Category name"
+        searchTerm1={searchTaxname}
+        searchTerm2={searchcgst}
+        onSearchChange1={setSearchTaxname}
+         onSearchChange2={setSearchcgst}
+        searchPlaceholder1="Search by Tax Name"
+         searchPlaceholder2="Search by CGST"
+          showThirdSearch={false}
         actions={tableActions}
         onActionClick={handleTableAction}
-        emptyMessage="No categories found."
+        emptyMessage="No taxes found."
         className="mt-4"
+        onResetSearch={() => {
+    setSearchTaxname("");
+    setSearchcgst("");
+  }}
       />
         </div>
     )

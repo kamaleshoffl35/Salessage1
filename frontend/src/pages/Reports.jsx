@@ -21,10 +21,8 @@ const Reports = () => {
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <TbFileReport size={24} />
-        </span>
-        <b>REPORTS</b>
+        
+        <b>Reports</b>
       </h2>
 
       <ul className="nav nav-tabs mb-3">

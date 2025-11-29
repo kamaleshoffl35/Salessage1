@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { BiPurchaseTag } from "react-icons/bi";
 import { MdDeleteForever, MdAdd, MdClose,} from "react-icons/md";
 import { FaRegSave, FaSearch } from "react-icons/fa";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch, useSelector, useStore } from "react-redux";
 import { addpurchase, deletepurchase, fetchpurchases, updatePurchase } from "../redux/purchaseSlice";
 import { fetchProducts } from "../redux/productSlice";
 import { fetchwarehouses } from "../redux/warehouseSlice";
@@ -40,7 +40,9 @@ const Purchase = () => {
     notes: ""
   });
 
-  const [search, setSearch] = useState("");
+const [searchname,setSearchName]=useState("")
+const [searchinvoice,setSearchInvoice]=useState("")
+const [searchdate,setSearchDate]=useState("")
   const [editingPurchase, setEditingPurchase] = useState(null);
   const [showPurchaseForm, setShowPurchaseForm] = useState(false);
 
@@ -184,11 +186,30 @@ const Purchase = () => {
     }
   };
 
-  const filteredpurchase = purchases.filter((p) =>
-    (p.supplier_id?.name || p.supplier_id || "").toString().toLowerCase().includes(search.toLowerCase()) ||
-    (p.invoice_no || "").toString().toLowerCase().includes(search.toLowerCase()) ||
-    (p.items?.some(item => products.find(prod => prod._id === item.product_id)?.name?.toLowerCase().includes(search.toLowerCase())))
-  );
+  const filteredpurchase = purchases.filter((p) => {
+  const supplierName =
+    typeof p.supplier_id === "object"
+      ? p.supplier_id?.name?.toLowerCase() || ""
+      : String(p.supplier_id || "").toLowerCase();
+
+  const invno = String(p.invoice_no || "").toLowerCase();
+  const date = String(p.invoice_date || "").toLowerCase();
+
+  const matchname =
+    searchname.trim() === "" ||
+    supplierName.includes(searchname.toLowerCase());
+
+  const matchinvno =
+    searchinvoice.trim() === "" ||
+    invno.includes(searchinvoice.toLowerCase());
+
+  const matchdate =
+    searchdate.trim() === "" ||
+    date.includes(searchdate.toLowerCase());
+
+  return matchname && matchinvno && matchdate;
+});
+
 
   const handleDelete = async (id) => {
     if (!id) return console.error("Purchase ID is undefined");
@@ -370,11 +391,9 @@ const Purchase = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <BiPurchaseTag size={24} />
-        </span>
-        <b>PURCHASE MASTER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+       
+        <b>Purchases</b>
       </h2>
 
       
@@ -385,7 +404,7 @@ const Purchase = () => {
               className="btn add text-white d-flex align-items-center" 
               onClick={() => setShowPurchaseForm(true)}
             >
-              <MdAdd className="me-2" />
+            
               Add Purchase
             </button>
           )}
@@ -527,7 +546,7 @@ const Purchase = () => {
                   </div>
                   <div className="col-12 d-flex gap-2">
                     <button type="submit" className="btn add text-white px-4 d-flex align-items-center justify-content-center">
-                      <FaRegSave className="me-2 text-white" />
+                   
                       {editingPurchase ? "Update Purchase" : "Save Purchase"}
                     </button>
                     <button
@@ -535,7 +554,7 @@ const Purchase = () => {
                       className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                       onClick={handleCloseForm}
                     >
-                      <MdClose className="me-2" />
+                   
                       Cancel
                     </button>
                   </div>
@@ -552,13 +571,25 @@ const Purchase = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search Customer, name, email"
+        searchTerm1={searchname}
+        searchTerm2={searchinvoice}
+        searchTerm3={searchdate}
+        onSearchChange1={setSearchName}
+        onSearchChange2={setSearchInvoice}
+        onSearchChange3={setSearchDate}
+        searchPlaceholder1="Search by Name"
+        searchPlaceholder2="Search by Invoice no"
+        searchPlaceholder3="Search by Date"
+        showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No purchases found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchName("")
+          setSearchInvoice("")
+          setSearchDate("")
+        }}
       />
     </div>
   );

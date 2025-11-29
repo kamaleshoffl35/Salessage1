@@ -43,7 +43,9 @@ const SalePOS = () => {
     items: []
   });
 
-  const [search, setSearch] = useState("");
+ const [searchName,setSearchName]=useState("")
+ const [searchinvoice,setSearchInvoice]=useState("")
+ const [searchdate,setSearchDate]=useState("")
   const [editingSale, setEditingSale] = useState(null);
   const [showSaleForm, setShowSaleForm] = useState(false);
 
@@ -214,12 +216,20 @@ const SalePOS = () => {
   };
 
   const filteredsales = sales.filter((s) => {
-    const customerName = s.customer_id?.name || s.customer_id || "";
-    const counter = s.counter_id || "";
-    return (
-      customerName.toString().toLowerCase().includes(search.toLowerCase()) ||
-      counter.toLowerCase().includes(search.toLowerCase())
-    );
+    const Name = typeof s.customer_id === "object"
+      ? s.customer_id?.name?.toLowerCase() || ""
+      : String(s.customer_id || "").toLowerCase();
+
+  const invno = String(s.invoice_no || "").toLowerCase();
+  const date = String(s.invoice_date_time || "").toLowerCase();
+
+  const matchname = searchName.trim() === "" || Name.includes(searchName.toLowerCase());
+
+  const matchinvno = searchinvoice.trim() === "" || invno.includes(searchinvoice.toLowerCase());
+
+  const matchdate = searchdate.trim() === "" || date.includes(searchdate.toLowerCase());
+
+  return matchname && matchinvno && matchdate;
   });
 
   const handleDelete = async (id) => {
@@ -486,11 +496,9 @@ const SalePOS = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <TbFileInvoice size={24} />
-        </span>
-        <b>SALES/INVOICE MASTER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        
+        <b>Sales</b>
       </h2>
       <div className="row mb-4">
         <div className="col-12">
@@ -498,7 +506,7 @@ const SalePOS = () => {
             className="btn add text-white d-flex align-items-center"
             onClick={() => setShowSaleForm(true)}
           >
-            <MdAdd className="me-2" />
+         
             New Sale
           </button>
         </div>
@@ -621,7 +629,7 @@ const SalePOS = () => {
                       </tbody>
                     </table>
                   </div>
-                  <button type="button" onClick={addItem} className="btn add text-white mt-2">+ Add Item </button>
+                  <button type="button" onClick={addItem} className="btn add text-white mt-2">Add Item </button>
                  
                   <div className="mt-4 row">
                     <div className="col-md-6">
@@ -640,15 +648,15 @@ const SalePOS = () => {
 
                   <div className="d-flex flex-wrap gap-2 mt-4">
                     <button type="submit" className="btn  add text-white px-4 d-flex align-items-center justify-content-center">
-                      <FaRegSave className="me-2" />
+                      
                       {editingSale ? "Update Sale" : "Save & Print"}
                     </button>
-                    <button type="button" className="btn btn-success px-4 d-flex align-items-center justify-content-center">
-                      <FaWhatsapp className="me-2" />
+                    <button type="button" className="btn add text-white  px-4 d-flex align-items-center justify-content-center">
+                  
                       Save & WhatsApp
                     </button>
-                    <button type="button" className="btn btn-warning px-4 d-flex align-items-center justify-content-center text-white">
-                      <TfiHandStop className="me-2" />
+                    <button type="button" className="btn add text-white px-4 d-flex align-items-center justify-content-center text-white">
+                     
                       Hold Bill
                     </button>
                     <button
@@ -656,7 +664,7 @@ const SalePOS = () => {
                       className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                       onClick={handleCloseForm}
                     >
-                      <MdClose className="me-2" />
+                  
                       Cancel
                     </button>
                   </div>
@@ -672,13 +680,25 @@ const SalePOS = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search Customer name, Counter"
+        searchTerm1={searchName}
+        searchTerm2={searchinvoice}
+        searchTerm3={searchdate}
+        onSearchChange1={setSearchName}
+        onSearchChange2={setSearchInvoice}
+        onSearchChange3={setSearchDate}
+        searchPlaceholder1="Search by Name"
+        searchPlaceholder2="Search by Invoice no"
+        searchPlaceholder3="Search by Date"
+        showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No sales records found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchName("")
+          setSearchInvoice("")
+          setSearchDate("")
+        }}
       />
     </div>
   );

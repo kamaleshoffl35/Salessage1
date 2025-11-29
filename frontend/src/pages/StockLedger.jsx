@@ -34,7 +34,9 @@ const StockLedger = () => {
   });
 
   const [editingStockLedger, setEditingStockLedger] = useState(null);
-  const [search, setSearch] = useState("");
+const [searchproduct,setSearchproduct]=useState("")
+const [searchWarehouse,setSearchWarehouse]=useState("")
+const [searchType,setSearchType]=useState("")
   const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
@@ -119,23 +121,29 @@ const StockLedger = () => {
   };
 
   const filteredStocks = (stocks || []).filter((s) => {
-    const warehouseName =
-      s.warehouseId?.store_name ||
-      warehouses.find((w) => w._id === s.warehouseId)?.store_name ||
-      "";
+  let productname = "";
+  if (typeof s.productId === "string") {
+    productname = s.productId.toLowerCase();
+  } else if (typeof s.productId === "object" && s.productId !== null) {
+    productname = (s.productId.name || "").toLowerCase();
+  }
 
-    const productName =
-      s.productId?.name ||
-      products.find((p) => p._id === s.productId)?.name ||
-      "Unknown";
+  let warehousename = "";
+  if (typeof s.warehouseId === "string") {
+    warehousename = s.warehouseId.toLowerCase();
+  } else if (typeof s.warehouseId === "object" && s.warehouseId !== null) {
+    warehousename = (s.warehouseId.store_name || "").toLowerCase();
+  }
 
-    return (
-      warehouseName.toLowerCase().includes(search.toLowerCase()) ||
-      productName.toLowerCase().includes(search.toLowerCase()) ||
-      s.txnId?.toLowerCase().includes(search.toLowerCase()) ||
-      s.txnDate?.toString().toLowerCase().includes(search.toLowerCase())
-    );
-  });
+  const type = s.txnType?.toLowerCase() || "";
+
+  const matchwarehouse = searchWarehouse.trim() === "" || warehousename.includes(searchWarehouse.toLowerCase());
+  const matchproduct = searchproduct.trim() === "" || productname.includes(searchproduct.toLowerCase());
+  const matchtype = searchType.trim() === "" || type.includes(searchType.toLowerCase());
+
+  return matchwarehouse && matchproduct && matchtype;
+});
+
 
   const getProductName = (stock) => {
     if (typeof stock.productId === "object" && stock.productId !== null) {
@@ -229,11 +237,9 @@ const StockLedger = () => {
  
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <MdOutlineInventory2 size={24} />
-        </span>
-        <b>STOCK LEDGER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        
+        <b>Stock Ledger</b>
       </h2>
 
       <div className="row mb-4">
@@ -242,9 +248,7 @@ const StockLedger = () => {
             <button 
               className="btn add text-white d-flex align-items-center" 
               onClick={openModal}
-            >
-              <MdAdd className="me-2" />
-              Add Ledger
+            >Add Ledger
             </button>
           )}
         </div>
@@ -401,7 +405,7 @@ const StockLedger = () => {
                     type="submit" 
                     className="btn add text-white px-4 d-flex align-items-center justify-content-center"
                   >
-                    <FaRegSave className="me-2 text-white" />
+                   
                     {editingStockLedger ? "Update Ledger" : "Save Ledger"}
                   </button> 
                   <button
@@ -409,7 +413,7 @@ const StockLedger = () => {
                     className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                     onClick={() => setShowModal(false)}
                   >
-                    <MdClose className="me-2" />
+                    
                     Cancel
                   </button>
                 </div>
@@ -425,13 +429,25 @@ const StockLedger = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by warehouse or product"
+        searchTerm1={searchproduct}
+        searchTerm2={searchWarehouse}
+        searchTerm3={searchType}
+        onSearchChange1={setSearchproduct}
+        onSearchChange2={setSearchWarehouse}
+        onSearchChange3={setSearchType}
+        searchPlaceholder1="Search by Product"
+         searchPlaceholder2="Search by Warehouse"
+         searchPlaceholder3="Search by Type "
+         showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No stock ledger records found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchproduct("")
+          setSearchWarehouse("")
+          setSearchType("")
+        }}
       />
     </div>
   );

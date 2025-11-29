@@ -31,7 +31,9 @@ const StockAdjustment = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [editingStockAdjustment, setEditingStockAdjustment] = useState(null);
-  const [search, setSearch] = useState("");
+ const [searchName,setSearchName]=useState("")
+ const [searchdate,setSearchDate]=useState("")
+ const [searchreason,setSearchreason]=useState("")
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -128,22 +130,20 @@ const StockAdjustment = () => {
   };
 
   const filteredstocks = stocks.filter((s) => {
-    const warehousename =
-      s.warehouse_id?.store_name ||
-      warehouses.find((w) => w._id === s.warehouse_id)?.store_name ||
-      "";
-    const productNames = s.items
-      .map(
-        (item) =>
-          products.find((p) => p._id === item.product_id)?.name || "Unknown"
-      )
-      .join(" ");
-    return (
-      warehousename.toLowerCase().includes(search.trim().toLowerCase()) ||
-      productNames.toLowerCase().includes(search.trim().toLowerCase()) ||
-      s.reason?.toLowerCase().includes(search.trim().toLowerCase()) ||
-      s.date?.toString().toLowerCase().includes(search.trim().toLowerCase())
-    );
+  let name = "";
+if (typeof s.warehouse_id === "string") {
+  name = s.warehouse_id.toLowerCase();
+} else if (typeof s.warehouse_id === "object" && s.warehouse_id !== null) {
+  name = (s.warehouse_id.store_name || "").toLowerCase();
+}
+
+    const Date = String(s.date || "").toLowerCase()
+    const reason = s.reason?.toLowerCase() || ""
+    const matchname=searchName.trim() === "" || name.includes(searchName.toLowerCase())
+    const matchdate=searchdate.trim() === "" || Date.includes(searchdate.toLowerCase())
+    const matchreason=searchreason.trim() === "" || reason.includes(searchreason.toLowerCase()) 
+  return matchname && matchdate && matchreason
+    
   });
 
   const getWarehouseName = (stock) => {
@@ -222,11 +222,9 @@ const StockAdjustment = () => {
  
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <PiShippingContainer size={24} />
-        </span>
-        <b>STOCK ADJUSTMENT</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        
+        <b>Stock Adjustment</b>
       </h2>
 
       <div className="row mb-4">
@@ -246,7 +244,7 @@ const StockAdjustment = () => {
                 setShowModal(true);
               }}
             >
-              <MdAdd className="me-2" />
+   
               Add Stock Adjustment
             </button>
           )}
@@ -267,7 +265,7 @@ const StockAdjustment = () => {
                   className="btn-close btn-close-white"
                   onClick={() => setShowModal(false)}
                 >
-                  <MdClose />
+                 
                 </button>
               </div>
               <div className="modal-body">
@@ -412,7 +410,7 @@ const StockAdjustment = () => {
                     className="btn add text-white mb-3"
                     onClick={addItem}
                   >
-                    + Add Row
+                    Add Row
                   </button>
 
                   <div className="d-flex justify-content-end gap-2">
@@ -421,14 +419,14 @@ const StockAdjustment = () => {
                       className="btn btn-secondary d-flex align-items-center"
                       onClick={() => setShowModal(false)}
                     >
-                      <MdClose className="me-2" />
+             
                       Cancel
                     </button>
                     <button 
                       type="submit" 
                       className="btn add text-white d-flex align-items-center"
                     >
-                      <FaSave className="me-2" />
+                     
                       {editingStockAdjustment ? "Update Adjustment" : "Save Adjustment"}
                     </button>
                   </div>
@@ -445,13 +443,25 @@ const StockAdjustment = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search warehouse name"
+        searchTerm1={searchName}
+        searchTerm2={searchdate}
+        searchTerm3={searchreason}
+        onSearchChange1={setSearchName}
+        onSearchChange2={setSearchDate}
+        onSearchChange3={setSearchreason}
+        searchPlaceholder1="Search by Name"
+        searchPlaceholder2="Search by Date"
+        searchPlaceholder3="Search by Reason"
+        showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No stock adjustments found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchName("")
+          setSearchDate("")
+          setSearchreason("")
+        }}
       />
     </div>
   );

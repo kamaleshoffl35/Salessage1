@@ -33,7 +33,9 @@ const Warehouse = () => {
   const [states, setStates] = useState([]);
   const [editingWarehouse, setEditingWarehouse] = useState(null);
   const [showWarehouseForm, setShowWarehouseForm] = useState(false);
-  const [search, setSearch] = useState("");
+ const [searchName,setSearchName]=useState("")
+ const [searchPerson,setSearchPerson]=useState("")
+ const [searchPhone,setSearchPhone]=useState("")
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -158,10 +160,16 @@ const Warehouse = () => {
   };
 
   const filteredwarehouse = warehouses.filter(
-    (w) =>
-      w.store_name.toLowerCase().includes(search.toLowerCase()) ||
-      w.phone.toString().includes(search) ||
-      w.email.toLowerCase().includes(search.toLowerCase())
+    (w) =>{
+      const name=w.store_name?.toLowerCase() || ""
+      const person=w.contact?.toLowerCase() || ""
+      const phone=String(w.phone || "").toLowerCase() 
+      const matchname=searchName.trim() === "" || name.includes(searchName.toLowerCase())
+      const matchperson=searchPerson.trim() === ""|| person.includes(searchPerson.toLowerCase())
+      const matchphone=searchPhone.trim() === ""|| phone.includes(searchPhone.toLowerCase())
+      return matchname && matchperson && matchphone
+    }
+     
   );
 
   const tableColumns = [
@@ -234,11 +242,9 @@ const Warehouse = () => {
  
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <MdOutlineWarehouse size={24} />
-        </span>
-        <b>WAREHOUSE MASTER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        
+        <b>Warehouses</b>
       </h2>
 
   
@@ -249,7 +255,7 @@ const Warehouse = () => {
               className="btn add text-white d-flex align-items-center" 
               onClick={() => setShowWarehouseForm(true)}
             >
-              <MdAdd className="me-2" />
+             
               Add Warehouse
             </button>
           )}
@@ -370,7 +376,7 @@ const Warehouse = () => {
 
                   <div className="col-12 d-flex gap-2">
                     <button type="submit" className="btn add text-white px-4 d-flex align-items-center justify-content-center" >
-                      <span className=" me-2 d-flex align-items-center" ><FaRegSave /></span>
+                   
                       {editingWarehouse ? "Update Warehouse" : "Save Warehouse"}
                     </button>
                     <button
@@ -378,7 +384,7 @@ const Warehouse = () => {
                       className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                       onClick={handleCloseForm}
                     >
-                      <MdClose className="me-2" /> Cancel
+                      Cancel
                     </button>
                   </div>
                 </form>
@@ -393,13 +399,25 @@ const Warehouse = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search Warehouse name, email, phone"
+        searchTerm1={searchName}
+        searchTerm2={searchPerson}
+        searchTerm3={searchPhone}
+        onSearchChange1={setSearchName}
+        onSearchChange2={setSearchPerson}
+        onSearchChange3={setSearchPhone}
+        searchPlaceholder1="Search by Name"
+        searchPlaceholder2="Search by Contact"
+        searchPlaceholder3="Search by Phone"
         actions={tableActions}
+        showThirdSearch={true}
         onActionClick={handleTableAction}
         emptyMessage="No warehouses found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchName("")
+          setSearchPerson("")
+          setSearchPhone("")
+        }}
       />
     </div>
   );

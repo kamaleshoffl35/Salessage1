@@ -1,5 +1,3 @@
-
-
 import  { useEffect, useState } from 'react';
 import { IoIosContact } from "react-icons/io";
 import { FaRegSave} from "react-icons/fa";
@@ -32,7 +30,9 @@ const user = JSON.parse(localStorage.getItem("user"))
   });
 
   const [states, setStates] = useState([]);
-  const [search, setSearch] = useState("");
+  const [searchName,setSearchName]=useState("")
+  const [searchMobile,setSearchMobile]=useState("")
+  const [searchEmail,setSearchEmail]=useState("")
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
 
@@ -119,10 +119,15 @@ const user = JSON.parse(localStorage.getItem("user"))
   };
 
   const filteredCustomers = customers.filter(
-    c =>
-      c.name.toLowerCase().includes(search.toLowerCase()) ||
-      c.phone.toString().includes(search) ||
-      c.email.toLowerCase().includes(search.toLowerCase())
+    c =>{
+      const name=c.name?.toLowerCase() || ""
+      const phone=String(c.phone || "").toLowerCase()
+      const email=String(c.email || "").toLowerCase()
+      const matchname=searchName.trim() === ""|| name.includes(searchName.toLowerCase())
+      const matchphone=searchMobile.trim() === ""|| phone.includes(searchMobile.toLowerCase())
+      const matchemail=searchEmail.trim() === ""|| email.includes(searchEmail.toLowerCase())
+      return matchname && matchphone && matchemail }
+
   );
 
   const handleEdit = (customer) => {
@@ -223,11 +228,9 @@ const user = JSON.parse(localStorage.getItem("user"))
     };
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <IoIosContact size={24} />
-        </span>
-        <b>CUSTOMER MASTER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+       
+        <b>Customers</b>
       </h2>
       <div className="row mb-4">
         <div className="col-12">
@@ -235,7 +238,7 @@ const user = JSON.parse(localStorage.getItem("user"))
             className="btn add text-white d-flex align-items-center" 
             onClick={() => setShowCustomerForm(true)}
           >
-            <MdAdd className="me-2" />
+            
             Add Customer
           </button>
         </div>
@@ -331,7 +334,7 @@ const user = JSON.parse(localStorage.getItem("user"))
                       type="submit"
                       className="btn add text-white px-4 d-flex align-items-center justify-content-center"
                     >
-                      <FaRegSave className="me-2 text-white" />
+                      
                       {editingCustomer ? "Update Customer" : "Add Customer"}
                     </button>
                     <button
@@ -339,7 +342,7 @@ const user = JSON.parse(localStorage.getItem("user"))
                       className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                       onClick={handleCloseForm}
                     >
-                      <MdClose className="me-2" />
+                     
                       Cancel
                     </button>
                     
@@ -355,13 +358,25 @@ const user = JSON.parse(localStorage.getItem("user"))
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search Category code, Category name"
+        searchTerm1={searchName}
+        searchTerm2={searchMobile}
+        searchTerm3={searchEmail}
+        onSearchChange1={setSearchName}
+        onSearchChange2={setSearchMobile}
+        onSearchChange3={setSearchEmail}
+        searchPlaceholder1="Search by Name"
+        searchPlaceholder2="Search by Mobile"
+        searchPlaceholder3="Search by Email"
+         showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No categories found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchName("")
+          setSearchMobile("")
+          setSearchEmail("")
+        }}
       />
     </div>
   );

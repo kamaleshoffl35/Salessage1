@@ -1,5 +1,3 @@
-
-
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts, addProduct, deleteProduct, updateProduct } from "../redux/productSlice";
@@ -44,8 +42,9 @@ const Product = () => {
 
   const [subcategories, setSubcategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [search, setSearch] = useState("");
-  const [uniqueCategories, setUniqueCategories] = useState([]);
+  const [searchNameSku, setSearchNameSku] = useState("");
+   const [searchCategory, setSearchCategory] = useState("");
+   const [uniqueCategories, setUniqueCategories] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
 
   useEffect(() => {
@@ -251,16 +250,22 @@ const Product = () => {
   
 
   const filteredProducts = products.filter((p) => {
-    const categoryName = typeof p.category_id === "object"
-      ? p.category_id?.name || ""
-      : p.category_id || "";
+  const name = (p.name || "").toLowerCase();
+  const sku = (p.sku || "").toLowerCase();
+  const categoryName = typeof p.category_id === "object"
+    ? p.category_id?.name?.toLowerCase() || ""
+    : (p.category_id || "").toLowerCase();
 
-    return (
-      (p.name || "").toLowerCase().includes(search.toLowerCase()) ||
-      (p.sku || "").toLowerCase().includes(search.toLowerCase()) ||
-      categoryName.toLowerCase().includes(search.toLowerCase())
-    );
-  });
+  const matchNameSku = searchNameSku.trim() === "" ||
+    name.includes(searchNameSku.toLowerCase()) ||
+    sku.includes(searchNameSku.toLowerCase());
+
+  const matchCategory = searchCategory.trim() === "" ||
+    categoryName.includes(searchCategory.toLowerCase());
+
+  return matchNameSku && matchCategory;
+});
+
 
 
   const handleCloseForm = () => {
@@ -288,78 +293,36 @@ const Product = () => {
     setBrands([]);
   };
 
-  const tableColumns = [
-    {
-      key: "sku",
-      header: "SKU",
-      headerStyle: { width: "120px" }
-    },
-    {
-      key: "name",
-      header: "Name",
-      headerStyle: { width: "200px" }
-    },
-    {
-      key: "category",
-      header: "Category",
-      render: (product) => product.category_id?.name || product.category_id || ""
-    },
-    {
-      key: "brand_name",
-      header: "Brand",
-      render: (product) => product.brand_name || "-"
-    },
-    {
-      key: "unit_id",
-      header: "UoM",
-      headerStyle: { width: "80px" }
-    },
-    {
-      key: "tax_rate_id",
-      header: "Tax",
-      headerStyle: { width: "80px" }
-    },
-    {
-      key: "mrp",
-      header: "MRP",
-      headerStyle: { width: "100px" },
-      render: (product) => `₹${product.mrp}`
-    },
-    {
-      key: "purchase_price",
-      header: "Purchase",
-      headerStyle: { width: "100px" },
-      render: (product) => `₹${product.purchase_price}`
-    },
-    {
-      key: "sale_price",
-      header: "Sale",
-      headerStyle: { width: "100px" },
-      render: (product) => `₹${product.sale_price}`
-    }
+   const tableColumns = [
+    { key: "sku", header: "SKU", width: 120 },
+    { key: "name", header: "Name", width: 200 },
+    { key: "category", header: "Category", render: (p) => p.category_id?.name || p.category_id || "" },
+    { key: "brand_name", header: "Brand", render: (p) => p.brand_name || "-" },
+    { key: "unit_id", header: "UoM", width: 80 },
+    { key: "tax_rate_id", header: "Tax", width: 80 },
+    { key: "mrp", header: "MRP", render: (p) => `₹${p.mrp}` },
+    { key: "purchase_price", header: "Purchase", render: (p) => `₹${p.purchase_price}` },
+    { key: "sale_price", header: "Sale", render: (p) => `₹${p.sale_price}` }
   ];
 
- const tableActions = createCustomRoleActions({
-   edit: { 
-     show: () => ["super_admin", "admin",].includes(role) 
-   },
-   delete: { 
-     show: () => ["super_admin", "admin"].includes(role) 
-   }})
+  const tableActions = createCustomRoleActions({
+    edit: { show: () => ["super_admin", "admin"].includes(role) },
+    delete: { show: () => ["super_admin", "admin"].includes(role) }
+  });
+
   const handleTableAction = (actionType, product) => {
-    if (actionType === "edit") {
-      handleEdit(product);
-    } else if (actionType === "delete") {
-      handleDelete(product._id);
-    }
+    if (actionType === "edit") handleEdit(product);
+    else if (actionType === "delete") handleDelete(product._id);
   };
+
+  const handlereset=()=>{
+    setSearchNameSku("")
+    setSearchCategory("")
+  }
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <MdProductionQuantityLimits size={24} />
-        </span>
-        <b>PRODUCT MASTER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        <b>Products</b>
       </h2>
     
       <div className="row mb-4">
@@ -370,7 +333,7 @@ const Product = () => {
                 className="btn add  d-flex align-items-center text-white " 
                 onClick={() => setShowProductForm(true)}
               >
-                <MdAdd className="me-2" />
+             
                 Add Product
               </button>
             )}
@@ -613,7 +576,7 @@ const Product = () => {
                       type="submit"
                       className="btn add text-white d-flex align-items-center"
                     >
-                      <FaCartPlus className="me-2 text-white" />
+                     
                       {editingProduct ? "Update Product" : "Add Product"}
                     </button>
 
@@ -622,7 +585,7 @@ const Product = () => {
                       className="btn btn-secondary d-flex align-items-center"
                       onClick={handleCloseForm}
                     >
-                      <MdClose className="me-2" />
+                
                       Cancel
                     </button>
                   </div>
@@ -632,20 +595,24 @@ const Product = () => {
           </div>
         </div>
       )}
+    
       <ReusableTable
         data={filteredProducts}
         columns={tableColumns}
-        
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search by Name, SKU, Category"
+        searchTerm1={searchNameSku}
+        searchTerm2={searchCategory}
+        onSearchChange1={setSearchNameSku}
+        onSearchChange2={setSearchCategory}
+        searchPlaceholder1="Search by Name or Sku"
+        searchPlaceholder2="Search by Category"
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No products found."
-        className="mt-4"
-          headerClassName="table-dark"
+        onResetSearch={handlereset}
+        // className="mt-4"
+      
       />
     </div>
   );

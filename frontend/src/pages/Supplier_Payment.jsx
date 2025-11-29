@@ -159,13 +159,7 @@ const Supplier_Payment = () => {
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span
-          className="me-2 d-flex align-items-center"
-          style={{ color: "#4d6f99ff" }}
-        >
-          <GiTakeMyMoney size={24} />
-        </span>
-        <b>SUPPLIER PAYMENT RECEIPT</b>
+        <b>Supplier Receipts</b>
       </h2>
 
     

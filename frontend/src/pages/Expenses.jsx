@@ -28,8 +28,9 @@ const Expenses = () => {
 
   const [editingExpense, setEditingExpense] = useState(null);
   const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [search, setSearch] = useState("");
-
+  const [searchDate,setSearchDate]=useState("")
+  const [searchWarehouse,setSearchWarehouse]=useState("")
+  const [searchExpense,setSearchExpense]=useState("")
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.token) console.error("No user found. Please login.");
@@ -97,16 +98,14 @@ const Expenses = () => {
   };
 
   const filteredExpenses = (expenses || []).filter((e) => {
-    const warehousename =
-      e.warehouseId?.store_name ||
-      warehouses.find((w) => w._id === e.warehouseId)?.store_name ||
-      "";
-    return (
-      warehousename.toLowerCase().includes(search.trim().toLowerCase()) ||
-      e.expenseHead?.toLowerCase().includes(search.trim().toLowerCase()) ||
-      e.notes?.toLowerCase().includes(search.trim().toLowerCase()) ||
-      e.txnDate?.toString().toLowerCase().includes(search.trim().toLowerCase())
-    );
+    const date = String(e.expenseDate || "").toLowerCase()
+    const name = e.warehouseId?.toLowerCase() || ""
+    const expense = e.expenseHead?.toLowerCase() || ""
+    const matchdate = searchDate.trim() === "" || date.includes(searchDate.toLowerCase())
+    const matchname = searchWarehouse.trim() === " " || name.includes(searchWarehouse.toLowerCase())
+    const matchexpense = searchExpense.trim() === " " || expense.includes(searchExpense.toLowerCase())
+    return matchdate && matchname && matchexpense
+   
   });
 
  
@@ -168,11 +167,9 @@ const Expenses = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <GiMoneyStack size={24} />
-        </span>
-        <b>EXPENSES</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+       
+        <b>Expense</b>
       </h2>
       <div className="row mb-4">
         <div className="col-12">
@@ -181,7 +178,7 @@ const Expenses = () => {
               className="btn add text-white d-flex align-items-center"
               onClick={() => setShowExpenseForm(true)}
             >
-              <MdAdd className="me-2" /> Add Expense
+              Add Expense
             </button>
           )}
         </div>
@@ -268,7 +265,7 @@ const Expenses = () => {
 
                   <div className="col-12 d-flex justify-content-end gap-2 mt-3">
                     <button type="submit" className="btn add text-white d-flex align-items-center">
-                      <FaRegSave className="me-2 text-white" />
+                    
                       {editingExpense ? "Update Expense" : "Add Expense"}
                     </button>
                     <button
@@ -276,7 +273,7 @@ const Expenses = () => {
                       className="btn btn-secondary d-flex align-items-center"
                       onClick={handleCloseForm}
                     >
-                      <MdClose className="me-2" /> Cancel
+                      Cancel
                     </button>
                   </div>
                 </form>
@@ -291,13 +288,25 @@ const Expenses = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search warehouse name, expense head, or notes"
+        searchTerm1={searchDate}
+        searchTerm2={searchWarehouse}
+        searchTerm3={searchExpense}
+        onSearchChange1={setSearchDate}
+        onSearchChange2={setSearchWarehouse}
+        onSearchChange3={setSearchExpense}
+        searchPlaceholder1="Search by Date"
+        searchPlaceholder2='Search by Warehouse'
+        searchPlaceholder3='Search by Expense'
+        showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No expenses found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchDate("")
+          setSearchWarehouse("")
+          setSearchExpense("")
+        }}
       />
     </div>
   );

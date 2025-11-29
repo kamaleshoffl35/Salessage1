@@ -32,7 +32,10 @@ const Supplier = () => {
   });
 
   const [states, setStates] = useState([]);
-  const [search, setSearch] = useState("");
+  const [searchName, setSearchName] = useState("");
+  const [searchMobile,setSearchMobile]=useState("")
+  const [searchEmail,setSearchEmail]=useState("")
+ 
   const [editingSupplier, setEditingSupplier] = useState(null);
   const [showSupplierForm, setShowSupplierForm] = useState(false);
 
@@ -141,10 +144,16 @@ const Supplier = () => {
   };
 
   const filteredSuppliers = suppliers.filter(
-    (s) =>
-      s.name.toLowerCase().includes(search.toLowerCase()) ||
-      s.phone.toString().includes(search) ||
-      s.email.toLowerCase().includes(search.toLowerCase())
+    (s) =>{
+      const name = s.name?.toLowerCase() || ""
+      const mobile = String(s.phone || "").toLowerCase()
+      const email = String(s.email || "").toLowerCase()
+      const matchname=searchName.trim() === "" || name.includes(searchName.toLowerCase())
+      const matchmobile=searchMobile.trim() === "" || mobile.includes(searchMobile.toLowerCase())
+      const matchemail=searchEmail.trim() === "" || email.includes(searchEmail.toLowerCase())
+      return matchname && matchmobile && matchemail
+    }
+     
   );
 
   const tableColumns = [
@@ -208,11 +217,9 @@ const Supplier = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <IoIosContact size={24} />
-        </span>
-        <b>SUPPLIER MASTER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        
+        <b>Suppliers</b>
       </h2>
 
       {["super_admin", "admin"].includes(role) && (
@@ -222,7 +229,7 @@ const Supplier = () => {
               className="btn add text-white d-flex align-items-center" 
               onClick={() => setShowSupplierForm(true)}
             >
-              <MdAdd className="me-2" />
+              
               Add Supplier
             </button>
           </div>
@@ -300,11 +307,11 @@ const Supplier = () => {
 
                   <div className="col-12 d-flex gap-2">
                      <button type="submit" className="btn add text-white px-4" >
-                      <FaRegSave className="me-2 text-white" />
+              
                       {editingSupplier ? "Update Supplier" : "Add Supplier"}
                     </button>
                     <button type="button" className="btn btn-secondary px-4" onClick={handleCloseForm}>
-                      <MdClose className="me-2" /> Cancel
+                       Cancel
                     </button>
                    
                   </div>
@@ -320,13 +327,25 @@ const Supplier = () => {
         columns={tableColumns}
         loading={status === "loading"}
         searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search supplier name, email, phone"
+        searchTerm1={searchName}
+        searchTerm2={searchMobile}
+        searchTerm3={searchEmail}
+        onSearchChange1={setSearchName}
+        onSearchChange2={setSearchMobile}
+        onSearchChange3={setSearchEmail}
+        searchPlaceholder1="Search Name"
+        searchPlaceholder2="Search Mobile"
+        searchPlaceholder3="Search Email"
+        showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No suppliers found."
         className="mt-4"
+        onResetSearch={()=>{
+          setSearchName("")
+          setSearchMobile("")
+          setSearchEmail("")
+        }}
       />
     </div>
   );

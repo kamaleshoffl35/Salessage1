@@ -39,7 +39,9 @@ const Category = () => {
 
   const [subcategories, setSubcategories] = useState([]);
   const [brands, setBrands] = useState([]);
-  const [search, setSearch] = useState("");
+ const [searchName, setSearchName] = useState("");
+const [searchCode, setSearchCode] = useState("");
+
   const [editingCategory, setEditingCategory] = useState(null)
 
   useEffect(() => {
@@ -100,15 +102,15 @@ const Category = () => {
   };
 
   const filteredCategories = categories.filter((c) => {
-    const name = c.name?.toLowerCase() || "";
-    const code = c.code?.toLowerCase() || "";
-    const parental_id = c.parental_id?.toLowerCase() || "";
-    return (
-      name.includes(search.toLowerCase()) ||
-      code.includes(search.toLowerCase()) ||
-      parental_id.includes(search.toLowerCase())
-    );
-  });
+  const name = c.name?.toLowerCase() || "";
+  const code = c.code?.toLowerCase() || "";
+
+  const matchName = searchName.trim() === "" || name.includes(searchName.toLowerCase());
+  const matchCode = searchCode.trim() === "" || code.includes(searchCode.toLowerCase());
+
+  return matchName && matchCode;
+});
+
 
   const uniqueCategories = filteredCategories.filter(
     (c, index, self) => index === self.findIndex((obj) => obj._id === c._id)
@@ -203,11 +205,9 @@ const tableActions = createCustomRoleActions({
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <MdOutlineCategory size={24} />
-        </span>
-        <b>CATEGORY MASTER</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        
+        <b>Categories</b>
       </h2>
 
       {/* Action Buttons - Above the category area */}
@@ -219,7 +219,7 @@ const tableActions = createCustomRoleActions({
                 className="btn add text-white d-flex align-items-center" 
                 onClick={() => setShowCategoryForm(true)}
               >
-                <MdAdd className="me-2" />
+                
                 Add Category
               </button>
             )}
@@ -335,7 +335,7 @@ const tableActions = createCustomRoleActions({
                       type="submit"
                       className="btn add text-white d-flex align-items-center" 
                     >
-                      <FaCartPlus className="me-2 text-white" />
+                     
                       {editingCategory ? "Update Category" : "Add Category"}
                     </button>
 
@@ -344,7 +344,7 @@ const tableActions = createCustomRoleActions({
                       className="btn btn-secondary d-flex align-items-center"
                       onClick={handleCloseForm}
                     >
-                      <MdClose className="me-2" />
+                     
                       Cancel
                     </button>
                   </div>
@@ -356,19 +356,25 @@ const tableActions = createCustomRoleActions({
       )}
 
       {/* Reusable Table Component - Replaces the old table */}
-      <ReusableTable
-        data={uniqueCategories}
-        columns={tableColumns}
-        loading={status === "loading"}
-        searchable={true}
-        searchTerm={search}
-        onSearchChange={setSearch}
-        searchPlaceholder="Search Category code, Category name"
-        actions={tableActions}
-        onActionClick={handleTableAction}
-        emptyMessage="No categories found."
-        className="mt-4"
-      />
+  <ReusableTable
+  data={filteredCategories}
+  columns={tableColumns}
+  loading={status === "loading"}
+  searchable={true}
+  searchTerm1={searchName}
+  searchTerm2={searchCode}
+  onSearchChange1={setSearchName}
+  onSearchChange2={setSearchCode}
+  searchPlaceholder1="Search by Category Name"
+  searchPlaceholder2="Search by Category Code"
+  actions={tableActions}
+  onActionClick={handleTableAction}
+  emptyMessage="No categories found."
+  onResetSearch={() => {
+    setSearchName("");
+    setSearchCode("");
+  }}
+/>
     </div>
   );
 };  
