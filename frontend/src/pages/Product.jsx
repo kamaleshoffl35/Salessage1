@@ -1,26 +1,20 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts, addProduct, deleteProduct, updateProduct } from "../redux/productSlice";
-import { MdProductionQuantityLimits,  MdClose, MdAdd } from "react-icons/md";
-import { FaCartPlus } from "react-icons/fa";
 import API from "../api/axiosInstance";
 import { fetchCategories } from "../redux/categorySlice";
 import { variants } from "../data/variants";
 import { setAuthToken } from "../services/userService";
-
+import HistoryModal from "../components/HistoryModal";
 import ReusableTable , {createCustomRoleActions} from "../components/ReusableTable"; 
-
 const Product = () => {
   const dispatch = useDispatch();
   const { items: products, status } = useSelector((state) => state.products);
   const { items: categories } = useSelector((state) => state.categories);
-
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "user";
   const token = user?.token;
-
   const [showProductForm, setShowProductForm] = useState(false);
-
   const [form, setForm] = useState({
     name: "",
     sku: "",
@@ -39,13 +33,14 @@ const Product = () => {
     is_serial_tracked: false,
     status: false,
   });
-
-  const [subcategories, setSubcategories] = useState([]);
+const [subcategories, setSubcategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [searchNameSku, setSearchNameSku] = useState("");
    const [searchCategory, setSearchCategory] = useState("");
    const [uniqueCategories, setUniqueCategories] = useState([]);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+const [historyInfo, setHistoryInfo] = useState(null);
 
   useEffect(() => {
     if (categories.length > 0) {
@@ -98,7 +93,6 @@ const Product = () => {
   const handleCategoryChange = async (e) => {
     const selectedCategoryId = e.target.value;
     const selectedCategory = uniqueCategories.find(cat => cat._id === selectedCategoryId);
-    
     if (selectedCategory) {
       const categorySubcategories = categories
         .filter(cat => cat.name === selectedCategory.name)
@@ -156,7 +150,7 @@ const Product = () => {
     !form.purchase_price ||
     !form.sale_price
   ) {
-    alert("⚠️ Please fill in all required fields before submitting!");
+    alert("Please fill in all required fields before submitting!");
     return; 
   }
 
@@ -247,28 +241,15 @@ const Product = () => {
     }
   };
 
-  
-
   const filteredProducts = products.filter((p) => {
   const name = (p.name || "").toLowerCase();
   const sku = (p.sku || "").toLowerCase();
-  const categoryName = typeof p.category_id === "object"
-    ? p.category_id?.name?.toLowerCase() || ""
-    : (p.category_id || "").toLowerCase();
-
-  const matchNameSku = searchNameSku.trim() === "" ||
-    name.includes(searchNameSku.toLowerCase()) ||
-    sku.includes(searchNameSku.toLowerCase());
-
-  const matchCategory = searchCategory.trim() === "" ||
-    categoryName.includes(searchCategory.toLowerCase());
-
-  return matchNameSku && matchCategory;
+  const categoryName = typeof p.category_id === "object" ? p.category_id?.name?.toLowerCase() || "" : (p.category_id || "").toLowerCase();
+  const matchNameSku = searchNameSku.trim() === "" || name.includes(searchNameSku.toLowerCase()) || sku.includes(searchNameSku.toLowerCase());
+  const matchCategory = searchCategory.trim() === "" ||categoryName.includes(searchCategory.toLowerCase());
+return matchNameSku && matchCategory;
 });
-
-
-
-  const handleCloseForm = () => {
+const handleCloseForm = () => {
     setShowProductForm(false);
     setEditingProduct(null);
     setForm({
@@ -307,19 +288,68 @@ const Product = () => {
 
   const tableActions = createCustomRoleActions({
     edit: { show: () => ["super_admin", "admin"].includes(role) },
-    delete: { show: () => ["super_admin", "admin"].includes(role) }
+    delete: { show: () => ["super_admin", "admin"].includes(role) },
+    history:{ show : () => ["super_admin","admin","user"].includes(role)}
   });
 
   const handleTableAction = (actionType, product) => {
     if (actionType === "edit") handleEdit(product);
     else if (actionType === "delete") handleDelete(product._id);
+    else if (actionType === "history") handleHistory(product)
   };
 
   const handlereset=()=>{
     setSearchNameSku("")
     setSearchCategory("")
   }
-  return (
+const handleHistory = async (product) => {
+  if (!product?._id) {
+    console.error("Product ID is missing:", product);
+    setHistoryInfo({
+      createdBy: product?.created_by?.name ||
+                 product?.created_by?.username ||
+                 product?.created_by?.email ||
+                 "Unknown",
+      createdAt: product?.createdAt || null,
+      updatedBy: "-",
+      updatedAt: null,
+    });
+    setShowHistoryModal(true);
+    return;
+  }
+try {
+    const res = await API.get(`/products/${product._id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+const p = res.data;
+const createdByUser = p?.created_by?.name || p?.created_by?.username || p?.created_by?.email || "Unknown";
+const updatedByUser = p?.updated_by?.name || p?.updated_by?.username || p?.updated_by?.email || "-";
+const oldValues = p?.oldValues || null;
+const newValues = p?.newValues || p;
+setHistoryInfo({
+      createdBy: createdByUser,
+      createdAt: p?.createdAt || product?.createdAt || null,
+      updatedBy: updatedByUser,
+      updatedAt: p?.updatedAt || null,
+      oldValues,
+      newValues,
+    });
+  } catch (err) {
+
+    console.warn(`Failed to fetch history for product ${product._id}:`, err);
+
+    setHistoryInfo({
+      createdBy: product?.created_by?.name || product?.created_by?.username || product?.created_by?.email ||"Unknown",
+      createdAt: product?.createdAt || null,
+      updatedBy: product?.updated_by?.name || product?.updated_by?.username || product?.updated_by?.email || "-",
+      updatedAt: product?.updatedAt || null,
+    });
+  } finally {
+    setShowHistoryModal(true);
+  }
+};
+
+return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
         <b>Products</b>
@@ -332,9 +362,7 @@ const Product = () => {
               <button
                 className="btn add  d-flex align-items-center text-white " 
                 onClick={() => setShowProductForm(true)}
-              >
-             
-                Add Product
+              >Add Product
               </button>
             )}
           </div>
@@ -614,7 +642,12 @@ const Product = () => {
         // className="mt-4"
       
       />
-    </div>
+<HistoryModal
+  open={showHistoryModal}
+  onClose={() => setShowHistoryModal(false)}
+  data={historyInfo}
+/>
+</div>
   );
 };
 

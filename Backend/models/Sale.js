@@ -1,6 +1,4 @@
 const mongoose = require('mongoose');
-
-
 const SaleItemSchema = new mongoose.Schema({
   product_id:{type:mongoose.Schema.Types.ObjectId,ref:'Product',required:true },
   batch_no:{type:String},

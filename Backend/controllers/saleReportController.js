@@ -9,7 +9,6 @@ exports.getSaleReports = async (req, res) => {
     else{
           salereports = await Salereport.find().populate('customer_id', 'name')
     }
-     
     res.json(salereports)
   }
   catch (err) {

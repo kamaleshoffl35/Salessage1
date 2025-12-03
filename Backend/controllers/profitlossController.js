@@ -1,4 +1,3 @@
-
 const Sale = require('../models/Sale');
 const StockLedger = require('../models/Stockledger');
 const Expense = require('../models/Expense');

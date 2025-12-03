@@ -168,8 +168,6 @@ exports.forgotPassword = async (req, res) => {
     if (!user) {
       return res.json(successMessage);
     }
-
-    // Generate reset token
     const token = crypto.randomBytes(32).toString("hex");
     user.resetPasswordToken = token;
     user.resetPasswordExpires = Date.now() + 3600000; // 1 hour
@@ -186,10 +184,6 @@ exports.forgotPassword = async (req, res) => {
         <p>This link will expire in 1 hour.</p>
       `,
     };
-
-    // -------------------------
-    //  SMTP Transport + Debugging
-    // -------------------------
     let transporter;
     try {
       transporter = nodemailer.createTransport({
@@ -210,8 +204,6 @@ exports.forgotPassword = async (req, res) => {
     } catch (err) {
       console.log("Transport creation error:", err.message);
     }
-
-    // Send the email
     if (transporter) {
       try {
         await transporter.sendMail(mailOptions);
@@ -246,12 +238,10 @@ exports.resetPassword = async (req, res) => {
     if (!user)
       return res.status(400).json({ error: "Invalid or expired token" });
 
-    user.password = password; // <-- DO NOT HASH MANUALLY
+    user.password = password; 
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
-
-    await user.save(); // pre("save") will hash it
-
+    await user.save(); 
     res.json({ message: "Password has been reset successfully" });
   } catch (err) {
     console.error("Reset password error:", err);

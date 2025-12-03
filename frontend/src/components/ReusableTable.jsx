@@ -1,8 +1,7 @@
-import { MdEdit, MdDeleteForever } from "react-icons/md";
+import { MdEdit, MdDeleteForever, MdHistory } from "react-icons/md";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
 import { ModuleRegistry,AllCommunityModule } from "ag-grid-community";
 
 ModuleRegistry.registerModules([AllCommunityModule])
@@ -15,6 +14,10 @@ export const COMMON_ACTIONS = {
     type: "delete", 
     icon: <MdDeleteForever className="text-danger"/>
   },
+  HISTORY:{
+    type: "history",
+    icon: <MdHistory />
+  }
 };
 
 export const createRoleBasedActions = (role, allowedRoles = ["super_admin", "admin", "user"]) => {
@@ -29,6 +32,10 @@ export const createRoleBasedActions = (role, allowedRoles = ["super_admin", "adm
       ...COMMON_ACTIONS.DELETE, 
       show: () => ["super_admin", "admin"].includes(role)
     },
+    history:{
+      ...COMMON_ACTIONS.HISTORY,
+      show:()=> ["super_admin","admin","user"].includes(role)
+    }
   };
 };
 
@@ -47,6 +54,13 @@ export const createCustomRoleActions = (roleConfig) => {
       ...COMMON_ACTIONS.DELETE,
       show: roleConfig.delete.show || (() => true)
     };
+  }
+
+  if (roleConfig.history){
+    actions.history={
+      ...COMMON_ACTIONS.HISTORY,
+      show:roleConfig.history.show || (()=>true)
+    }
   }
   
   return Object.values(actions);
@@ -119,7 +133,6 @@ const ReusableTable = ({
       flex: 1
     });
   }
-  
   
   return (
     <div >

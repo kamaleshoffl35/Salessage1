@@ -1,7 +1,7 @@
 
 
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import logo from "../assets/Logo.png";
 import { AiOutlineDashboard } from "react-icons/ai";
@@ -21,6 +21,32 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+
+  const [dateTime, setDateTime] = useState(() => {
+    const now = new Date();
+    return now.toLocaleString("en-IN", {
+      dateStyle: "medium",
+      timeStyle: "medium",
+      hour12: false
+    });
+  });
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const now = new Date();
+      setDateTime(
+        now.toLocaleString("en-IN", {
+          dateStyle: "medium",
+          timeStyle: "medium",
+          hour12: false
+        })
+      );
+    }, 1000);
+
+    return () => clearInterval(id);
+  }, []);
+
+  
   const modules = [
     { name: "Dashboard", path: "/", icon: <AiOutlineDashboard />, roles: ["super_admin", "admin", "user"] },
     // { name: "Manage Users", path: "/users", icon: <AiOutlineDashboard />, roles: ["super_admin"] },
@@ -65,6 +91,15 @@ export default function Dashboard() {
           </a>
 
           <div className="ms-auto d-flex align-items-center gap-2">
+
+              <div className="d-flex align-items-center me-2">
+  <span
+    className="text-muted small"
+    style={{ whiteSpace: "nowrap", fontVariantNumeric: "tabular-nums" }}
+  >
+    {dateTime}
+  </span>
+</div>
             <UserProfile />
 
           </div>

@@ -7,9 +7,10 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchCategories, addCategory, deleteCategory } from "../redux/categorySlice";
 import { setAuthToken } from "../services/userService";
 import { updateCategory } from "../redux/categorySlice";
-
+import HistoryModal from "../components/HistoryModal";
 import { FaCartPlus } from "react-icons/fa";
 import ReusableTable,  {createCustomRoleActions, createRoleBasedActions} from "../components/ReusableTable"; // Import the reusable table
+import API from "../api/axiosInstance";
 
 const Category = () => {
   const dispatch = useDispatch()
@@ -41,6 +42,8 @@ const Category = () => {
   const [brands, setBrands] = useState([]);
  const [searchName, setSearchName] = useState("");
 const [searchCode, setSearchCode] = useState("");
+const [showHistoryModal,setShowHistoryModal]=useState(false)
+const [historyInfo,setHistoryInfo]=useState(null)
 
   const [editingCategory, setEditingCategory] = useState(null)
 
@@ -192,7 +195,11 @@ const tableActions = createCustomRoleActions({
    },
    delete: { 
      show: () => ["super_admin", "admin"].includes(role) // Only admin/super_admin can delete
-   }})
+   },
+   history:{
+    show :() =>["super_admin","admin","user"].includes(role)
+   }
+  })
 
   // Handle table actions
   const handleTableAction = (actionType, category) => {
@@ -201,7 +208,56 @@ const tableActions = createCustomRoleActions({
     } else if (actionType === "delete") {
       handleDelete(category._id);
     }
+    else if(actionType === "history")
+      handleHistory(category)
   };
+
+
+ 
+const handleHistory = async (category) => {
+  if (!category?._id) {
+    console.error("Category ID missing:", category);
+setHistoryInfo({
+      createdBy:category?.created_by?.name || category?.created_by?.username || category?.created_by?.email ||"Unknown",
+      createdAt: category?.createdAt || null,
+      updatedBy: "-",
+      updatedAt: null,
+      oldValues: null,
+      newValues: category,
+    });
+setShowHistoryModal(true);
+    return;
+  }
+try {
+    const res = await API.get(`/categories/${category._id}`, {
+      headers: {Authorization: `Bearer ${user?.token}`,},
+    });
+
+    const c = res.data;
+ const createdByUser = c?.created_by?.name || c?.created_by?.username ||c?.created_by?.email ||"Unknown";
+const updatedByUser =c?.updated_by?.name || c?.updated_by?.username ||c?.updated_by?.email ||"-";
+setHistoryInfo({
+      createdBy: createdByUser,
+      createdAt: c?.createdAt || category?.createdAt || null,
+      updatedBy: updatedByUser,
+      updatedAt: c?.updatedAt || null,
+      oldValues: c?.oldValues || null,
+      newValues: c?.newValues || c,
+    });
+  } catch (err) {
+    console.warn(`Failed to fetch category history ${category._id}:`, err);
+setHistoryInfo({
+      createdBy:category?.created_by?.name ||category?.created_by?.username ||category?.created_by?.email ||"Unknown",
+      createdAt: category?.createdAt || null,
+      updatedBy:category?.updated_by?.name ||category?.updated_by?.username ||category?.updated_by?.email ||"-",
+      updatedAt: category?.updatedAt || null,
+      oldValues: null,
+      newValues: category,
+    });
+  } finally {
+    setShowHistoryModal(true);
+  }
+};
 
   return (
     <div className="container mt-4">
@@ -210,7 +266,6 @@ const tableActions = createCustomRoleActions({
         <b>Categories</b>
       </h2>
 
-      {/* Action Buttons - Above the category area */}
       <div className="row mb-4">
         <div className="col-12">
           <div className="d-flex gap-2">
@@ -226,8 +281,6 @@ const tableActions = createCustomRoleActions({
           </div>
         </div>
       </div>
-
-      {/* Category Form Popup/Modal */}
       {showCategoryForm && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
@@ -355,7 +408,6 @@ const tableActions = createCustomRoleActions({
         </div>
       )}
 
-      {/* Reusable Table Component - Replaces the old table */}
   <ReusableTable
   data={filteredCategories}
   columns={tableColumns}
@@ -375,6 +427,7 @@ const tableActions = createCustomRoleActions({
     setSearchCode("");
   }}
 />
+<HistoryModal open={showHistoryModal} onClose={()=>setShowHistoryModal(false)} data={historyInfo} />
     </div>
   );
 };  

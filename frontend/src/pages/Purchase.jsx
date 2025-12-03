@@ -11,6 +11,13 @@ import { fetchwarehouses } from "../redux/warehouseSlice";
 import { fetchsuppliers } from "../redux/supplierSlice";
 import { setAuthToken } from "../services/userService";
 import ReusableTable,{createCustomRoleActions} from "../components/ReusableTable"; // Import the reusable table
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
+
 
 const Purchase = () => {
   const dispatch = useDispatch()
@@ -389,6 +396,47 @@ const [searchdate,setSearchDate]=useState("")
         }
       };
 
+  const purchaseItemColumns = [
+    {
+      headerName: "Product",
+      field: "product_id",
+      editable: true,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: {
+        values: products.map((p) => p._id),
+      },
+      valueFormatter: (params) => {
+        const prod = products.find((p) => p._id === params.value);
+        return prod ? prod.name : "Select Product";
+      },
+    },
+    { headerName: "Batch No", field: "batch_no", editable: true },
+    { headerName: "MFG Date", field: "mfg_date", editable: true },
+    { headerName: "EXP Date", field: "exp_date", editable: true },
+    { headerName: "Qty", field: "qty", editable: true, valueParser: (v) => Number(v) || 0 },
+    { headerName: "Unit Price", field: "unit_price", editable: true, valueParser: (v) => Number(v) || 0 },
+    { headerName: "Discount", field: "discount", editable: true, valueParser: (v) => Number(v) || 0 },
+    { headerName: "Tax", field: "tax", editable: true, valueParser: (v) => Number(v) || 0 },
+    { headerName: "Line Total",
+      field: "line_total",
+      valueGetter: (params) => {
+        const { qty, unit_price, discount, tax } = params.data;
+        const total = (qty || 0) * (unit_price || 0) - (discount || 0) + (tax || 0);
+        return Number.isFinite(total) ? total.toFixed(2) : "0.00";
+      },
+    },
+    {
+      headerName: "Action",
+      field: "action",
+      cellRenderer: (params) => (
+        <button className="btn btn-sm" onClick={() => removeItem(params.node.rowIndex)}>
+          <MdDeleteForever className="text-danger" />
+        </button>
+      ),
+      width: 110,
+    },
+  ];
+
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
@@ -454,50 +502,37 @@ const [searchdate,setSearchDate]=useState("")
 
                   <div className="col-12">
                     <h5>Purchase Items</h5>
-                    <div className="table-responsive">
-                      <table className="table table-bordered">
-                        <thead className="table-dark">
-                          <tr>
-                            <th>Product</th>
-                            <th>Batch No</th>
-                            <th>MFG Date</th>
-                            <th>EXP Date</th>
-                            <th>Qty</th>
-                            <th>Unit Price</th>
-                            <th>Discount</th>
-                            <th>Tax</th>
-                            <th>Line Total</th>
-                            <th>Action</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {purchase.items.map((item, index) => (
-                            <tr key={index}>
-                              <td>
-                                <select name="product_id" value={item.product_id} className="form-select" onChange={(e) => handleItemChange(index, e)} required>
-                                  <option value="">Select Product</option>
-                                  {products.map((p) => (<option key={p._id} value={p._id}>{p.name}</option>))}
-                                </select>
-                              </td>
-                              <td><input name="batch_no" value={item.batch_no} onChange={(e) => handleItemChange(index, e)} className="form-control" /></td>
-                              <td><input type="date" name="mfg_date" value={item.mfg_date} onChange={(e) => handleItemChange(index, e)} className="form-control" /></td>
-                              <td><input type="date" name="exp_date" value={item.exp_date} onChange={(e) => handleItemChange(index, e)} className="form-control" /></td>
-                              <td><input type="number" name="qty" value={item.qty} onChange={(e) => handleItemChange(index, e)} className="form-control" /></td>
-                              <td><input type="number" name="unit_price" value={item.unit_price} onChange={(e) => handleItemChange(index, e)} className="form-control" /></td>
-                              <td><input type="number" name="discount" value={item.discount} onChange={(e) => handleItemChange(index, e)} className="form-control" /></td>
-                              <td><input type="number" name="tax" value={item.tax} onChange={(e) => handleItemChange(index, e)} className="form-control" /></td>
-                              <td>
-                                <input type="number" name="line_total" value={((Number(item.qty) || 0) * (Number(item.unit_price) || 0) - (Number(item.discount) || 0) + (Number(item.tax) || 0)).toFixed(2)} className="form-control" disabled />
-                              </td>
-                              <td>
-                                <button type="button" className="btn btn-sm" onClick={() => removeItem(index)}>
-                                  <MdDeleteForever className="text-danger" /> 
-                                </button>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
+                   <div
+                      className="ag-theme-alpine"
+                      style={{
+                        width: "100%",
+                        borderRadius: "10px",
+                        overflow: "hidden",
+                        border: "1px solid #ddd",
+                      }}
+                    >
+                      <AgGridReact
+                        rowData={purchase.items}
+                        columnDefs={purchaseItemColumns}
+                        defaultColDef={{ resizable: true, sortable: true, filter: true, editable: true }}
+                        domLayout="autoHeight"
+                        headerHeight={45}
+                        rowHeight={40}
+                        suppressCellFocus={true}
+                        onCellValueChanged={(params) => {
+                          // sync row edits back to state and recompute totals
+                          const updatedItems = [...purchase.items];
+                          updatedItems[params.node.rowIndex] = {
+                            ...params.data,
+                            // ensure numeric fields are numbers
+                            qty: Number(params.data.qty) || 0,
+                            unit_price: Number(params.data.unit_price) || 0,
+                            discount: Number(params.data.discount) || 0,
+                            tax: Number(params.data.tax) || 0,
+                          };
+                          calculateTotalsFromItems(updatedItems);
+                        }}
+                      />
                     </div>
                     <button type="button" className="btn add text-white  btn-sm" onClick={addItem}>+ Add Item</button>
                   </div>

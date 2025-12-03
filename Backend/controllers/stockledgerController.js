@@ -1,9 +1,4 @@
-
-
 const Stockledger = require("../models/Stockledger");
-
-
-
 exports.getStockledger=async (req, res) => {
   try {
     let ledgers
@@ -16,8 +11,6 @@ exports.getStockledger=async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 }
-
-
 exports.postStockledger= async (req, res) => {
   try {
     const ledger = new Stockledger({...req.body,created_by_role:req.user.role});

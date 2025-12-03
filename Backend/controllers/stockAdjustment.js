@@ -7,7 +7,7 @@ exports.getStockAdjustment = async (req, res) => {
       stocks=(await StockAdj.find({created_by_role:{$in:["super_admin","admin","user"]}})).populate('items.product_id')
     }
     else{
-         stocks = await StockAdj.find().populate('warehouse_id').populate('items.product_id')
+      stocks = await StockAdj.find().populate('warehouse_id').populate('items.product_id')
     }
     
     res.json(stocks)

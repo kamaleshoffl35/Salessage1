@@ -158,14 +158,14 @@ const Supplier_Payment = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
+      <h2 className="mb-4 d-flex align-items-center fs-3">
         <b>Supplier Receipts</b>
       </h2>
 
     
       <div className="row mb-4">
         <div className="col-md-6">
-          <label className="form-label">Select Supplier</label>
+          <label className="form-label">Select Supplier <span className="text-danger">*</span></label>
           <select 
             className="form-select bg-light" 
             value={selectedSupplier} 
@@ -174,7 +174,22 @@ const Supplier_Payment = () => {
             <option value="">-- Select Supplier --</option>
             {suppliers.map(s => (
               <option key={s._id} value={s._id}>
-                {s.name} - {s.phone}
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </div>
+         <div className="col-md-6">
+          <label className="form-label">Select Phone No </label>
+          <select 
+            className="form-select bg-light" 
+            value={selectedSupplier} 
+            onChange={handleSupplierChange}
+          >
+            <option value="">-- Select Phone --</option>
+            {suppliers.map(s => (
+              <option key={s._id} value={s._id}>
+                {s.phone}
               </option>
             ))}
           </select>

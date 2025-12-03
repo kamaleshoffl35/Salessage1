@@ -151,16 +151,14 @@ const Customer_Payment = () => {
 
   return (
     <div className="container mt-4">
-      <h2 className="mb-4 d-flex align-items-center fs-5">
-        <span className="me-2 d-flex align-items-center" style={{ color: "#4d6f99ff" }}>
-          <MdAttachMoney size={24} />
-        </span>
-        <b>CUSTOMER RECEIPTS</b>
+      <h2 className="mb-4 d-flex align-items-center fs-3">
+        
+        <b>Customer Receipts</b>
       </h2>
 
       <div className="row mb-4">
         <div className="col-md-6">
-          <label className="form-label">Select Customer</label>
+          <label className="form-label">Select Customer <span className="text-danger">*</span></label>
           <select 
             className="form-select bg-light" 
             value={selectedCustomer} 
@@ -169,7 +167,22 @@ const Customer_Payment = () => {
             <option value="">-- Select Customer --</option>
             {customers.map(c => (
               <option key={c._id} value={c._id}>
-                {c.name} - {c.phone}
+                {c.name} 
+              </option>
+            ))}
+          </select>
+        </div>
+        <div className="col-md-6">
+          <label className="form-label">Select Phone(Optional)</label>
+          <select 
+            className="form-select bg-light" 
+            value={selectedCustomer} 
+            onChange={handleCustomerChange}
+          >
+            <option value="">-- Select Phone No--</option>
+            {customers.map(c => (
+              <option key={c._id} value={c._id}>
+                {c.phone} 
               </option>
             ))}
           </select>

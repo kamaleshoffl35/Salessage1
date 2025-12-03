@@ -1,6 +1,5 @@
 // const SupplierPayment = require("../models/SupplierPayment")
 // const Supplier = require("../models/Supplier");
-
 exports.getSupplierPayments = async (req, res) => {
 
     try {

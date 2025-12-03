@@ -1,7 +1,4 @@
-
 const Tax = require("../models/Tax");
-
-
 
 exports.getTaxes = async (req, res) => {
   try{
@@ -20,9 +17,6 @@ exports.getTaxes = async (req, res) => {
     
 }
   
-
-
-
 exports.addTax = async (req, res) => {
   try {
     const tax = new Tax({...req.body,created_by_role:req.user.role})
@@ -33,7 +27,6 @@ exports.addTax = async (req, res) => {
     res.status(400).json({ error: err.message })
   }
 }
-
 
 exports.deletetax = async (req, res) => {
   try {

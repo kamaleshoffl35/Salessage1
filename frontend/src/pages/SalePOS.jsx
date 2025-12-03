@@ -15,6 +15,12 @@ import autoTable from "jspdf-autotable";
 import logo from "../assets/img/image_360.png";
 import ReusableTable, {createRoleBasedActions} from '../components/ReusableTable';
 
+import { AgGridReact } from "ag-grid-react";
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+ModuleRegistry.registerModules([AllCommunityModule]);
+
 const SalePOS = () => {
   const dispatch = useDispatch();
   const { items: sales, status } = useSelector((state) => state.sales);
@@ -494,6 +500,111 @@ const SalePOS = () => {
     setShowSaleForm({ ...form, items });
   };
 
+    const saleItemColumns = [
+    {
+      headerName: "Product",
+      field: "product_id",
+      editable: true,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: products.map((p) => p._id) },
+      valueFormatter: (params) => {
+        const prod = products.find((p) => p._id === params.value);
+        return prod ? prod.name : "Select Product";
+      },
+    },
+    { headerName: "Qty", field: "qty", editable: true, valueParser: (v) => Number(v) || 0, width: 100 },
+    { headerName: "Unit Price", field: "unit_price", editable: true, valueParser: (v) => Number(v) || 0, width: 140 },
+    { headerName: "Discount %", field: "discount_percent", editable: true, valueParser: (v) => Number(v) || 0, width: 140 },
+    {
+      headerName: "Tax",
+      field: "tax_rate_id",
+      editable: true,
+      cellEditor: "agSelectCellEditor",
+      cellEditorParams: { values: taxes.map((t) => t._id) },
+      valueFormatter: (params) => {
+        const tax = taxes.find((t) => t._id === params.value);
+        return tax ? tax.name : "Select Tax";
+      },
+      width: 160,
+    },
+    {
+      headerName: "Line Total",
+      field: "line_total",
+      valueGetter: (params) => {
+        const d = params.data || {};
+        const qty = Number(d.qty) || 0;
+        const price = Number(d.unit_price) || 0;
+        const discount = Number(d.discount_percent) || 0;
+        const subtotal = qty * price;
+        const discountAmount = subtotal * (discount / 100);
+        const taxableAmount = subtotal - discountAmount;
+        let cgst = 0,
+          sgst = 0,
+          igst = 0;
+        if (d.tax_rate_id) {
+          const tax = taxes.find((t) => t._id === d.tax_rate_id);
+          if (tax) {
+            cgst = taxableAmount * (tax.cgst_percent / 100);
+            sgst = taxableAmount * (tax.sgst_percent / 100);
+            igst = taxableAmount * (tax.igst_percent / 100);
+          }
+        }
+        const total = taxableAmount + cgst + sgst + igst;
+        return Number.isFinite(total) ? total.toFixed(2) : "0.00";
+      },
+      width: 140,
+    },
+    {
+      headerName: "Action",
+      field: "action",
+      cellRenderer: (params) => {
+        return (
+          <button
+            type="button"
+            className="btn btn-sm"
+            onClick={() => {
+              const idx = params.node.rowIndex;
+              const items = [...form.items];
+              items.splice(idx, 1);
+              setForm((prev) => ({ ...prev, items }));
+            }}
+          >
+            <MdDeleteForever className="text-danger" />
+          </button>
+        );
+      },
+      width: 110,
+    },
+  ];
+
+  const onSaleItemCellChanged = (params) => {
+    const rowIndex = params.node.rowIndex;
+    const updatedRow = { ...params.data };
+
+    // If product changed, auto-fill unit_price from products list
+    if (params.colDef.field === "product_id") {
+      const prod = products.find((p) => p._id === updatedRow.product_id);
+      if (prod) {
+        updatedRow.unit_price = Number(prod.sale_price || 0);
+      }
+    }
+
+    // Recalculate line totals and tax amounts for this row
+    const recalculated = calculateLineTotal({
+      ...updatedRow,
+      qty: Number(updatedRow.qty) || 0,
+      unit_price: Number(updatedRow.unit_price) || 0,
+      discount_percent: Number(updatedRow.discount_percent) || 0,
+      tax_rate_id: updatedRow.tax_rate_id,
+    });
+
+    const updatedItems = [...form.items];
+    updatedItems[rowIndex] = recalculated;
+
+    setForm((prev) => ({ ...prev, items: updatedItems }));
+    // totals will recalc via useEffect watching form.items
+  };
+
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
@@ -579,55 +690,17 @@ const SalePOS = () => {
 
                
                   <h5 className="mt-4">Sale Items</h5>
-                  <div className="table-responsive">
-                    <table className="table table-bordered table-striped">
-                      <thead className="table-dark">
-                        <tr>
-                          <th>Product</th>
-                          <th style={{ width: "80px" }}>Qty</th>
-                          <th style={{ width: "120px" }}>Unit Price</th>
-                          <th style={{ width: "120px" }}>Discount %</th>
-                          <th style={{ width: "150px" }}>Tax</th>
-                          <th style={{ width: "120px" }}>Line Total</th>
-                          <th style={{ width: "120px" }}>Action</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {form.items.map((item, index) => (
-                          <tr key={index}>
-                            <td>
-                              <select name="product_id" value={item.product_id} onChange={(e) => handleItemChange(index, e)} className="form-select bg-light" >
-                                <option value="">Select Product</option>
-                                {products.map((p) => ( <option key={p._id} value={p._id}>{p.name}</option> ))}
-                              </select>
-                            </td>
-                            <td>
-                              <input type="number"  name="qty" value={item.qty} onChange={(e) => handleItemChange(index, e)} className="form-control bg-light" />
-                            </td>
-                            <td>
-                              <input type="number" name="unit_price" value={item.unit_price} onChange={(e) => handleItemChange(index, e)}  className="form-control bg-light"/>
-                            </td>
-                            <td>
-                              <input type="number" name="discount_percent" value={item.discount_percent} onChange={(e) => handleItemChange(index, e)} className="form-control bg-light"/>
-                            </td>
-                            <td>
-                              <select name="tax_rate_id" value={item.tax_rate_id} onChange={(e) => handleItemChange(index, e)} className="form-select bg-light" >
-                                <option value="">Select Tax</option>
-                                {taxes.map((t) => ( <option key={t._id} value={t._id}>{t.name}</option> ))}
-                              </select>
-                            </td>
-                            <td>
-                              <input type="text" value={item.line_total.toFixed(2)} readOnly className="form-control bg-light"/>
-                            </td>
-                            <td>
-                                                            <button type="button" className="btn btn-sm" onClick={() => removeItem(index)}>
-                                                              <MdDeleteForever className="text-danger" /> 
-                                                            </button>
-                                                          </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                   <div className="ag-theme-alpine" style={{ width: "100%", borderRadius: "10px", overflow: "hidden", border: "1px solid #ddd" }}>
+                    <AgGridReact
+                      rowData={form.items}
+                      columnDefs={saleItemColumns}
+                      defaultColDef={{ resizable: true, sortable: true, filter: true, editable: true }}
+                      domLayout="autoHeight"
+                      headerHeight={45}
+                      rowHeight={40}
+                      suppressCellFocus={true}
+                      onCellValueChanged={onSaleItemCellChanged}
+                    />
                   </div>
                   <button type="button" onClick={addItem} className="btn add text-white mt-2">Add Item </button>
                  

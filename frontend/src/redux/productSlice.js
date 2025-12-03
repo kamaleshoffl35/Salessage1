@@ -9,10 +9,14 @@ export const fetchProducts = createAsyncThunk("products/fetchAll", async () => {
 });
 
 export const addProduct = createAsyncThunk("products/addProduct", async (product) => {
-  const res = await API.post(API_URL, product);
+  // Remove fields that backend should generate
+  const filtered = { ...product };
+  delete filtered.created_by;
+  delete filtered.created_by_role;
+
+  const res = await API.post(API_URL, filtered);
   return res.data;
 });
-
 export const deleteProduct = createAsyncThunk("products/delete", async (id) => {
   await API.delete(`${API_URL}/${id}`);
   return id;

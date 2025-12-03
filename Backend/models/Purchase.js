@@ -1,6 +1,4 @@
-
 const mongoose = require("mongoose");
-
 const purchaseItemSchema = new mongoose.Schema({
   product_id:{type: mongoose.Schema.Types.ObjectId,ref: "Product", required: true},
   batch_no:{type:String},
@@ -23,7 +21,6 @@ const purchaseSchema = new mongoose.Schema({
   items:[purchaseItemSchema],
   subtotal:{type:Number,default:0},
   discount_amount:{type:Number,default:0},
-
   other_charges:{type:Number,default:0},
   round_off:{type:Number,default:0},
   grand_total:{type:Number,default:0},

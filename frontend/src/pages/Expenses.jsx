@@ -99,10 +99,15 @@ const Expenses = () => {
 
   const filteredExpenses = (expenses || []).filter((e) => {
     const date = String(e.expenseDate || "").toLowerCase()
-    const name = e.warehouseId?.toLowerCase() || ""
+    let warehouseName = "";
+  if (typeof e.warehouseId === "string") {
+    warehouseName = e.warehouseId.toLowerCase();
+  } else if (typeof e.warehouseId === "object" && e.warehouseId !== null) {
+    warehouseName = (e.warehouseId.store_name || "").toLowerCase();
+  }
     const expense = e.expenseHead?.toLowerCase() || ""
     const matchdate = searchDate.trim() === "" || date.includes(searchDate.toLowerCase())
-    const matchname = searchWarehouse.trim() === " " || name.includes(searchWarehouse.toLowerCase())
+    const matchname = searchWarehouse.trim() === " " || warehouseName.includes(searchWarehouse.toLowerCase())
     const matchexpense = searchExpense.trim() === " " || expense.includes(searchExpense.toLowerCase())
     return matchdate && matchname && matchexpense
    

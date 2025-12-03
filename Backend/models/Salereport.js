@@ -1,5 +1,4 @@
 const mongoose = require("mongoose");
-
 const SaleSchema = new mongoose.Schema(
   {
     from_date: { type: Date, required: true },

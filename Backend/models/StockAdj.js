@@ -1,6 +1,4 @@
 const mongoose = require("mongoose")
-
-
 const stockAdjSchema = new mongoose.Schema({
     warehouse_id:{type:mongoose.Schema.Types.ObjectId, ref:'Warehouse'},
     created_by_role:{type:String,required:true},
