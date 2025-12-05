@@ -1,12 +1,10 @@
 import API from "../api/axiosInstance";
 
 const API_URL = "/users";
-
-// Update the interceptor to handle public routes properly
 API.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Don't redirect for public routes
+  
     const url = error.config?.url || '';
     const isPublicRoute = 
       url.includes('check-super-admin') || 
@@ -41,7 +39,6 @@ export const setAuthToken = (token) => {
 };
 
 export const checkSuperAdminExists = () => {
-  // Create a new axios instance without interceptors for this public call
   const publicAPI = API.create();
   delete publicAPI.defaults.headers.common["Authorization"];
   
@@ -52,7 +49,6 @@ export const checkSuperAdminExists = () => {
     })
     .catch((error) => {
       console.error("Error in checkSuperAdminExists:", error);
-      // Return default response without throwing error
       return { superAdminExists: true };
     });
 };
@@ -69,7 +65,7 @@ export const register = (form) => {
     });
 };
 
-// ... rest of your functions remain the same
+
 export const login = async (email, password) => {
   const publicAPI = API.create();
   delete publicAPI.defaults.headers.common["Authorization"];

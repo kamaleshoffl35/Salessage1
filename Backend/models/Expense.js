@@ -6,7 +6,15 @@ const ExpenseSchema = new mongoose.Schema({
     warehouseId:{type:mongoose.Schema.Types.ObjectId,ref:"Warehouse",required:true},
     expenseHead:{type:String,enum:["RENT","EB BILL", "SALARY"],required:true},
     amount:{type:Number, required:true},
-    notes:{type:String}
+    notes:{type:String},
+    created_by:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:false},
+    updated_by:{type:mongoose.Schema.Types.ObjectId,ref:"User"},
+    updated_by_role:String,
+    updated_At:Date,
+    history:{
+        oldValue:String,
+        newValue:String,
+    }
 },
 {timestamps:true})
 

@@ -1,7 +1,7 @@
-const Sale = require('../models/Sale');
-const StockLedger = require('../models/Stockledger');
-const Expense = require('../models/Expense');
-const mongoose = require('mongoose');
+const Sale = require("../models/Sale");
+const StockLedger = require("../models/Stockledger");
+const Expense = require("../models/Expense");
+const mongoose = require("mongoose");
 
 exports.getProfitLoss = async (req, res) => {
   try {
@@ -28,13 +28,12 @@ exports.getProfitLoss = async (req, res) => {
 
     for (const sale of sales) {
       for (const item of sale.items) {
-     
         const stockFilter = {
           productId: new mongoose.Types.ObjectId(item.product_id),
           txnType: "PURCHASE",
           balanceQty: { $gt: 0 },
         };
-        if (warehouseId && warehouseId !== '') {
+        if (warehouseId && warehouseId !== "") {
           stockFilter.warehouseId = new mongoose.Types.ObjectId(warehouseId);
         }
 
@@ -61,10 +60,10 @@ exports.getProfitLoss = async (req, res) => {
         $lte: new Date(toDate),
       };
     }
-    if (warehouseId && warehouseId !== '') {
+    if (warehouseId && warehouseId !== "") {
       expenseFilter.warehouseId = new mongoose.Types.ObjectId(warehouseId);
     }
-const expensesList = await Expense.find(expenseFilter).lean();
+    const expensesList = await Expense.find(expenseFilter).lean();
     const expenses = expensesList.reduce((sum, e) => sum + e.amount, 0);
     const grossProfit = netSales - cogs;
     const netProfit = grossProfit - expenses;
@@ -77,18 +76,18 @@ const expensesList = await Expense.find(expenseFilter).lean();
       expenses,
       netProfit,
       details: [
-        { category: "Sales Revenue", amount: totalSales, notes: "Total sales before discounts" },
+        {
+          category: "Sales Revenue",
+          amount: totalSales,
+          notes: "Total sales before discounts",
+        },
         { category: "Net Sales", amount: netSales, notes: "After discounts" },
         { category: "COGS", amount: cogs, notes: "Cost of goods sold" },
         { category: "Expenses", amount: expenses, notes: "Rent, salary, etc." },
       ],
     });
-
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: err.message });
   }
 };
-
-
-

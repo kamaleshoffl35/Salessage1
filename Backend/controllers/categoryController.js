@@ -59,8 +59,8 @@ exports.updateCategory = async (req, res) => {
     allowedFields.updated_by_role = req.user.role;
     allowedFields.updatedAt = new Date();
     allowedFields.history = {
-      oldValue: oldCategory.name,       // old name
-      newValue: req.body.name || oldCategory.name, // new name
+      oldValue: oldCategory.name,       
+      newValue: req.body.name || oldCategory.name, 
     };
 
     const updated = await Category.findByIdAndUpdate(

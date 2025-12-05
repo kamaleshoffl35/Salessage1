@@ -1,15 +1,10 @@
-// import React, { useEffect, useState } from 'react';
-import { IoIosContact } from "react-icons/io";
-import { FaRegSave,} from "react-icons/fa";
-import { MdClose, MdAdd,  } from "react-icons/md";
-
 import 'react-phone-input-2/lib/style.css';
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addSupplier, deleteSupplier, fetchsuppliers, updateSupplier } from '../redux/supplierSlice';
 import { setAuthToken } from '../services/userService';
-import ReusableTable, {createCustomRoleActions, } from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions, } from '../components/ReusableTable'; 
 import { useState,useEffect } from "react";
 import API from "../api/axiosInstance";
 import HistoryModal from "../components/HistoryModal";

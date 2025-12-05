@@ -1,14 +1,10 @@
-
-
 import { useEffect, useState } from 'react';
-import { MdOutlineWarehouse, MdAdd, MdClose, } from "react-icons/md";
-import { FaRegSave,  } from "react-icons/fa";
 import PhoneInput from 'react-phone-input-2';
 import { State, Country } from 'country-state-city';
 import { useDispatch, useSelector } from 'react-redux';
 import { addwarehouse, deletewarehouse, fetchwarehouses, updateWarehouse } from '../redux/warehouseSlice';
 import { setAuthToken } from '../services/userService';
-import ReusableTable, {createCustomRoleActions,} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions,} from '../components/ReusableTable'; 
 import API from '../api/axiosInstance';
 import HistoryModal from '../components/HistoryModal';
 

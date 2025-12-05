@@ -1,11 +1,8 @@
 import  { useEffect, useState } from "react";
-import { GiTakeMyMoney, } from "react-icons/gi";
 import {  MdReceipt } from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchsuppliers } from "../redux/supplierSlice";
-import {
-  fetchpayments,
-} from "../redux/supplierpaymentSlice";
+import {fetchpayments,} from "../redux/supplierpaymentSlice";
 import { fetchpurchases } from "../redux/purchaseSlice";
 import { setAuthToken } from "../services/userService";
 import ReusableTable from "../components/ReusableTable";

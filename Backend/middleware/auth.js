@@ -7,19 +7,18 @@ const protect = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ error: "Not authorized, token missing" });
     }
-const decoded = jwt.verify(token, process.env.JWT_SECRET);
-const user = await User.findById(decoded.id).select("-password");
-if (!user) {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id).select("-password");
+    if (!user) {
       return res.status(401).json({ error: "User not found" });
     }
-req.user = user; 
-next();
+    req.user = user;
+    next();
   } catch (err) {
     console.error(err);
     return res.status(401).json({ error: "Not authorized" });
   }
 };
-
 
 const authorize = (...roles) => {
   return (req, res, next) => {
@@ -34,6 +33,5 @@ const authorize = (...roles) => {
     next();
   };
 };
-
 
 module.exports = { protect, authorize };

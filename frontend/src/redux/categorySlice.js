@@ -56,7 +56,6 @@ const categorySlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      // Fetch Categories
       .addCase(fetchCategories.pending, (state) => {
         state.status = "loading";
       })
@@ -68,18 +67,12 @@ const categorySlice = createSlice({
         state.status = "failed";
         state.error = action.payload || action.error.message;
       })
-
-      // Add Category
       .addCase(addCategory.fulfilled, (state, action) => {
         state.items.push(action.payload);
       })
-
-      // Delete Category
       .addCase(deleteCategory.fulfilled, (state, action) => {
         state.items = state.items.filter((c) => c._id !== action.payload);
       })
-
-      // Update Category
       .addCase(updateCategory.fulfilled, (state, action) => {
         const index = state.items.findIndex((c) => c._id === action.payload._id);
         if (index !== -1) {

@@ -1,24 +1,18 @@
-
-import { MdClose, MdAdd } from 'react-icons/md';
-import { GiMoneyStack } from "react-icons/gi";
-import { FaRegSave } from 'react-icons/fa';
 import { useState, useEffect } from 'react';
-
 import { useDispatch, useSelector } from "react-redux";
 import { fetchwarehouses } from '../redux/warehouseSlice';
 import { addexpense, deleteexpense, fetchexpenses, updateexpense } from '../redux/expenseSlice';
 import { setAuthToken } from '../services/userService';
-import ReusableTable, {createCustomRoleActions} from '../components/ReusableTable'; // Import the reusable table
-
+import ReusableTable, {createCustomRoleActions} from '../components/ReusableTable'; 
+import API from '../api/axiosInstance';
+import HistoryModal from '../components/HistoryModal';
 const Expenses = () => {
   const dispatch = useDispatch();
   const { items: expenses, status } = useSelector((state) => state.expenses);
   const { items: warehouses } = useSelector((state) => state.warehouses);
-
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role;
-
-  const [form, setForm] = useState({
+const [form, setForm] = useState({
     expenseDate: "",
     warehouseId: "",
     expenseHead: "",
@@ -31,6 +25,9 @@ const Expenses = () => {
   const [searchDate,setSearchDate]=useState("")
   const [searchWarehouse,setSearchWarehouse]=useState("")
   const [searchExpense,setSearchExpense]=useState("")
+
+  const [showHistoryModal,setShowHistoryModal]=useState(false)
+  const [historyInfo,setHistoryInfo]=useState(null)
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.token) console.error("No user found. Please login.");
@@ -161,15 +158,65 @@ const Expenses = () => {
      },
      delete: { 
        show: () => ["super_admin", "admin"].includes(role)
-     }})
-      const handleTableAction = (actionType, category) => {
+     },
+    history :{
+      show:()=>["super_admin","admin","user"].includes(role)
+    }
+    })
+      const handleTableAction = (actionType, expense) => {
         if (actionType === "edit") {
-          handleEdit(category);
+          handleEdit(expense);
         } else if (actionType === "delete") {
-          handleDelete(category._id);
+          handleDelete(expense._id);
+        }
+        else if(actionType === "history"){
+           handleHistory(expense)
         }
       };
 
+
+  const handleHistory=async (expense) => {
+    if(!expense){
+      console.error("Expense not found",expense)
+      setHistoryInfo({
+        createdBy:expense?.created_by?.name || expense?.created_by?.username || expense?.created_by?.email || "Unknown",
+        createdAt:expense?.createdAt || null,
+        updatedBy:"-",
+        updatedAt:null
+      })
+    }
+    try{
+      const res=await API.get(`/expenses/${expense._id}`,{
+        headers:{Authorization:`Bearer ${user?.token}`}
+      })
+      const e=res.data
+      const createdByUser=e?.created_by?.username || e?.created_by?.name || e?.created_by?.email || "Unknown"
+      const updatedByUser=e?.updated_by?.username || e?.updated_by?.name || e?.updated_by?.email ||  "-"
+      setHistoryInfo({
+        createdBy:createdByUser,
+        createdAt:expense?.createdAt || e?.createdAt || null,
+        updatedBy:updatedByUser,
+        updatedAt:expense?.updatedAt || e?.updatedAt || null,
+        oldValue:e?.history?.oldValue,
+        newValue:e?.history?.newValue,
+      }) 
+      
+    }
+    catch(err){
+      console.warn(`Failed to fetch the Expense history ${expense._id}`)
+      setHistoryInfo({
+        createdBy:expense?.created_by?.name || expense?.created_by?.username || expense?.created_by?.email || "Unknown",
+        createAt:expense?.createdAt || null,
+        updatedBy:expense?.updated_by?.name || expense?.updated_by?.username || expense?.updated_by?.email || "-",
+        updatedAt:expense?.updatedAt || null,
+        oldValue:null,
+        newValue:expense,
+      })
+    }
+    finally{
+      setShowHistoryModal(true)
+    }
+  }
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
@@ -313,6 +360,7 @@ const Expenses = () => {
           setSearchExpense("")
         }}
       />
+      <HistoryModal open={showHistoryModal} onClose={()=>setShowHistoryModal(false)} data={historyInfo}/>
     </div>
   );
 };

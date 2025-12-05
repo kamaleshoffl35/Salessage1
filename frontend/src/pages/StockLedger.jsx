@@ -1,15 +1,20 @@
-
-
-import 'bootstrap/dist/css/bootstrap.min.css';
-import { useState, useEffect } from 'react';
-import { MdOutlineInventory2, MdClose, MdAdd } from 'react-icons/md';
-import {  FaRegSave } from 'react-icons/fa';
+import "bootstrap/dist/css/bootstrap.min.css";
+import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from '../redux/productSlice';
-import { fetchwarehouses } from '../redux/warehouseSlice';
-import { addstock, deletestock, fetchstocks, updatestock } from '../redux/stockledgerSlice';
-import { setAuthToken } from '../services/userService';
-import ReusableTable,{createCustomRoleActions} from '../components/ReusableTable'; 
+import { fetchProducts } from "../redux/productSlice";
+import { fetchwarehouses } from "../redux/warehouseSlice";
+import {
+  addstock,
+  deletestock,
+  fetchstocks,
+  updatestock,
+} from "../redux/stockledgerSlice";
+import { setAuthToken } from "../services/userService";
+import ReusableTable, {
+  createCustomRoleActions,
+} from "../components/ReusableTable";
+import API from "../api/axiosInstance";
+import HistoryModal from "../components/HistoryModal";
 
 const StockLedger = () => {
   const dispatch = useDispatch();
@@ -34,11 +39,12 @@ const StockLedger = () => {
   });
 
   const [editingStockLedger, setEditingStockLedger] = useState(null);
-const [searchproduct,setSearchproduct]=useState("")
-const [searchWarehouse,setSearchWarehouse]=useState("")
-const [searchType,setSearchType]=useState("")
+  const [searchproduct, setSearchproduct] = useState("");
+  const [searchWarehouse, setSearchWarehouse] = useState("");
+  const [searchType, setSearchType] = useState("");
   const [showModal, setShowModal] = useState(false);
-
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyInfo, setHistoryInfo] = useState(null);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.token) console.error("No user found. Please login.");
@@ -58,13 +64,14 @@ const [searchType,setSearchType]=useState("")
     e.preventDefault();
     try {
       if (editingStockLedger) {
-        await dispatch(updatestock({ id: editingStockLedger, updatedData: form })).unwrap();
+        await dispatch(
+          updatestock({ id: editingStockLedger, updatedData: form })
+        ).unwrap();
         console.log("Stock Ledger Updated Successfully");
       } else {
         await dispatch(addstock(form)).unwrap();
         console.log("Stock Ledger Added Successfully");
       }
-
       setForm({
         productId: "",
         warehouseId: "",
@@ -121,143 +128,216 @@ const [searchType,setSearchType]=useState("")
   };
 
   const filteredStocks = (stocks || []).filter((s) => {
-  let productname = "";
-  if (typeof s.productId === "string") {
-    productname = s.productId.toLowerCase();
-  } else if (typeof s.productId === "object" && s.productId !== null) {
-    productname = (s.productId.name || "").toLowerCase();
-  }
+    let productname = "";
+    if (typeof s.productId === "string") {
+      productname = s.productId.toLowerCase();
+    } else if (typeof s.productId === "object" && s.productId !== null) {
+      productname = (s.productId.name || "").toLowerCase();
+    }
 
-  let warehousename = "";
-  if (typeof s.warehouseId === "string") {
-    warehousename = s.warehouseId.toLowerCase();
-  } else if (typeof s.warehouseId === "object" && s.warehouseId !== null) {
-    warehousename = (s.warehouseId.store_name || "").toLowerCase();
-  }
+    let warehousename = "";
+    if (typeof s.warehouseId === "string") {
+      warehousename = s.warehouseId.toLowerCase();
+    } else if (typeof s.warehouseId === "object" && s.warehouseId !== null) {
+      warehousename = (s.warehouseId.store_name || "").toLowerCase();
+    }
 
-  const type = s.txnType?.toLowerCase() || "";
+    const type = s.txnType?.toLowerCase() || "";
 
-  const matchwarehouse = searchWarehouse.trim() === "" || warehousename.includes(searchWarehouse.toLowerCase());
-  const matchproduct = searchproduct.trim() === "" || productname.includes(searchproduct.toLowerCase());
-  const matchtype = searchType.trim() === "" || type.includes(searchType.toLowerCase());
+    const matchwarehouse =
+      searchWarehouse.trim() === "" ||
+      warehousename.includes(searchWarehouse.toLowerCase());
+    const matchproduct =
+      searchproduct.trim() === "" ||
+      productname.includes(searchproduct.toLowerCase());
+    const matchtype =
+      searchType.trim() === "" || type.includes(searchType.toLowerCase());
 
-  return matchwarehouse && matchproduct && matchtype;
-});
-
+    return matchwarehouse && matchproduct && matchtype;
+  });
 
   const getProductName = (stock) => {
     if (typeof stock.productId === "object" && stock.productId !== null) {
       return stock.productId?.name || "Unknown Product";
     }
-    return products.find((p) => p._id === stock.productId)?.name || "Unknown Product";
+    return (
+      products.find((p) => p._id === stock.productId)?.name || "Unknown Product"
+    );
   };
 
- 
   const getWarehouseName = (stock) => {
     if (typeof stock.warehouseId === "object" && stock.warehouseId !== null) {
       return stock.warehouseId?.store_name || "Unknown Warehouse";
     }
-    return warehouses.find((w) => w._id === stock.warehouseId)?.store_name || "Unknown Warehouse";
+    return (
+      warehouses.find((w) => w._id === stock.warehouseId)?.store_name ||
+      "Unknown Warehouse"
+    );
   };
 
- 
   const tableColumns = [
     {
       key: "product",
       header: "Product",
       headerStyle: { width: "150px" },
-      render: (stock) => getProductName(stock)
+      render: (stock) => getProductName(stock),
     },
     {
       key: "warehouse",
       header: "Warehouse",
       headerStyle: { width: "150px" },
-      render: (stock) => getWarehouseName(stock)
+      render: (stock) => getWarehouseName(stock),
     },
     {
       key: "txnType",
       header: "Type",
       headerStyle: { width: "100px" },
-      render: (stock) => stock.txnType || "N/A"
+      render: (stock) => stock.txnType || "N/A",
     },
     {
       key: "txnId",
       header: "Transaction ID",
       headerStyle: { width: "120px" },
-      render: (stock) => stock.txnId || "N/A"
+      render: (stock) => stock.txnId || "N/A",
     },
     {
       key: "txnDate",
       header: "Date",
       headerStyle: { width: "100px" },
-      render: (stock) => stock.txnDate ? new Date(stock.txnDate).toLocaleDateString() : "N/A"
+      render: (stock) =>
+        stock.txnDate ? new Date(stock.txnDate).toLocaleDateString() : "N/A",
     },
     {
       key: "inQty",
       header: "In Qty",
       headerStyle: { width: "80px" },
-      render: (stock) => stock.inQty || "0"
+      render: (stock) => stock.inQty || "0",
     },
     {
       key: "outQty",
       header: "Out Qty",
       headerStyle: { width: "80px" },
-      render: (stock) => stock.outQty || "0"
+      render: (stock) => stock.outQty || "0",
     },
     {
       key: "rate",
       header: "Rate",
       headerStyle: { width: "80px" },
-      render: (stock) => stock.rate ? `₹${stock.rate}` : "₹0"
+      render: (stock) => (stock.rate ? `₹${stock.rate}` : "₹0"),
     },
     {
       key: "balanceQty",
       header: "Balance Qty",
       headerStyle: { width: "100px" },
-      render: (stock) => stock.balanceQty || "0"
-    }
+      render: (stock) => stock.balanceQty || "0",
+    },
   ];
 
- const tableActions = createCustomRoleActions({
-    edit: { 
-      show: () => ["super_admin", "admin",].includes(role) 
+  const tableActions = createCustomRoleActions({
+    edit: {
+      show: () => ["super_admin", "admin"].includes(role),
     },
-    delete: { 
-      show: () => ["super_admin", "admin"].includes(role) 
-    }})
-  
-   
-    const handleTableAction = (actionType, category) => {
-      if (actionType === "edit") {
-        handleEdit(category);
-      } else if (actionType === "delete") {
-        handleDelete(category._id);
-      }
-    };
- 
+    delete: {
+      show: () => ["super_admin", "admin"].includes(role),
+    },
+    history: {
+      show: () => ["super_admin", "admin", "user"].includes(role),
+    },
+  });
+
+  const handleTableAction = (actionType, stock) => {
+    if (actionType === "edit") {
+      handleEdit(stock);
+    } else if (actionType === "delete") {
+      handleDelete(stock._id);
+    } else if (actionType === "history") {
+      handleHistory(stock);
+    }
+  };
+
+  const handleHistory = async (stockledger) => {
+    if (!stockledger._id) {
+      console.error("Stockledger id is missing", stockledger);
+      setHistoryInfo({
+        createdBy:
+          stockledger.created_by?.name ||
+          stockledger?.created_by?.username ||
+          stockledger?.created_by?.name ||
+          "Unknown",
+        createdAt: stockledger.createdAt || null,
+        updatedBy: "-",
+        updatedAt: null,
+      });
+    }
+    try {
+      const res = await API.get(`/stockledger/${stockledger._id}`, {
+        headers: { Authorization: `Bearer ${user?.token}` },
+      });
+      const s = res.data;
+      const createdByUser =
+        s?.created_by?.name ||
+        s?.created_by?.username ||
+        s?.created_by?.email ||
+        "Unknown";
+      const updatedByUser =
+        s?.updated_by?.name ||
+        s?.updated_by?.username ||
+        s?.updated_by?.email ||
+        "-";
+      setHistoryInfo({
+        createdBy: createdByUser,
+        createdAt: s?.createdAt || stockledger?.createdAt || null,
+        updatedBy: updatedByUser,
+        updatedAt: s?.updatedAt || stockledger?.updatedAt || null,
+        oldValue: s?.history?.oldValue || null,
+        newValue: s?.history?.newValue || null,
+      });
+    } catch (err) {
+      console.warn(`Failed to fetch stock ledger history ${stockledger._id}`);
+      setHistoryInfo({
+        createdBy:
+          stockledger?.created_by?.name ||
+          stockledger?.created_by?.username ||
+          stockledger?.created_by?.email ||
+          "Unknown",
+        createdAt: stockledger?.createdAt || null,
+        updatedBy:
+          stockledger?.updated_by?.username ||
+          stockledger?.updated_by?.email ||
+          stockledger?.updated_by?.name ||
+          "-",
+        updatedAt: stockledger?.updatedAt || null,
+        oldValue: null,
+        newValue: stockledger,
+      });
+    } finally {
+      setShowHistoryModal(true);
+    }
+  };
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
-        
         <b>Stock Ledger</b>
       </h2>
 
       <div className="row mb-4">
         <div className="col-12">
           {["super_admin"].includes(role) && (
-            <button 
-              className="btn add text-white d-flex align-items-center" 
+            <button
+              className="btn add text-white d-flex align-items-center"
               onClick={openModal}
-            >Add Ledger
+            >
+              Add Ledger
             </button>
           )}
         </div>
       </div>
 
-      
       <div
         className={`modal fade ${showModal ? "show d-block" : ""}`}
-        style={{ backgroundColor: showModal ? "rgba(0,0,0,0.5)" : "transparent" }}
+        style={{
+          backgroundColor: showModal ? "rgba(0,0,0,0.5)" : "transparent",
+        }}
         tabIndex="-1"
       >
         <div className="modal-dialog modal-lg">
@@ -398,22 +478,19 @@ const [searchType,setSearchType]=useState("")
                 </div>
               </div>
 
-              
               <div className="modal-footer mt-3 pt-3 border-top">
                 <div className="d-flex gap-2">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     className="btn add text-white px-4 d-flex align-items-center justify-content-center"
                   >
-                   
                     {editingStockLedger ? "Update Ledger" : "Save Ledger"}
-                  </button> 
+                  </button>
                   <button
                     type="button"
                     className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                     onClick={() => setShowModal(false)}
                   >
-                    
                     Cancel
                   </button>
                 </div>
@@ -423,7 +500,6 @@ const [searchType,setSearchType]=useState("")
         </div>
       </div>
 
-  
       <ReusableTable
         data={filteredStocks}
         columns={tableColumns}
@@ -436,18 +512,23 @@ const [searchType,setSearchType]=useState("")
         onSearchChange2={setSearchWarehouse}
         onSearchChange3={setSearchType}
         searchPlaceholder1="Search by Product"
-         searchPlaceholder2="Search by Warehouse"
-         searchPlaceholder3="Search by Type "
-         showThirdSearch={true}
+        searchPlaceholder2="Search by Warehouse"
+        searchPlaceholder3="Search by Type "
+        showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No stock ledger records found."
         className="mt-4"
-        onResetSearch={()=>{
-          setSearchproduct("")
-          setSearchWarehouse("")
-          setSearchType("")
+        onResetSearch={() => {
+          setSearchproduct("");
+          setSearchWarehouse("");
+          setSearchType("");
         }}
+      />
+      <HistoryModal
+        open={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        data={historyInfo}
       />
     </div>
   );

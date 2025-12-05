@@ -11,6 +11,14 @@ const StockLedgerSchema = new mongoose.Schema(
     outQty: {type: Number,default: 0,},
     rate: {type: Number,default: 0,},
     balanceQty: {type: Number,default: 0,},
+    created_by:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:false},
+    updated_by:{type:mongoose.Schema.Types.ObjectId,ref:"User"},
+    updated_by_role:String,
+    updatedAt:Date,
+    history:{
+      oldValue:String,
+      newValue:String,
+    }
   },
   { timestamps: true }
 );

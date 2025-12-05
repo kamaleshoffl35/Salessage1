@@ -1,15 +1,8 @@
-
-
 import { NavLink, Outlet, useLocation } from "react-router-dom";
-
-import { TbFileReport } from "react-icons/tb";
-
 const Reports = () => {
   const location = useLocation();
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role;
-
-  
   const reports = [
     { path: "sales", label: "Sales Report", roles: ["super_admin", "admin", "user"] },
     { path: "purchase", label: "Purchase Report", roles: ["super_admin"] },
@@ -34,11 +27,7 @@ const Reports = () => {
             </li>
           ))}
       </ul>
-
-      
-
-      
-      <Outlet />
+<Outlet />
     </div>
   );
 };

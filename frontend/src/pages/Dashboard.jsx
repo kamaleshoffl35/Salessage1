@@ -1,12 +1,8 @@
-
-
-
 import { useEffect, useState } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import logo from "../assets/Logo.png";
 import { AiOutlineDashboard } from "react-icons/ai";
 import { MdProductionQuantityLimits, MdOutlineCategory, MdOutlineAttachMoney, MdOutlineWarehouse, MdAttachMoney, MdOutlineInventory2 } from "react-icons/md";
-
 import { IoIosContact } from "react-icons/io";
 import { BiPurchaseTag } from "react-icons/bi";
 import { TbFileInvoice, TbReportSearch } from "react-icons/tb";
@@ -21,8 +17,7 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-
-  const [dateTime, setDateTime] = useState(() => {
+const [dateTime, setDateTime] = useState(() => {
     const now = new Date();
     return now.toLocaleString("en-IN", {
       dateStyle: "medium",
@@ -79,7 +74,7 @@ export default function Dashboard() {
 
   return (
     <div className="d-flex flex-column vh-100">
-      <nav className="navbar navbar-expand-lg navbar-dark bg-white shadow">
+      <nav className="navbar navbar-expand-lg navbar-dark bg-white shadow" >
         <div className="container-fluid">
           <button className="btn btn-outline-light me-3 text-success" onClick={toggleSidebar}>
             {sidebarOpen ? <FaArrowLeft className="text-dark" /> : "☰"}
@@ -87,7 +82,7 @@ export default function Dashboard() {
 
           <a className="navbar-brand d-flex align-items-center gap-3" href="#">
             <img src={logo} alt="Logo" className="me-2" style={{ height: "50px" }} />
-            <span className="fw-bold fs-4" style={{ color: "#072141ff" }}>Billing & Inventory</span>
+            <span className="fw-bold fs-4 text-black" >SALESSAGE</span>
           </a>
 
           <div className="ms-auto d-flex align-items-center gap-2">
@@ -126,7 +121,7 @@ export default function Dashboard() {
                 >
                   <div className="d-flex align-items-center gap-2">
                     <span style={{ width: "24px" }}>{m.icon}</span>
-                    <span>{m.name}</span>
+                    <span >{m.name}</span>
                   </div>
                 </div>
               ))}

@@ -1,24 +1,25 @@
-import  { useEffect, useState } from 'react';
-import { IoIosContact } from "react-icons/io";
-import { FaRegSave} from "react-icons/fa";
-import { MdClose, MdAdd } from "react-icons/md";
-import 'react-phone-input-2/lib/style.css';
-import PhoneInput from 'react-phone-input-2';
-import { State, Country } from 'country-state-city';
-import { useDispatch, useSelector } from 'react-redux';
-import { addcustomer, deletecustomer, fetchcustomers, updatecustomer } from '../redux/customerSlice';
-import ReusableTable, {createCustomRoleActions} from '../components/ReusableTable'; // Import the reusable table
-import API from '../api/axiosInstance';
-import HistoryModal from '../components/HistoryModal';
-
+import { useEffect, useState } from "react";
+import "react-phone-input-2/lib/style.css";
+import PhoneInput from "react-phone-input-2";
+import { State, Country } from "country-state-city";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addcustomer,
+  deletecustomer,
+  fetchcustomers,
+  updatecustomer,
+} from "../redux/customerSlice";
+import ReusableTable, {
+  createCustomRoleActions,
+} from "../components/ReusableTable";
+import API from "../api/axiosInstance";
+import HistoryModal from "../components/HistoryModal";
 const Customer = () => {
   const dispatch = useDispatch();
   const { items: customers, status } = useSelector((state) => state.customers);
-  
   const user = JSON.parse(localStorage.getItem("user"));
   const token = localStorage.getItem("token");
   const role = user?.role || "user";
-
   const [form, setForm] = useState({
     name: "",
     phone: "",
@@ -33,13 +34,13 @@ const Customer = () => {
   });
 
   const [states, setStates] = useState([]);
-  const [searchName,setSearchName]=useState("")
-  const [searchMobile,setSearchMobile]=useState("")
-  const [searchEmail,setSearchEmail]=useState("")
+  const [searchName, setSearchName] = useState("");
+  const [searchMobile, setSearchMobile] = useState("");
+  const [searchEmail, setSearchEmail] = useState("");
   const [showCustomerForm, setShowCustomerForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
-  const [showHistoryModal,setShowHistoryModal]=useState(false)
-  const [historyInfo,setHistoryInfo]=useState(null)
+  const [showHistoryModal, setShowHistoryModal] = useState(false);
+  const [historyInfo, setHistoryInfo] = useState(null);
 
   useEffect(() => {
     dispatch(fetchcustomers());
@@ -50,20 +51,20 @@ const Customer = () => {
       try {
         const stateList = State.getStatesOfCountry(countryCode.toUpperCase());
         setStates(stateList);
-        setForm(prev => ({ ...prev, state_code: "" }));
+        setForm((prev) => ({ ...prev, state_code: "" }));
       } catch (error) {
         console.error("Error fetching states:", error);
         setStates([]);
       }
     } else {
       setStates([]);
-      setForm(prev => ({ ...prev, state_code: "" }));
+      setForm((prev) => ({ ...prev, state_code: "" }));
     }
   };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm(prev => ({ ...prev, [name]: value }));
+    setForm((prev) => ({ ...prev, [name]: value }));
     if (name === "country") updateStates(value);
   };
 
@@ -71,8 +72,10 @@ const Customer = () => {
     const countryCode =
       countryData?.countryCode ||
       countryData?.code ||
-      (countryData?.dialCode ? getCountryCodeFromDialCode(countryData.dialCode) : "");
-    setForm(prev => ({
+      (countryData?.dialCode
+        ? getCountryCodeFromDialCode(countryData.dialCode)
+        : "");
+    setForm((prev) => ({
       ...prev,
       phone: phone,
       country: countryCode,
@@ -81,12 +84,12 @@ const Customer = () => {
   };
 
   const getCountryCodeFromDialCode = (dialCode) => {
-    const dialCodeMap = { '91': 'IN', '1': 'US', '44': 'GB', '61': 'AU' };
-    return dialCodeMap[dialCode] || '';
+    const dialCodeMap = { 91: "IN", 1: "US", 44: "GB", 61: "AU" };
+    return dialCodeMap[dialCode] || "";
   };
 
   const handleCountryChange = (countryCode) => {
-    setForm(prev => ({ ...prev, country: countryCode }));
+    setForm((prev) => ({ ...prev, country: countryCode }));
     updateStates(countryCode);
   };
 
@@ -94,7 +97,9 @@ const Customer = () => {
     e.preventDefault();
     try {
       if (editingCustomer) {
-        await dispatch(updatecustomer({ id: editingCustomer, updatedData: form ,token})).unwrap();
+        await dispatch(
+          updatecustomer({ id: editingCustomer, updatedData: form, token })
+        ).unwrap();
         setEditingCustomer(null);
       } else {
         await dispatch(addcustomer(form)).unwrap();
@@ -123,17 +128,18 @@ const Customer = () => {
     dispatch(deletecustomer(id));
   };
 
-  const filteredCustomers = customers.filter(
-    c =>{
-      const name=c.name?.toLowerCase() || ""
-      const phone=String(c.phone || "").toLowerCase()
-      const email=String(c.email || "").toLowerCase()
-      const matchname=searchName.trim() === ""|| name.includes(searchName.toLowerCase())
-      const matchphone=searchMobile.trim() === ""|| phone.includes(searchMobile.toLowerCase())
-      const matchemail=searchEmail.trim() === ""|| email.includes(searchEmail.toLowerCase())
-      return matchname && matchphone && matchemail }
-
-  );
+  const filteredCustomers = customers.filter((c) => {
+    const name = c.name?.toLowerCase() || "";
+    const phone = String(c.phone || "").toLowerCase();
+    const email = String(c.email || "").toLowerCase();
+    const matchname =
+      searchName.trim() === "" || name.includes(searchName.toLowerCase());
+    const matchphone =
+      searchMobile.trim() === "" || phone.includes(searchMobile.toLowerCase());
+    const matchemail =
+      searchEmail.trim() === "" || email.includes(searchEmail.toLowerCase());
+    return matchname && matchphone && matchemail;
+  });
 
   const handleEdit = (customer) => {
     setEditingCustomer(customer._id);
@@ -172,137 +178,161 @@ const Customer = () => {
     {
       key: "name",
       header: "Customer Name",
-      headerStyle: { width: "150px" }
+      headerStyle: { width: "150px" },
     },
     {
       key: "phone",
       header: "Mobile Number",
-      headerStyle: { width: "140px" }
+      headerStyle: { width: "140px" },
     },
     {
       key: "state_code",
       header: "State",
-      headerStyle: { width: "100px" }
+      headerStyle: { width: "100px" },
     },
     {
       key: "gstin",
       header: "GSTIN",
       headerStyle: { width: "120px" },
-      render: (customer) => customer.gstin || "-"
+      render: (customer) => customer.gstin || "-",
     },
     {
       key: "email",
       header: "Email",
       headerStyle: { width: "180px" },
-      render: (customer) => customer.email || "-"
+      render: (customer) => customer.email || "-",
     },
     {
       key: "billing_address",
       header: "Address",
       headerStyle: { width: "200px" },
-      render: (customer) => customer.billing_address || "-"
+      render: (customer) => customer.billing_address || "-",
     },
     {
       key: "credit_limit",
       header: "Credit Limit",
       headerStyle: { width: "120px" },
-      render: (customer) => customer.credit_limit ? `₹${customer.credit_limit}` : "-"
+      render: (customer) =>
+        customer.credit_limit ? `₹${customer.credit_limit}` : "-",
     },
     {
       key: "opening_balance",
       header: "Opening Balance",
       headerStyle: { width: "140px" },
-      render: (customer) => customer.opening_balance ? `₹${customer.opening_balance}` : "-"
-    }
+      render: (customer) =>
+        customer.opening_balance ? `₹${customer.opening_balance}` : "-",
+    },
   ];
   const tableActions = createCustomRoleActions({
-  edit: { 
-    show: () => ["super_admin", "admin", "user"].includes(role) 
-  },
-  delete: { 
-    show: () => ["super_admin", "admin"].includes(role)
-  },
-  history:{
-    show:()=>["super_admin","admin","user"].includes(role)
-  }
-});
+    edit: {
+      show: () => ["super_admin", "admin", "user"].includes(role),
+    },
+    delete: {
+      show: () => ["super_admin", "admin"].includes(role),
+    },
+    history: {
+      show: () => ["super_admin", "admin", "user"].includes(role),
+    },
+  });
 
-    const handleTableAction = (actionType, customer) => {
-      if (actionType === "edit") {
-        handleEdit(customer);
-      } else if (actionType === "delete") {
-        handleDelete(customer._id);
-      }
-      else if(actionType === "history"){
-        handleHistory(customer)
-      }
-    };
-
+  const handleTableAction = (actionType, customer) => {
+    if (actionType === "edit") {
+      handleEdit(customer);
+    } else if (actionType === "delete") {
+      handleDelete(customer._id);
+    } else if (actionType === "history") {
+      handleHistory(customer);
+    }
+  };
 
   const handleHistory = async (customer) => {
-    if(!customer._id){
-      console.error("Customer ID Missing",customer)
+    if (!customer._id) {
+      console.error("Customer ID Missing", customer);
       setHistoryInfo({
-        createdBy:customer?.created_by?.name || customer?.created_by?.email || customer?.created_by?.username || "Unknown",
-        createdAt:customer?.createdAt || null,
-        updatedBy:"-",
-        updatedAt:null,
-      })
-      setShowHistoryModal(true)
-      return
+        createdBy:
+          customer?.created_by?.name ||
+          customer?.created_by?.email ||
+          customer?.created_by?.username ||
+          "Unknown",
+        createdAt: customer?.createdAt || null,
+        updatedBy: "-",
+        updatedAt: null,
+      });
+      setShowHistoryModal(true);
+      return;
     }
-    try{
-      const res=await API.get(`/customers/${customer._id}`,{
-        headers:{Authorization: `Bearer ${token}`,},
-      })
-      const c=res.data
-      const createdByUser=c?.created_by?.name || c?.created_by?.email || c?.created_by?.username || "Unknown"
-      const updatedByUser=c?.updated_by?.name || c?.updated_by?.email || c?.updated_by?.username || "-"
+    try {
+      const res = await API.get(`/customers/${customer._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const c = res.data;
+      const createdByUser =
+        c?.created_by?.name ||
+        c?.created_by?.email ||
+        c?.created_by?.username ||
+        "Unknown";
+      const updatedByUser =
+        c?.updated_by?.name ||
+        c?.updated_by?.email ||
+        c?.updated_by?.username ||
+        "-";
       setHistoryInfo({
-        createdBy:createdByUser,
-        createdAt:c?.createdAt || customer?.createdAt || null,
-        updatedBy:updatedByUser,
-        updatedAt:c?.updatedAt || null,
-        oldValue:c?.history?.oldValue || null,
-        newValue:c?.history?.newValue || null,
-      })
-    }catch(err){
-      console.warn(`Failed to fetch customer history ${customer._id}`)
+        createdBy: createdByUser,
+        createdAt: c?.createdAt || customer?.createdAt || null,
+        updatedBy: updatedByUser,
+        updatedAt: c?.updatedAt || null,
+        oldValue: c?.history?.oldValue || null,
+        newValue: c?.history?.newValue || null,
+      });
+    } catch (err) {
+      console.warn(`Failed to fetch customer history ${customer._id}`);
       setHistoryInfo({
-       createdBy:customer?.created_by?.name || customer?.created_by?.email || customer?.created_by?.username || "Unknown",
-        createdAt:customer?.createdAt || null,
-        updatedBy:customer?.updated_by?.name || customer?.updated_by?.email || customer?.updated_by?.username || "-",
-        updatedAt:customer?.updatedAt || null,
-        oldValues:null,
-        newValues:customer,
-      })
-    }finally{
-      setShowHistoryModal(true)
+        createdBy:
+          customer?.created_by?.name ||
+          customer?.created_by?.email ||
+          customer?.created_by?.username ||
+          "Unknown",
+        createdAt: customer?.createdAt || null,
+        updatedBy:
+          customer?.updated_by?.name ||
+          customer?.updated_by?.email ||
+          customer?.updated_by?.username ||
+          "-",
+        updatedAt: customer?.updatedAt || null,
+        oldValues: null,
+        newValues: customer,
+      });
+    } finally {
+      setShowHistoryModal(true);
     }
-  }
+  };
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
-       
         <b>Customers</b>
       </h2>
       <div className="row mb-4">
         <div className="col-12">
           <button
-            className="btn add text-white d-flex align-items-center" 
+            className="btn add text-white d-flex align-items-center"
             onClick={() => setShowCustomerForm(true)}
           >
-            
             Add Customer
           </button>
         </div>
       </div>
       {showCustomerForm && (
-        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+        <div
+          className="modal show d-block"
+          tabIndex="-1"
+          style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+        >
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content">
               <div className="modal-header  text-white">
-                <h5 className="modal-title">{editingCustomer ? "Edit Customer" : "Add New Customer"}</h5>
+                <h5 className="modal-title">
+                  {editingCustomer ? "Edit Customer" : "Add New Customer"}
+                </h5>
                 <button
                   type="button"
                   className="btn-close btn-close-white"
@@ -312,30 +342,47 @@ const Customer = () => {
               <div className="modal-body">
                 <form className="row g-3" onSubmit={handleSubmit}>
                   <div className="col-md-6">
-                    <label className="form-label">Customer Name <span className="text-danger">*</span></label>
-                    <input type="text" className="form-control bg-light" placeholder="Enter full name" onChange={handleChange} name="name" value={form.name} required pattern="[A-Za-z\s]+" />
+                    <label className="form-label">
+                      Customer Name <span className="text-danger">*</span>
+                    </label>
+                    <input
+                      type="text"
+                      className="form-control bg-light"
+                      placeholder="Enter full name"
+                      onChange={handleChange}
+                      name="name"
+                      value={form.name}
+                      required
+                      pattern="[A-Za-z\s]+"
+                    />
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Mobile Number <span className="text-danger">*</span></label>
+                    <label className="form-label">
+                      Mobile Number <span className="text-danger">*</span>
+                    </label>
                     <PhoneInput
-                      country={'in'}
+                      country={"in"}
                       value={form.phone}
                       onChange={handlePhoneChange}
                       onCountryChange={handleCountryChange}
                       inputProps={{
-                        name: 'phone',
+                        name: "phone",
                         required: true,
-                        className: 'form-control bg-light',
+                        className: "form-control bg-light",
                       }}
-                      containerStyle={{ width: '100%' }}
-                      inputStyle={{ width: '100%', height: '38px' }}
+                      containerStyle={{ width: "100%" }}
+                      inputStyle={{ width: "100%", height: "38px" }}
                     />
-                    <small className="text-muted">Selected country: {form.country || 'None'}</small>
+                    <small className="text-muted">
+                      Selected country: {form.country || "None"}
+                    </small>
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">State <span className="text-danger">*</span></label>
+                    <label className="form-label">
+                      State <span className="text-danger">*</span>
+                    </label>
                     <select
                       className="form-select bg-light"
                       onChange={handleChange}
@@ -345,7 +392,7 @@ const Customer = () => {
                       disabled={!form.country}
                     >
                       <option value="">Select State</option>
-                      {states.map(s => (
+                      {states.map((s) => (
                         <option key={s.isoCode} value={s.isoCode}>
                           {s.name} ({s.isoCode})
                         </option>
@@ -355,32 +402,83 @@ const Customer = () => {
 
                   <div className="col-md-6">
                     <label className="form-label">GSTIN (Optional)</label>
-                    <input type="text" className="form-control bg-light" placeholder="Optional GSTIN" onChange={handleChange} name="gstin" value={form.gstin} />
+                    <input
+                      type="text"
+                      className="form-control bg-light"
+                      placeholder="Optional GSTIN"
+                      onChange={handleChange}
+                      name="gstin"
+                      value={form.gstin}
+                    />
                   </div>
 
                   <div className="col-md-6">
                     <label className="form-label">Email (Optional)</label>
-                    <input type="email" className="form-control bg-light" placeholder="example@mail.com" onChange={handleChange} name="email" value={form.email} />
+                    <input
+                      type="email"
+                      className="form-control bg-light"
+                      placeholder="example@mail.com"
+                      onChange={handleChange}
+                      name="email"
+                      value={form.email}
+                    />
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Billing Address <span className="text-danger">*</span></label>
-                    <textarea className="form-control bg-light" rows="2" placeholder="Enter billing address" onChange={handleChange} name="billing_address" value={form.billing_address} required></textarea>
+                    <label className="form-label">
+                      Billing Address <span className="text-danger">*</span>
+                    </label>
+                    <textarea
+                      className="form-control bg-light"
+                      rows="2"
+                      placeholder="Enter billing address"
+                      onChange={handleChange}
+                      name="billing_address"
+                      value={form.billing_address}
+                      required
+                    ></textarea>
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Shipping Address (Optional)</label>
-                    <textarea className="form-control bg-light" rows="2" placeholder="Enter shipping address" onChange={handleChange} name="shipping_address" value={form.shipping_address}></textarea>
+                    <label className="form-label">
+                      Shipping Address (Optional)
+                    </label>
+                    <textarea
+                      className="form-control bg-light"
+                      rows="2"
+                      placeholder="Enter shipping address"
+                      onChange={handleChange}
+                      name="shipping_address"
+                      value={form.shipping_address}
+                    ></textarea>
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Credit Limit (Optional)</label>
-                    <input type="number" className="form-control bg-light" placeholder="e.g. 50000" onChange={handleChange} name="credit_limit" value={form.credit_limit} />
+                    <label className="form-label">
+                      Credit Limit (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control bg-light"
+                      placeholder="e.g. 50000"
+                      onChange={handleChange}
+                      name="credit_limit"
+                      value={form.credit_limit}
+                    />
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Opening Balance (Optional)</label>
-                    <input type="number" className="form-control bg-light" placeholder="e.g. 1000" onChange={handleChange} value={form.opening_balance} name="opening_balance" />
+                    <label className="form-label">
+                      Opening Balance (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      className="form-control bg-light"
+                      placeholder="e.g. 1000"
+                      onChange={handleChange}
+                      value={form.opening_balance}
+                      name="opening_balance"
+                    />
                   </div>
 
                   <div className="col-12 d-flex gap-2">
@@ -388,7 +486,6 @@ const Customer = () => {
                       type="submit"
                       className="btn add text-white px-4 d-flex align-items-center justify-content-center"
                     >
-                      
                       {editingCustomer ? "Update Customer" : "Add Customer"}
                     </button>
                     <button
@@ -396,10 +493,8 @@ const Customer = () => {
                       className="btn btn-secondary px-4 d-flex align-items-center justify-content-center"
                       onClick={handleCloseForm}
                     >
-                     
                       Cancel
                     </button>
-                    
                   </div>
                 </form>
               </div>
@@ -407,7 +502,7 @@ const Customer = () => {
           </div>
         </div>
       )}
-       <ReusableTable
+      <ReusableTable
         data={filteredCustomers}
         columns={tableColumns}
         loading={status === "loading"}
@@ -421,18 +516,22 @@ const Customer = () => {
         searchPlaceholder1="Search by Name"
         searchPlaceholder2="Search by Mobile"
         searchPlaceholder3="Search by Email"
-         showThirdSearch={true}
+        showThirdSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No categories found."
         className="mt-4"
-        onResetSearch={()=>{
-          setSearchName("")
-          setSearchMobile("")
-          setSearchEmail("")
+        onResetSearch={() => {
+          setSearchName("");
+          setSearchMobile("");
+          setSearchEmail("");
         }}
       />
-      <HistoryModal open={showHistoryModal} onClose={()=>setShowHistoryModal(false)} data={historyInfo} />
+      <HistoryModal
+        open={showHistoryModal}
+        onClose={() => setShowHistoryModal(false)}
+        data={historyInfo}
+      />
     </div>
   );
 };

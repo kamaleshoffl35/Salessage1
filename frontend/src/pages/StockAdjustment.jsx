@@ -1,39 +1,35 @@
-
 import { useState, useEffect } from "react";
-
-import { PiShippingContainer } from "react-icons/pi";
-import { MdDelete,MdClose, MdAdd } from "react-icons/md";
-import { FaSave, } from "react-icons/fa";
+import { MdDelete,} from "react-icons/md";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchwarehouses } from "../redux/warehouseSlice";
 import { fetchProducts } from "../redux/productSlice";
 import { addstock, deletestock, fetchstocks, updateStock } from "../redux/stockadjSlice";
 import { setAuthToken } from "../services/userService";
-import ReusableTable, {createCustomRoleActions,} from '../components/ReusableTable'; // Import the reusable table
+import ReusableTable, {createCustomRoleActions,} from '../components/ReusableTable';
+import API from "../api/axiosInstance";
+import HistoryModal from "../components/HistoryModal";
 
 const StockAdjustment = () => {
   const dispatch = useDispatch();
   const { items: stocks, status } = useSelector((state) => state.stocks);
   const { items: warehouses } = useSelector((state) => state.warehouses);
   const { items: products } = useSelector((state) => state.products);
-
-  const user = JSON.parse(localStorage.getItem("user"));
+const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "user";
- 
-
-  const [form, setForm] = useState({
+ const [form, setForm] = useState({
     warehouse_id: "",
     reason: "",
     date: new Date().toISOString().slice(0, 16),
     notes: "",
     items: [{ product_id: "", batch: "", qty: "", remarks: "" }],
   });
-
-  const [showModal, setShowModal] = useState(false);
+const [showModal, setShowModal] = useState(false);
   const [editingStockAdjustment, setEditingStockAdjustment] = useState(null);
  const [searchName,setSearchName]=useState("")
  const [searchdate,setSearchDate]=useState("")
  const [searchreason,setSearchreason]=useState("")
+ const [showHistoryModal,setShowHistoryModal]=useState(false)
+ const [historyInfo,setHistoryInfo]=useState(null)
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -210,16 +206,64 @@ if (typeof s.warehouse_id === "string") {
     },
     delete: { 
       show: () => ["super_admin", "admin"].includes(role) 
-    }})
+    },
+    history:{
+      show:()=>["super_admin","admin","user"].includes(role)
+    }
+  })
  
-    const handleTableAction = (actionType, category) => {
+    const handleTableAction = (actionType, stockadj) => {
       if (actionType === "edit") {
-        handleEdit(category);
+        handleEdit(stockadj);
       } else if (actionType === "delete") {
-        handleDelete(category._id);
+        handleDelete(stockadj._id);
+      }else if(actionType === "history"){
+        handleHistory(stockadj)
       }
     };
  
+
+    const handleHistory=async (stockadj) => {
+      if(!stockadj._id){
+        console.error("StockAdj id Missing",stockadj)
+        setHistoryInfo({
+          createdBy:stockadj?.created_by?.name || stockadj?.created_by?.username || stockadj?.created_by?.email || "Unknown",
+          createdAt:stockadj?.createdAt || null,
+          updatedBy:"-",
+          updatedAt:null,
+        })
+      }
+      try{
+        const res=await API.get(`/stocks/${stockadj._id}`,{
+          headers:{Authorization:`Bearer ${user?.token}`}
+        })
+        const s = res.data
+        const createdByUser=s?.created_by?.name || s?.created_by?.username || s?.created_by?.email || "Unknown"
+        const updatedByUser=s?.updated_by?.name || s?.updated_by?.username || s?.updated_by?.email || "-"
+        setHistoryInfo({
+          createdBy:createdByUser,
+          createdAt:s?.createdAt || stockadj?.createdAt || null,
+          updatedBy:updatedByUser,
+          updatedAt:s?.updatedAt || stockadj?.updatedAt || null,
+          oldValue:s?.history?.oldValue || null,
+          newValue:s?.history?.newValue || null,
+        })
+      }
+      catch(err){
+        console.warn(`Failed to fetch stock history ${stockadj._id}`)
+        setHistoryInfo({
+          createdBy:stockadj?.created_by?.name || stockadj?.created_by?.username || stockadj?.created_by?.email || "Unknown",
+          createdAt:stockadj?.createdAt || null,
+          updatedBy:stockadj?.updated_by?.username || stockadj?.updated_by?.email || stockadj?.updated_by?.name || "-",
+          updatedAt:stockadj?.updatedAt || null,
+          oldValue:null,
+          newValue:stockadj,
+        })
+      }
+      finally{
+        setShowHistoryModal(true)
+      }
+    }
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
@@ -463,6 +507,7 @@ if (typeof s.warehouse_id === "string") {
           setSearchreason("")
         }}
       />
+      <HistoryModal open={showHistoryModal} onClose={()=>setShowHistoryModal(false)} data={historyInfo}/>
     </div>
   );
 };

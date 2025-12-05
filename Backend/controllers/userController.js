@@ -238,14 +238,13 @@ exports.resetPassword = async (req, res) => {
     if (!user)
       return res.status(400).json({ error: "Invalid or expired token" });
 
-    user.password = password; 
+    user.password = password;
     user.resetPasswordToken = undefined;
     user.resetPasswordExpires = undefined;
-    await user.save(); 
+    await user.save();
     res.json({ message: "Password has been reset successfully" });
   } catch (err) {
     console.error("Reset password error:", err);
     res.status(500).json({ error: "Server error" });
   }
 };
-

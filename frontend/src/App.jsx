@@ -1,9 +1,4 @@
-
-
-
-import React from "react";
 import { Routes, Route, Navigate, BrowserRouter as Router } from "react-router-dom";
-
 import Dashboard from "./pages/Dashboard";
 import Product from "./pages/Product";
 import Category from "./pages/Category";
@@ -55,8 +50,6 @@ function App() {
   useEffect(() => {
   const publicPaths = ["/login", "/register", "/forgot-password", "/reset-password"];
   const currentPath = window.location.pathname;
-
-  // Skip auth check for public routes
   if (publicPaths.some((p) => currentPath.startsWith(p))) 
     return;
 
