@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { FaRegSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -239,12 +238,11 @@ const GstReport = () => {
         <div className="col-12">
           <button
             type="submit"
-            className="btn btn-primary px-4 d-flex align-center justify-center"
+            className="btn  px-4 d-flex align-center justify-center text-white"
+            style={{backgroundColor:"#182235"}}
           >
-            <span className="text-warning me-2 d-flex align-items-center">
-              <FaRegSave />
-            </span>
-            Save{" "}
+            
+            Save
           </button>
         </div>
       </form>
@@ -302,13 +300,13 @@ const GstReport = () => {
                     </td>
                     <td>
                       <button
-                        className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"
+                        className="btn  btn-sm px-4 d-flex align-items-center justify-content-center"
                         onClick={() => handleDelete(g._id)}
                       >
-                        <span className="text-warning me-2 d-flex align-items-center">
+                        <span className="text-danger me-2 d-flex align-items-center">
                           <MdDeleteForever />
                         </span>
-                        Delete
+                       
                       </button>
                     </td>
                   </tr>

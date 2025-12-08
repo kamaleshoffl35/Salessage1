@@ -61,15 +61,30 @@ const Warehouse = () => {
       setForm((prev) => ({ ...prev, state_code: "" }));
     }
   };
+const handleChange = (e) => {
+  const { name, value, type, checked } = e.target;
+if (name === "store_name") {
+    const existingWarehouse = warehouses.find(
+      (w) => w.store_name?.toLowerCase() === value.toLowerCase()
+    );
+ setForm((prev) => ({
+      ...prev,
+      store_name: value,
+      status: existingWarehouse ? true : false,
+    }));
+return;
+  }
 
-  const handleChange = (e) => {
-    const { name, value, type, checked } = e.target;
-    setForm((prev) => ({ ...prev, [name]: type === "checkbox" ? checked : value }));
+  setForm((prev) => ({
+    ...prev,
+    [name]: type === "checkbox" ? checked : value,
+  }));
 
-    if (name === "country") {
-      updateStates(value);
-    }
-  };
+  if (name === "country") {
+    updateStates(value);
+  }
+};
+
 
   const handlePhoneChange = (phone, countryData) => {
     const countryCode =

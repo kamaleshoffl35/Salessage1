@@ -679,7 +679,7 @@ const Purchase = () => {
                 <form className="row g-3" onSubmit={handleSubmit}>
                   <div className="col-md-6">
                     <label className="form-label">
-                      Supplier<span className="text-danger">*</span>
+                      Supplier <span className="text-danger">*</span>
                     </label>
                     <select
                       name="supplier_id"
@@ -699,7 +699,7 @@ const Purchase = () => {
 
                   <div className="col-md-6">
                     <label className="form-label">
-                      Invoice No<span className="text-danger">*</span>
+                      Invoice No <span className="text-danger">*</span>
                     </label>
                     <input
                       type="text"
@@ -712,7 +712,7 @@ const Purchase = () => {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label">
-                      Invoice Date<span className="text-danger">*</span>
+                      Invoice Date <span className="text-danger">*</span>
                     </label>
                     <input
                       type="date"
@@ -725,7 +725,7 @@ const Purchase = () => {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label">
-                      Warehouse<span className="text-danger">*</span>
+                      Warehouse <span className="text-danger">*</span>
                     </label>
                     <select
                       name="warehouse_id"
@@ -880,7 +880,7 @@ const Purchase = () => {
                               <td className="text-center">
                                 <button
                                   type="button"
-                                  className="btn btn-sm btn-danger"
+                                  className="btn btn-sm text-danger"
                                   onClick={() => removeItem(index)}
                                 >
                                   <MdDeleteForever />
@@ -900,13 +900,7 @@ const Purchase = () => {
                       + Add Item
                     </button>
 
-                    <button
-                      type="button"
-                      className="btn add text-white  btn-sm"
-                      onClick={addItem}
-                    >
-                      + Add Item
-                    </button>
+                    
                   </div>
 
                   <div className="col-md-6">

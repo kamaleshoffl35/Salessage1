@@ -61,10 +61,10 @@ export default function Profile({ show, onClose }) {
       <div className="modal-dialog modal-sm modal-dialog-centered ">
         <div
           className="modal-content p-3"
-          style={{ backgroundColor: "#faead1ff" }}
+          style={{ }}
         >
-          <div className="modal-header">
-            <h5 className="modal-title text-danger mb-4 d-flex align-items-center fs-5">
+          <div className="modal-header" style={{backgroundColor:"#182235"}}>
+            <h5 className="modal-title text-white mb-4 d-flex align-items-center fs-5">
               <span className="me-2 d-flex align-items-center">
                 <FaUser size={24} />
               </span>{" "}
@@ -110,7 +110,7 @@ export default function Profile({ show, onClose }) {
               Close
             </button>
             <button
-              className="btn btn-primary"
+              className="btn text-white" style={{backgroundColor:"#182235"}}
               onClick={save}
               disabled={saving}
             >

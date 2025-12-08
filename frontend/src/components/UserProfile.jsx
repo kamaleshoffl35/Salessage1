@@ -121,7 +121,7 @@ const UserProfile = () => {
               style={{ width: "200px" }}
             >
               <button
-                className="btn btn-info w-100"
+                className="btn  w-100 text-white " style={{backgroundColor:"#182235"}}
                 onClick={() => setShowProfile(true)}
               >
                 View Profile

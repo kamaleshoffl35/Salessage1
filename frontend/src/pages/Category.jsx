@@ -73,9 +73,12 @@ const Category = () => {
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     if (name === "name") {
+      const existingCategory = categories.find(
+      (cat) => cat.name?.toLowerCase() === value.toLowerCase()
+    );
       setSubcategories(Object.keys(categoryData[value] || {}));
       setBrands([]);
-      setForm({ ...form, name: value, subcategory: "", brand: "" });
+      setForm({ ...form, name: value, subcategory: "", brand: "" ,status:existingCategory ? true : false,});
     } else if (name === "subcategory") {
       setBrands(categoryData[form.name][value] || []);
       setForm({ ...form, subcategory: value, brand: "" });
@@ -326,7 +329,7 @@ const Category = () => {
                 <form className="row g-3" onSubmit={handleSubmit}>
                   <div className="col-md-6">
                     <label className="form-label">
-                      Category ID<span className="text-danger">*</span>
+                      Category ID <span className="text-danger">*</span>
                     </label>
                     <input
                       type="number"
@@ -339,7 +342,7 @@ const Category = () => {
                   </div>
                   <div className="col-md-6">
                     <label className="form-label">
-                      Category Name<span className="text-danger">*</span>
+                      Category Name <span className="text-danger">*</span>
                     </label>
                     <select
                       className="form-control"
@@ -412,6 +415,7 @@ const Category = () => {
                       className="form-check-input"
                       name="status"
                       checked={form.status}
+                      
                       onChange={handleChange}
                     />
                     <label className="form-check-label">Status</label>

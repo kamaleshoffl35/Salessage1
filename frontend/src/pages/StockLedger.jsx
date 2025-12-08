@@ -357,7 +357,7 @@ const StockLedger = () => {
               <div className="modal-body">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label">Product *</label>
+                    <label className="form-label">Product <span className="text-danger">*</span></label>
                     <select
                       className="form-select bg-light"
                       name="productId"
@@ -375,7 +375,7 @@ const StockLedger = () => {
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Warehouse *</label>
+                    <label className="form-label">Warehouse <span className="text-danger">*</span></label>
                     <select
                       className="form-select bg-light"
                       name="warehouseId"
@@ -393,7 +393,7 @@ const StockLedger = () => {
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Type *</label>
+                    <label className="form-label">Type <span className="text-danger">*</span></label>
                     <select
                       className="form-select bg-light"
                       name="txnType"
@@ -409,7 +409,7 @@ const StockLedger = () => {
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Transaction ID *</label>
+                    <label className="form-label">Transaction ID <span className="text-danger">*</span></label>
                     <input
                       type="text"
                       className="form-control bg-light"
@@ -421,7 +421,7 @@ const StockLedger = () => {
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Date *</label>
+                    <label className="form-label">Date <span className="text-danger">*</span></label>
                     <input
                       type="date"
                       className="form-control bg-light"

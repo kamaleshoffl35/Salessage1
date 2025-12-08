@@ -1,6 +1,4 @@
-
 import  { useEffect, useState } from "react";
-import { FaRegSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -105,24 +103,23 @@ const PurchaseReport = () => {
 <ExportButtons onExcel={handleExportExcel}  onPdf={handleExportPDF} onPrint={handlePrint}/>
       <form className="row g-3" onSubmit={handleSubmit}>
         <div className="col-md-6">
-          <label className="form-label">From Date<span className="text-danger">*</span></label>
+          <label className="form-label">From Date <span className="text-danger">*</span></label>
           <input type="date" className="form-control bg-light" name="from_date" value={form.from_date} onChange={handleChange} />
         </div>
         <div className="col-md-6">
-          <label className="form-label">To Date<span className="text-danger">*</span></label>
+          <label className="form-label">To Date <span className="text-danger">*</span></label>
           <input type="date" className="form-control bg-light" name="to_date" value={form.to_date} onChange={handleChange} />
         </div>
         <div className="col-md-6">
-          <label className="form-label">Supplier<span className="text-danger">*</span></label>
+          <label className="form-label">Supplier <span className="text-danger">*</span></label>
           <select className="form-select bg-light" name="supplier_id" value={form.supplier_id} onChange={handleChange}>
             <option value="">-- Select Supplier --</option>
             {suppliers.map(s => (<option key={s._id} value={s._id}>{s.name}</option>))}
           </select>
         </div>
         <div className="col-12">
-          <button type="submit" className="btn btn-primary px-4 d-flex align-center justify-center">
-            <span className="text-warning me-2 d-flex align-items-center"><FaRegSave />
-            </span>Save </button>
+          <button type="submit" className="btn  px-4 d-flex align-center justify-center text-white" style={{backgroundColor:"#182235"}}>
+           Save </button>
         </div>
       </form><br />
       <div className=" card shadow-sm">
@@ -160,13 +157,13 @@ const PurchaseReport = () => {
                     <td>{p.supplier_id?.name || p.supplier_id || "-"}</td>
                     <td>
                       <button
-                        className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"
+                        className="btn  btn-sm px-4 d-flex align-items-center justify-content-center"
                         onClick={() => handleDelete(p._id)}
                       >
-                        <span className="text-warning me-2 d-flex align-items-center">
+                        <span className="text-danger me-2 d-flex align-items-center">
                           <MdDeleteForever />
                         </span>
-                        Delete
+                        
                       </button>
                     </td>
 

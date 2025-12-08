@@ -139,7 +139,7 @@ const handlePrint = () => {
           </select>
         </div>
         <div className="col-12">
-          <button type="submit" className="btn btn-primary px-4">Generate Report</button>
+          <button type="submit" className="btn text-white px-4" style={{backgroundColor:"#182235"}}>Generate Report</button>
         </div>
       </form>
 

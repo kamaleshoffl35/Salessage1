@@ -2,7 +2,7 @@ const Sale = require("../models/Sale");
 exports.getSalePOSs = async (req, res) => {
   try {
     const sales = await Sale.find()
-      .populate("customer_id", "name")
+      .populate("customer_id", "name phone")
       .populate("items.product_id", "name")
       .populate("items.tax_rate_id", "name")
       .populate("created_by", "name email role")
@@ -28,7 +28,7 @@ exports.addSalePOS = async (req, res) => {
     const sale = new Sale(saleData);
     const saved = await sale.save();
     const populated = await Sale.findById(saved._id)
-      .populate("customer_id", "name")
+      .populate("customer_id", "name phone")
       .populate("items.product_id", "name")
       .populate("items.tax_rate_id", "name")
       .populate("created_by", "name email role");
@@ -83,7 +83,7 @@ exports.updateSale = async (req, res) => {
 exports.getSaleById = async (req, res) => {
   try {
     const sale = await Sale.findById(req.params.id)
-      .populate("customer_id", "name")
+      .populate("customer_id", "name phone")
       .populate("items.product_id", "name")
       .populate("items.tax_rate_id", "name")
       .populate("created_by", "name email role")

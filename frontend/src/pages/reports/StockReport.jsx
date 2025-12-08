@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { FaRegSave } from "react-icons/fa";
 import { MdDeleteForever } from "react-icons/md";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
@@ -141,7 +140,7 @@ const StockReport = () => {
       <form className="row g-3" onSubmit={handleSubmit}>
         <div className="col-md-6">
           <label className="form-label">
-            Product<span className="text-danger">*</span>
+            Product <span className="text-danger">*</span>
           </label>
           <select
             className="form-select bg-light"
@@ -159,7 +158,7 @@ const StockReport = () => {
         </div>
         <div className="col-md-6">
           <label className="form-label">
-            Warehouse<span className="text-danger">*</span>
+            Warehouse <span className="text-danger">*</span>
           </label>
           <select
             className="form-select bg-light"
@@ -177,7 +176,7 @@ const StockReport = () => {
         </div>
         <div className="col-md-6">
           <label className="form-label">
-            Category<span className="text-danger">*</span>
+            Category <span className="text-danger">*</span>
           </label>
           <select
             className="form-select bg-light"
@@ -196,12 +195,11 @@ const StockReport = () => {
         <div className="col-12">
           <button
             type="submit"
-            className="btn btn-primary px-4 d-flex align-center justify-center"
+            className="btn  px-4 d-flex align-center justify-center text-white"
+            style={{backgroundColor:"#182235"}}
           >
-            <span className="text-warning me-2 d-flex align-items-center">
-              <FaRegSave />
-            </span>
-            Save{" "}
+            
+            Save
           </button>
         </div>
       </form>
@@ -250,13 +248,13 @@ const StockReport = () => {
                     <td>
                       {["super_admin"].includes(role) ? (
                         <button
-                          className="btn btn-danger btn-sm px-4 d-flex align-items-center justify-content-center"
+                          className="btn  btn-sm px-4 d-flex align-items-center justify-content-center"
                           onClick={() => handleDelete(s._id)}
                         >
-                          <span className="text-warning me-2 d-flex align-items-center">
+                          <span className="text-danger me-2 d-flex align-items-center">
                             <MdDeleteForever />
                           </span>
-                          Delete
+                          
                         </button>
                       ) : (
                         <button className="btn btn-secondary btn-sm" disabled>

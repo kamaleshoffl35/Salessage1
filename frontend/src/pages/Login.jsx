@@ -21,7 +21,7 @@ const Login = () => {
   e.preventDefault();
   setError("");
   try {
-    const { user, token } = await login(form.email.trim(), form.password.trim());
+    const { user, token } =  await login(form.email.trim(), form.password.trim());
     localStorage.setItem("user", JSON.stringify({ ...user, token }));
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     switch (user.role) {
@@ -53,7 +53,7 @@ const Login = () => {
         {error && <div className="alert alert-danger">{error}</div>}
 
         <div className="mb-2 text-start">
-          <label className="form-label"> Email<span className="text-danger">*</span></label>
+          <label className="form-label"> Email <span className="text-danger">*</span></label>
           <input className="form-control bg-light" name="email" value={form.email} onChange={handleChange}/>
         </div>
 

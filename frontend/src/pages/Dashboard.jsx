@@ -15,7 +15,8 @@ import DashboardSummary from "./DashboardSummary";
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); 
+  const currentYear = new Date().getFullYear();
 
 const [dateTime, setDateTime] = useState(() => {
     const now = new Date();
@@ -139,6 +140,14 @@ const [dateTime, setDateTime] = useState(() => {
           </div>
         </div>
       </div>
+
+      <footer className="footer bg-light py-2 shadow-sm mt-auto" style={{ borderTop: "1px solid #dee2e6" }}>
+        <div className="container-fluid text-center">
+          <p className="mb-0 text-muted small">
+            &copy; {currentYear} Vyoobam Tech. All rights reserved. | Empowering Digital Solutions
+          </p>
+        </div>
+      </footer>
 
       <style>{`
         .hover-bg-light:hover {

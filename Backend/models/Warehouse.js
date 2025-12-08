@@ -8,7 +8,7 @@ const warehouseSchema = new mongoose.Schema({
     contact:{type:String},
     phone:{type:Number},
     email:{type:String},
-    status: { type: Boolean, enum: ["active", "inactive"], default: "active" },
+    status: { type: Boolean, default:true},
     created_by:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:false},
     updated_by:{type:mongoose.Schema.Types.ObjectId,ref:"User"},
     updated_by_role:String,
