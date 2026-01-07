@@ -23,4 +23,7 @@ const StockLedgerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports = mongoose.model("StockLedger", StockLedgerSchema);
+module.exports =
+ 
+  mongoose.model("StockLedger", StockLedgerSchema);
+

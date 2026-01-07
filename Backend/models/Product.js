@@ -17,6 +17,7 @@ const productSchema = new mongoose.Schema(
     brand_name: { type: String },
     variant: { type: String },
     unit_id: { type: String, default: "Kg" },
+    warehouse:{  type: mongoose.Schema.Types.ObjectId, ref:"Warehouse",required:true},
     hsn_code: { type: String },
     tax_rate_id: { type: String, default: "18%" },
     mrp: { type: Number, required: true },

@@ -6,9 +6,9 @@ exports.getProducts = async (req, res) => {
     if (req.user.role === "user") {
       products = await Product.find({
         created_by_role: { $in: ["super_admin", "admin"] },
-      }).populate("category_id", "name");
+      }).populate("category_id", "name").populate("warehouse", "store_name");
     } else {
-      products = await Product.find().populate("category_id", "name");
+      products = await Product.find().populate("category_id", "name").populate("warehouse", "store_name");
     }
     res.json(products);
   } catch (err) {
@@ -25,6 +25,7 @@ exports.addProduct = async (req, res) => {
       brand_name,
       variant,
       unit_id,
+      warehouse,
       hsn_code,
       tax_rate_id,
       mrp,
@@ -43,6 +44,7 @@ exports.addProduct = async (req, res) => {
       category_id,
       brand_name,
       variant,
+      warehouse,
       unit_id,
       hsn_code,
       tax_rate_id,

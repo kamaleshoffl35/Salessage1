@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const SaleItemSchema = new mongoose.Schema({
   product_id:{type:mongoose.Schema.Types.ObjectId,ref:'Product',required:true },
+  stock:{type:Number,ref:'Stockledger',},
   batch_no:{type:String},
   qty:{type:Number,required:true},
   unit_price:{type:Number,required:true},

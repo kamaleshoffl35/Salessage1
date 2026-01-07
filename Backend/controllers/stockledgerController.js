@@ -1,4 +1,4 @@
-const Stockledger = require("../models/Stockledger");
+const Stockledger = require("../models/Stockledger")
 exports.getStockledger = async (req, res) => {
   try {
     let ledgers;
@@ -93,3 +93,36 @@ exports.getStockById = async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 };
+
+// exports.getStockSummary = async (req, res) => {
+//   try {
+//     const summary = await StockLedger.aggregate([
+//       { $sort: { createdAt: -1 } },
+//       {
+//         $group: {
+//           _id: { productId: "$productId", warehouseId: "$warehouseId" },
+//           balanceQty: { $first: "$balanceQty" },
+//         },
+//       },
+//       {
+//         $lookup: { from: "products", localField: "_id.productId", foreignField: "_id", as: "product" },
+//       },
+//       {
+//         $lookup: { from: "warehouses", localField: "_id.warehouseId", foreignField: "_id", as: "warehouse" },
+//       },
+//       {
+//         $project: {
+//           productId: "$_id.productId",
+//           productName: { $arrayElemAt: ["$product.name", 0] },
+//           warehouseId: "$_id.warehouseId",
+//           warehouseName: { $arrayElemAt: ["$warehouse.store_name", 0] },
+//           availableQty: "$balanceQty",
+//         },
+//       },
+//     ]);
+
+//     res.json(summary);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };

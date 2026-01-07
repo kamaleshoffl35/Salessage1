@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts, addProduct, deleteProduct, updateProduct } from "../redux/productSlice";
 import API from "../api/axiosInstance";
 import { fetchCategories } from "../redux/categorySlice";
+import { fetchwarehouses } from "../redux/warehouseSlice";
 import { variants } from "../data/variants";
 import { setAuthToken } from "../services/userService";
 import HistoryModal from "../components/HistoryModal";
@@ -11,6 +12,7 @@ const Product = () => {
   const dispatch = useDispatch();
   const { items: products, status } = useSelector((state) => state.products);
   const { items: categories } = useSelector((state) => state.categories);
+  const {items:warehouses}=useSelector((state)=>state.warehouses)
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "user";
   const token = user?.token;
@@ -22,6 +24,7 @@ const Product = () => {
     category_name: "",
     brand_name: "",
     unit_id: "Kg",
+    warehouse:"",
     hsn_code: "",
     tax_rate_id: "18%",
     mrp: "",
@@ -67,6 +70,7 @@ const [historyInfo, setHistoryInfo] = useState(null);
     setAuthToken(token);
     dispatch(fetchCategories());
     dispatch(fetchProducts());
+    dispatch(fetchwarehouses())
   }, [dispatch]);
 
  
@@ -172,6 +176,7 @@ const [historyInfo, setHistoryInfo] = useState(null);
       category_name: "",
       brand_name: "",
       unit_id: "Kg",
+      warehouse:"",
       hsn_code: "",
       tax_rate_id: "18%",
       mrp: "",
@@ -220,6 +225,8 @@ const [historyInfo, setHistoryInfo] = useState(null);
       category_name: productCategory?.name || "",
       brand_name: product.brand_name || "",
       unit_id: product.unit_id || "Kg",
+    warehouse: product.warehouse?._id || product.warehouse || "",
+
       hsn_code: product.hsn_code || "",
       tax_rate_id: product.tax_rate_id || "18%",
       mrp: product.mrp || "",
@@ -259,6 +266,7 @@ const handleCloseForm = () => {
       category_name: "",
       brand_name: "",
       unit_id: "Kg",
+      warehouse:"",
       hsn_code: "",
       tax_rate_id: "18%",
       mrp: "",
@@ -279,6 +287,7 @@ const handleCloseForm = () => {
     { key: "name", header: "Name", width: 200 },
     { key: "category", header: "Category", render: (p) => p.category_id?.name || p.category_id || "" },
     { key: "brand_name", header: "Brand", render: (p) => p.brand_name || "-" },
+    {key: "warehouse", header:"Warehouse",render:(p)=>p.warehouse?.store_name || ""},
     { key: "unit_id", header: "UoM", width: 80 },
     { key: "tax_rate_id", header: "Tax", width: 80 },
     { key: "mrp", header: "MRP", render: (p) => `₹${p.mrp}` },
@@ -477,6 +486,26 @@ return (
                       ))}
                     </select>
                   </div>
+
+                   <div className="col-md-6">
+                      <label>
+                        Warehouse <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        name="warehouse"
+                        value={form.warehouse}
+                        onChange={handleChange}
+                        className="form-select bg-light"
+                        required
+                      >
+                        <option value="">Select Warehouse</option>
+                        {warehouses.map((c) => (
+                          <option key={c._id} value={c._id}>
+                            {c.store_name} 
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
                   <div className="col-md-6">
                     <label className="form-label">HSN Code (Optional)</label>

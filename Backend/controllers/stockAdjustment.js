@@ -1,4 +1,5 @@
 const StockAdj = require("../models/StockAdj");
+const StockLedger = require("../models/Stockledger");
 
 exports.getStockAdjustment = async (req, res) => {
   try {
@@ -31,7 +32,31 @@ exports.addStockAdjustment = async (req, res) => {
       created_by: req.user._id,
       created_by_role: req.user.role,
     });
+
     await stock.save();
+
+    for (const item of stock.items) {
+      const lastLedger = await StockLedger.findOne({
+        productId: item.product_id,
+        warehouseId: stock.warehouse_id,
+      }).sort({ createdAt: -1 });
+
+      const previousBalance = lastLedger ? lastLedger.balanceQty : 0;
+
+      await StockLedger.create({
+        productId: item.product_id,
+        warehouseId: stock.warehouse_id,
+        txnType: "ADJUSTMENT",
+        txnId: stock._id.toString(),
+        inQty: item.inQty || 0,
+        outQty: item.outQty || 0,
+        rate: item.rate || 0,
+        balanceQty: previousBalance + (item.inQty || 0) - (item.outQty || 0),
+        created_by: req.user._id,
+        created_by_role: req.user.role,
+      });
+    }
+
     res.json(stock);
   } catch (err) {
     console.error("Error saving StockAdjustment", err);

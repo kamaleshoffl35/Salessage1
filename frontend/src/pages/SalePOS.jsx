@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { MdAdd, MdClose, MdDeleteForever } from "react-icons/md";
+import { MdDeleteForever } from "react-icons/md";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -11,6 +11,7 @@ import {
 import { fetchtaxes } from "../redux/taxSlice";
 import { fetchProducts } from "../redux/productSlice";
 import { fetchcustomers } from "../redux/customerSlice";
+import { fetchstocks } from "../redux/stockledgerSlice";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../assets/img/image_360.png";
@@ -31,7 +32,7 @@ const SalePOS = () => {
   const { items: customers } = useSelector((state) => state.customers);
   const { items: products } = useSelector((state) => state.products);
   const { items: taxes } = useSelector((state) => state.taxes);
-
+  const { items: stockss } = useSelector((state) => state.stockss);
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role;
 
@@ -64,6 +65,8 @@ const SalePOS = () => {
     dispatch(fetchProducts());
     dispatch(fetchtaxes());
     dispatch(fetchsales());
+    dispatch(fetchstocks());
+    // fetchStockSummary();
 
     setForm((prev) => ({
       ...prev,
@@ -88,7 +91,6 @@ const SalePOS = () => {
 
   const handleItemChange = (index, e) => {
     const { name, value } = e.target;
-
     const items = [...form.items];
 
     let updatedItem = {
@@ -96,15 +98,12 @@ const SalePOS = () => {
       [name]: value,
     };
 
-    // Auto-fill unit price when product changes
     if (name === "product_id") {
       const product = products.find((p) => p._id === value);
       updatedItem.unit_price = product ? product.sale_price : 0;
     }
 
-    // ⭐ FIX: Always use returned updated object
     updatedItem = calculateLineTotal(updatedItem);
-
     items[index] = updatedItem;
 
     setForm((prev) => ({ ...prev, items }));
@@ -117,6 +116,7 @@ const SalePOS = () => {
         ...prev.items,
         {
           product_id: "",
+          stock: "",
           qty: 1,
           unit_price: 0,
           discount_percent: 0,
@@ -200,6 +200,7 @@ const SalePOS = () => {
     calculateTotals();
   }, [form.items, form.paid_amount]);
 
+ 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting form data:", form);
@@ -244,6 +245,7 @@ const SalePOS = () => {
       alert(`Error saving sale: ${err.response?.data?.message || err.message}`);
     }
   };
+
 
   const filteredsales = sales.filter((s) => {
     const Name =
@@ -314,6 +316,43 @@ const SalePOS = () => {
       items: [],
     });
   };
+  const getCustomerName = (sale) => {
+    if (typeof sale.customer_id === "object" && sale.customer_id !== null) {
+      return sale.customer_id?.name || "Unknown Customer";
+    }
+    return (
+      customers.find((c) => c._id === sale.customer_id)?.name ||
+      "Unknown Customer"
+    );
+  };
+
+  const getCustomerPhone = (sale) => {
+    return sale.customer_phone || sale.customer_id?.phone || "N/A";
+  };
+
+  const getProductNames = (sale) => {
+    if (!Array.isArray(sale.items) || sale.items.length === 0) {
+      return "No Items";
+    }
+
+    return sale.items
+      .map((item, idx) => {
+        let productName = "Unknown Product";
+        if (item?.product_id) {
+          if (typeof item.product_id === "object" && item.product_id !== null) {
+            productName = item.product_id?.name || "Unknown Product";
+          } else {
+            const matchedProduct = products.find(
+              (prod) => prod._id === item.product_id
+            );
+            productName = matchedProduct?.name || "Unknown Product";
+          }
+        }
+        return `${productName} (${item?.qty || 0})`;
+      })
+      .join(", ");
+  };
+
 
   const generateInvoicePDF = (saleData) => {
     const doc = new jsPDF();
@@ -410,42 +449,19 @@ const SalePOS = () => {
     doc.save(`${saleData.invoice_no}.pdf`);
   };
 
-  const getCustomerName = (sale) => {
-    if (typeof sale.customer_id === "object" && sale.customer_id !== null) {
-      return sale.customer_id?.name || "Unknown Customer";
-    }
-    return (
-      customers.find((c) => c._id === sale.customer_id)?.name ||
-      "Unknown Customer"
-    );
-  };
-
-  const getCustomerPhone = (sale) => {
-    return sale.customer_phone || sale.customer_id?.phone || "N/A";
-  };
-
-  const getProductNames = (sale) => {
-    if (!Array.isArray(sale.items) || sale.items.length === 0) {
-      return "No Items";
-    }
-
-    return sale.items
-      .map((item, idx) => {
-        let productName = "Unknown Product";
-        if (item?.product_id) {
-          if (typeof item.product_id === "object" && item.product_id !== null) {
-            productName = item.product_id?.name || "Unknown Product";
-          } else {
-            const matchedProduct = products.find(
-              (prod) => prod._id === item.product_id
-            );
-            productName = matchedProduct?.name || "Unknown Product";
-          }
-        }
-        return `${productName} (${item?.qty || 0})`;
-      })
-      .join(", ");
-  };
+  // const fetchStockSummary = async () => {
+  //   try {
+  //     setLoadingStock(true);
+  //     const res = await API.get("/stock/summary", {
+  //       headers: { Authorization: `Bearer ${user?.token}` },
+  //     });
+  //     setStockSummary(res.data || []);
+  //   } catch (err) {
+  //     console.error("Failed to load stock summary", err);
+  //   } finally {
+  //     setLoadingStock(false);
+  //   }
+  // };
 
   const tableColumns = [
     {
@@ -544,7 +560,7 @@ const SalePOS = () => {
     }
     const items = [...form.items];
     items.splice(index, 1);
-    setForm((prev) => ({ ...prev, items })); // <-- FIXED
+    setForm((prev) => ({ ...prev, items }));
   };
 
   const saleItemColumns = [
@@ -725,8 +741,6 @@ const SalePOS = () => {
     }
   };
 
-
-  
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
@@ -870,11 +884,26 @@ const SalePOS = () => {
                                 className="form-control"
                               >
                                 <option value="">Select Product</option>
-                                {products.map((p) => (
-                                  <option key={p._id} value={p._id}>
-                                    {p.name}
-                                  </option>
-                                ))}
+
+                                {products.map((p) => {
+                                  const productInQty = stockss
+                                    .filter(
+                                      (s) =>
+                                        String(
+                                          s.productId?._id || s.productId
+                                        ) === String(p._id)
+                                    )
+                                    .reduce(
+                                      (sum, s) => sum + Number(s.inQty || 0),
+                                      0
+                                    );
+
+                                  return (
+                                    <option key={p._id} value={p._id}>
+                                      {p.name} (InQty: {productInQty})
+                                    </option>
+                                  );
+                                })}
                               </select>
                             </td>
                             <td>

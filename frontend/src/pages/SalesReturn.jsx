@@ -22,6 +22,8 @@ const SalesReturn = () => {
   const role = user?.role || "user";
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [customerSales, setCustomerSales] = useState([]);
+  const [stockSummary, setStockSummary] = useState([]);
+
 const [form, setForm] = useState({
   invoice_no: "",
   product_id: "",
@@ -56,6 +58,20 @@ const [form, setForm] = useState({
   const totalGrandTotal = customerSales.reduce((total, sale) => {
     return total + (sale.grand_total || 0);
   }, 0);
+
+  useEffect(() => {
+  const fetchStockSummary = async () => {
+    try {
+      const res = await API.get("/stock/summary");
+      setStockSummary(res.data || []);
+    } catch (err) {
+      console.error("Failed to load stock summary", err);
+    }
+  };
+
+  fetchStockSummary();
+}, []);
+
 
 
   const handleChange = (e) => {
@@ -125,6 +141,17 @@ useEffect(() => {
     setForm({ ...form, customer_id: customerId });
   };
 
+
+  const getAvailableStock = (productId) => {
+  if (!productId) return 0;
+
+  const record = stockSummary.find(
+    (s) => s.productId === productId
+  );
+
+  return record?.availableQty || 0;
+};
+
   const getCustomerName = (payment) => {
     if (
       typeof payment.customer_id === "object" &&
@@ -138,32 +165,28 @@ useEffect(() => {
     );
   };
 
-  const handleSubmit = async (e) => {
+const handleSubmit = async (e) => {
   e.preventDefault();
 
-  if (
-    !form.invoice_no ||
-    !form.product_id ||
-    !form.quantity ||
-    !form.reason
-  ) {
+  if (!form.invoice_no || !form.product_id || !form.quantity || !form.reason) {
     alert("Please fill all required fields");
     return;
   }
 
-  const sale = customerSales.find(
-    (s) => s._id === form.invoice_no
-  );
+  if (!selectedSaleItem) {
+    alert("Invalid product selection");
+    return;
+  }
 
-  if (!sale) {
-    alert("Invalid invoice selected");
+  if (Number(form.quantity) > Number(selectedSaleItem.qty)) {
+    alert("Return quantity cannot exceed sold quantity");
     return;
   }
 
   try {
     await API.post("/sales-returns", {
       invoice_no: form.invoice_no,
-      customer_id: sale.customer_id?._id || sale.customer_id,
+      customer_id: selectedSale.customer_id?._id || selectedSale.customer_id,
       items: [
         {
           product_id: form.product_id,
@@ -176,12 +199,12 @@ useEffect(() => {
 
     alert("Sales Return Created Successfully");
 
-    // reset form
     setForm({
       invoice_no: "",
       product_id: "",
       quantity: "",
       reason: "",
+      return_amount: 0,
     });
 
     dispatch(fetchsales());
@@ -190,6 +213,7 @@ useEffect(() => {
     alert(err.response?.data?.message || "Sales return failed");
   }
 };
+
 
 
   const getProductNames = (sale) => {
@@ -376,21 +400,27 @@ useEffect(() => {
         </div>
 
         <div className="col-md-6">
-          <label className="form-label">Quantity</label>
-          <input
-            type="number"
-            className="form-control bg-light"
-            name="quantity"
-            value={form.quantity}
-            min="1"
-            max={
-              saleProducts.find(
-                (i) => i.product_id?._id === form.product_id
-              )?.qty || 0
-            }
-            onChange={handleChange}
-          />
-        </div>
+  <label className="form-label">Quantity</label>
+  <input
+    type="number"
+    className="form-control bg-light"
+    name="quantity"
+    value={form.quantity}
+    min="1"
+    max={
+      Math.min(
+        selectedSaleItem?.qty || 0,
+        getAvailableStock(form.product_id) + (selectedSaleItem?.qty || 0)
+      )
+    }
+    onChange={handleChange}
+  />
+  <small className="text-muted">
+    Sold Qty: {selectedSaleItem?.qty || 0} |  
+    Available Stock: {getAvailableStock(form.product_id)}
+  </small>
+</div>
+
 
         <div className="col-md-6">
           <label className="form-label">Return Amount</label>
