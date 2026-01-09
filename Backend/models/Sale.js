@@ -18,6 +18,7 @@ const SaleSchema = new mongoose.Schema({
   invoice_no:{type:String,required:true},
   invoice_date_time:{type:Date,required:true },
   customer_id:{type:mongoose.Schema.Types.ObjectId,ref:'Customer'},
+   warehouseId: {type: mongoose.Schema.Types.ObjectId,ref: "Warehouse",required: true},
   customer_name: { type: String },
   counter_id:{type:String,required:true},
   payment_mode:{type:String,required:true},

@@ -8,48 +8,61 @@ exports.getSalePOSs = async (req, res) => {
       // .populate("items.stock"," inQty")
       .populate("items.tax_rate_id", "name")
       .populate("created_by", "name email role")
-      .populate("updated_by", "name email role")
-      
-
+      .populate("updated_by", "name email role");
     res.json(sales);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
 
-const mongoose = require("mongoose");
-
-
-
-
 exports.addSalePOS = async (req, res) => {
   try {
-   
-    if (!req.body.items?.length) 
-      return res.status(400).json({ error: "Sale must contain at least 1 item" });
-    if (!req.body.customer_id) 
+    if (!req.body.items?.length)
+      return res
+        .status(400)
+        .json({ error: "Sale must contain at least 1 item" });
+    if (!req.body.customer_id)
       return res.status(400).json({ error: "Customer is required" });
-
     const sale = new Sale({
       ...req.body,
       invoice_date_time: new Date(req.body.invoice_date_time),
       created_by: req.user._id,
     });
-
     await sale.save();
+    for (const item of sale.items) {
+      const lastLedger = await StockLedger.findOne({
+        productId: item.product_id,
+        warehouseId: sale.warehouseId,
+      }).sort({ createdAt: -1 });
 
+      const oldQty = lastLedger ? Number(lastLedger.balanceQty) : 0;
+      const saleQty = Number(item.qty);
+      if (saleQty > oldQty) {
+        throw new Error("Insufficient stock for sale");
+      }
+
+      await StockLedger.create({
+        productId: item.product_id,
+        warehouseId: sale.warehouseId,
+        txnType: "SALE",
+        txnId: sale.invoice_no,
+        txnDate: sale.invoice_date_time,
+        inQty: 0,
+        outQty: saleQty,
+        balanceQty: oldQty - saleQty,
+        created_by: sale.created_by,
+        created_by_role: req.user.role,
+      });
+    }
     const populatedSale = await Sale.findById(sale._id)
       .populate("items.product_id", "name")
-
       .populate("customer_id", "name phone");
-
     res.json(populatedSale);
   } catch (err) {
     console.error("Error saving Sale:", err);
     res.status(400).json({ error: err.message });
   }
 };
-
 
 exports.deleteSale = async (req, res) => {
   try {
@@ -113,5 +126,3 @@ exports.getSaleById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
-
-

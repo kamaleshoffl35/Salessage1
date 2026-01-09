@@ -3,25 +3,16 @@ import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchProducts } from "../redux/productSlice";
 import { fetchwarehouses } from "../redux/warehouseSlice";
-import {
-  addstock,
-  deletestock,
-  fetchstocks,
-  updatestock,
-} from "../redux/stockledgerSlice";
+import { addstock, deletestock, fetchstocks } from "../redux/stockledgerSlice";
 import { setAuthToken } from "../services/userService";
-import ReusableTable, {
-  createCustomRoleActions,
-} from "../components/ReusableTable";
+import ReusableTable, {createCustomRoleActions,} from "../components/ReusableTable";
 import API from "../api/axiosInstance";
 import HistoryModal from "../components/HistoryModal";
-
 const StockLedger = () => {
   const dispatch = useDispatch();
   const { items: stocks, status } = useSelector((state) => state.stockss);
   const { items: products } = useSelector((state) => state.products);
   const { items: warehouses } = useSelector((state) => state.warehouses);
-
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "user";
   const token = user?.token;
@@ -29,13 +20,7 @@ const StockLedger = () => {
   const [form, setForm] = useState({
     productId: "",
     warehouseId: "",
-    txnType: "",
-    txnId: "",
-    txnDate: "",
     inQty: "",
-    outQty: "",
-    rate: "",
-    balanceQty: "",
   });
 
   const [editingStockLedger, setEditingStockLedger] = useState(null);
@@ -48,7 +33,6 @@ const StockLedger = () => {
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || !user.token) console.error("No user found. Please login.");
-
     setAuthToken(token);
     dispatch(fetchProducts());
     dispatch(fetchwarehouses());
@@ -57,37 +41,48 @@ const StockLedger = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    setForm((prev) => {
+      const updated = { ...prev, [name]: value };
+      if (["inQty", "outQty"].includes(name)) {
+        updated.balanceQty =
+          Number(updated.oldQty || 0) + Number(updated.inQty || 0);
+      }
+      return updated;
+    });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.productId) {
+      alert("Please select a product");
+      return;
+    }
+    if (!form.warehouseId) {
+      alert("Please select a warehouse");
+      return;
+    }
+    const qty = Number(form.inQty);
+    if (!qty || qty <= 0) {
+      alert("In Qty must be greater than 0");
+      return;
+    }
     try {
-      if (editingStockLedger) {
-        await dispatch(
-          updatestock({ id: editingStockLedger, updatedData: form })
-        ).unwrap();
-        console.log("Stock Ledger Updated Successfully");
-      } else {
-        await dispatch(addstock(form)).unwrap();
-        console.log("Stock Ledger Added Successfully");
-      }
+      await dispatch(
+        addstock({
+          productId: form.productId,
+          warehouseId: form.warehouseId,
+          inQty: qty,
+        })
+      ).unwrap();
       setForm({
         productId: "",
         warehouseId: "",
-        txnType: "",
-        txnId: "",
-        txnDate: "",
         inQty: "",
-        outQty: "",
-        rate: "",
-        balanceQty: "",
       });
-      setEditingStockLedger(null);
       setShowModal(false);
       dispatch(fetchstocks());
     } catch (err) {
-      console.error(err.response?.data || err.message);
+      console.error("Stock add failed:", err);
     }
   };
 
@@ -104,8 +99,7 @@ const StockLedger = () => {
       txnId: stock.txnId || "",
       txnDate: stock.txnDate ? stock.txnDate.slice(0, 10) : "",
       inQty: stock.inQty || "",
-      outQty: stock.outQty || "",
-      rate: stock.rate || "",
+      outQty: stock.outQty || 0,
       balanceQty: stock.balanceQty || "",
     });
     setShowModal(true);
@@ -120,8 +114,6 @@ const StockLedger = () => {
       txnId: "",
       txnDate: "",
       inQty: "",
-      outQty: "",
-      rate: "",
       balanceQty: "",
     });
     setShowModal(true);
@@ -175,6 +167,26 @@ const StockLedger = () => {
     );
   };
 
+  useEffect(() => {
+    if (!form.productId || !form.warehouseId) return;
+    const lastLedger = stocks
+      .filter(
+        (s) =>
+          String(s.productId?._id || s.productId) === String(form.productId) &&
+          String(s.warehouseId?._id || s.warehouseId) ===
+            String(form.warehouseId)
+      )
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+    const oldQty = lastLedger ? Number(lastLedger.balanceQty) : 0;
+    const inQty = Number(form.inQty || 0);
+    setForm((prev) => ({
+      ...prev,
+      oldQty,
+      outQty: lastLedger ? Number(lastLedger.outQty || 0) : 0,
+      balanceQty: oldQty + inQty,
+    }));
+  }, [form.productId, form.warehouseId, form.inQty, stocks]);
+
   const tableColumns = [
     {
       key: "product",
@@ -219,12 +231,7 @@ const StockLedger = () => {
       headerStyle: { width: "80px" },
       render: (stock) => stock.outQty || "0",
     },
-    {
-      key: "rate",
-      header: "Rate",
-      headerStyle: { width: "80px" },
-      render: (stock) => (stock.rate ? `₹${stock.rate}` : "₹0"),
-    },
+
     {
       key: "balanceQty",
       header: "Balance Qty",
@@ -357,7 +364,9 @@ const StockLedger = () => {
               <div className="modal-body">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label">Product <span className="text-danger">*</span></label>
+                    <label className="form-label">
+                      Product <span className="text-danger">*</span>
+                    </label>
                     <select
                       className="form-select bg-light"
                       name="productId"
@@ -375,7 +384,9 @@ const StockLedger = () => {
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Warehouse <span className="text-danger">*</span></label>
+                    <label className="form-label">
+                      Warehouse <span className="text-danger">*</span>
+                    </label>
                     <select
                       className="form-select bg-light"
                       name="warehouseId"
@@ -393,7 +404,9 @@ const StockLedger = () => {
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Type <span className="text-danger">*</span></label>
+                    <label className="form-label">
+                      Type <span className="text-danger">*</span>
+                    </label>
                     <select
                       className="form-select bg-light"
                       name="txnType"
@@ -406,30 +419,6 @@ const StockLedger = () => {
                       <option value="PURCHASE">PURCHASE</option>
                       <option value="ADJUSTMENT">ADJUSTMENT</option>
                     </select>
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Transaction ID <span className="text-danger">*</span></label>
-                    <input
-                      type="text"
-                      className="form-control bg-light"
-                      name="txnId"
-                      value={form.txnId}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="col-md-6">
-                    <label className="form-label">Date <span className="text-danger">*</span></label>
-                    <input
-                      type="date"
-                      className="form-control bg-light"
-                      name="txnDate"
-                      value={form.txnDate}
-                      onChange={handleChange}
-                      required
-                    />
                   </div>
 
                   <div className="col-md-6">
@@ -448,20 +437,18 @@ const StockLedger = () => {
                     <input
                       type="number"
                       className="form-control bg-light"
-                      name="outQty"
                       value={form.outQty}
-                      onChange={handleChange}
+                      readOnly
                     />
                   </div>
 
                   <div className="col-md-6">
-                    <label className="form-label">Rate</label>
+                    <label className="form-label">Old Qty</label>
                     <input
                       type="number"
                       className="form-control bg-light"
-                      name="rate"
-                      value={form.rate}
-                      onChange={handleChange}
+                      value={form.oldQty}
+                      readOnly
                     />
                   </div>
 
@@ -470,9 +457,8 @@ const StockLedger = () => {
                     <input
                       type="number"
                       className="form-control bg-light"
-                      name="balanceQty"
                       value={form.balanceQty}
-                      onChange={handleChange}
+                      readOnly
                     />
                   </div>
                 </div>

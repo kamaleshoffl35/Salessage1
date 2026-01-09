@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { MdDeleteForever } from "react-icons/md";
-
 import { useDispatch, useSelector } from "react-redux";
 import {
   addSale,
@@ -12,6 +11,7 @@ import { fetchtaxes } from "../redux/taxSlice";
 import { fetchProducts } from "../redux/productSlice";
 import { fetchcustomers } from "../redux/customerSlice";
 import { fetchstocks } from "../redux/stockledgerSlice";
+import { fetchwarehouses } from "../redux/warehouseSlice";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import logo from "../assets/img/image_360.png";
@@ -19,13 +19,11 @@ import ReusableTable, {
   createRoleBasedActions,
 } from "../components/ReusableTable";
 import API from "../api/axiosInstance";
-import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import HistoryModal from "../components/HistoryModal";
 ModuleRegistry.registerModules([AllCommunityModule]);
-
 const SalePOS = () => {
   const dispatch = useDispatch();
   const { items: sales, status } = useSelector((state) => state.sales);
@@ -33,15 +31,16 @@ const SalePOS = () => {
   const { items: products } = useSelector((state) => state.products);
   const { items: taxes } = useSelector((state) => state.taxes);
   const { items: stockss } = useSelector((state) => state.stockss);
+  const { items: warehouses } = useSelector((state) => state.warehouses);
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role;
-
   const [form, setForm] = useState({
     invoice_no: "",
     invoice_date_time: new Date().toISOString().slice(0, 10),
     customer_id: "",
     customer_phone: "",
     counter_id: "",
+    warehouseId: "",
     payment_mode: "Cash",
     subtotal: 0,
     discount_amount: 0,
@@ -52,7 +51,6 @@ const SalePOS = () => {
     notes: "",
     items: [],
   });
-
   const [searchName, setSearchName] = useState("");
   const [searchinvoice, setSearchInvoice] = useState("");
   const [searchdate, setSearchDate] = useState("");
@@ -66,8 +64,8 @@ const SalePOS = () => {
     dispatch(fetchtaxes());
     dispatch(fetchsales());
     dispatch(fetchstocks());
+    dispatch(fetchwarehouses());
     // fetchStockSummary();
-
     setForm((prev) => ({
       ...prev,
       invoice_no: "INV" + Math.floor(1000 + Math.random() * 9000),
@@ -76,7 +74,6 @@ const SalePOS = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
     if (name === "customer_id") {
       const selectedCustomer = customers.find((c) => c._id === value);
       setForm((prev) => ({
@@ -92,20 +89,16 @@ const SalePOS = () => {
   const handleItemChange = (index, e) => {
     const { name, value } = e.target;
     const items = [...form.items];
-
     let updatedItem = {
       ...items[index],
       [name]: value,
     };
-
     if (name === "product_id") {
       const product = products.find((p) => p._id === value);
       updatedItem.unit_price = product ? product.sale_price : 0;
     }
-
     updatedItem = calculateLineTotal(updatedItem);
     items[index] = updatedItem;
-
     setForm((prev) => ({ ...prev, items }));
   };
 
@@ -163,7 +156,7 @@ const SalePOS = () => {
 
   const calculateTotals = () => {
     const subtotal = form.items.reduce((sum, item) => {
-      if (!item) return sum; // <-- IMPORTANT FIX
+      if (!item) return sum;
       return sum + (Number(item.qty) || 0) * (Number(item.unit_price) || 0);
     }, 0);
 
@@ -200,7 +193,6 @@ const SalePOS = () => {
     calculateTotals();
   }, [form.items, form.paid_amount]);
 
- 
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log("Submitting form data:", form);
@@ -220,11 +212,13 @@ const SalePOS = () => {
 
       generateInvoicePDF(savedSale || form);
       await dispatch(fetchsales());
+      await dispatch(fetchstocks());
 
       setForm({
         invoice_no: "INV" + Math.floor(1000 + Math.random() * 9000),
         invoice_date_time: new Date().toISOString().slice(0, 10),
         customer_id: "",
+        warehouseId: "",
         customer_phone: "",
         counter_id: "",
         payment_mode: "Cash",
@@ -245,7 +239,6 @@ const SalePOS = () => {
       alert(`Error saving sale: ${err.response?.data?.message || err.message}`);
     }
   };
-
 
   const filteredsales = sales.filter((s) => {
     const Name =
@@ -283,6 +276,7 @@ const SalePOS = () => {
       customer_id: sale.customer_id || "",
       customer_phone: sale.customer_phone || "",
       counter_id: sale.counter_id || "",
+      warehouseId: sale.warehouseId || "",
       payment_mode: sale.payment_mode || "Cash",
       subtotal: sale.subtotal || 0,
       discount_amount: sale.discount_amount || 0,
@@ -353,6 +347,19 @@ const SalePOS = () => {
       .join(", ");
   };
 
+  const getAvailableStock = (productId, warehouseId) => {
+    if (!productId || !warehouseId) return 0;
+
+    const latest = stockss
+      .filter(
+        (s) =>
+          String(s.productId?._id || s.productId) === String(productId) &&
+          String(s.warehouseId?._id || s.warehouseId) === String(warehouseId)
+      )
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+    return latest ? Number(latest.balanceQty || 0) : 0;
+  };
 
   const generateInvoicePDF = (saleData) => {
     const doc = new jsPDF();
@@ -448,20 +455,6 @@ const SalePOS = () => {
 
     doc.save(`${saleData.invoice_no}.pdf`);
   };
-
-  // const fetchStockSummary = async () => {
-  //   try {
-  //     setLoadingStock(true);
-  //     const res = await API.get("/stock/summary", {
-  //       headers: { Authorization: `Bearer ${user?.token}` },
-  //     });
-  //     setStockSummary(res.data || []);
-  //   } catch (err) {
-  //     console.error("Failed to load stock summary", err);
-  //   } finally {
-  //     setLoadingStock(false);
-  //   }
-  // };
 
   const tableColumns = [
     {
@@ -658,27 +651,6 @@ const SalePOS = () => {
     },
   ];
 
-  const onSaleItemCellChanged = (params) => {
-    const rowIndex = params.node.rowIndex;
-    const updatedRow = { ...params.data };
-    if (params.colDef.field === "product_id") {
-      const prod = products.find((p) => p._id === updatedRow.product_id);
-      if (prod) {
-        updatedRow.unit_price = Number(prod.sale_price || 0);
-      }
-    }
-    const recalculated = calculateLineTotal({
-      ...updatedRow,
-      qty: Number(updatedRow.qty) || 0,
-      unit_price: Number(updatedRow.unit_price) || 0,
-      discount_percent: Number(updatedRow.discount_percent) || 0,
-      tax_rate_id: updatedRow.tax_rate_id,
-    });
-    const updatedItems = [...form.items];
-    updatedItems[rowIndex] = recalculated;
-    setForm((prev) => ({ ...prev, items: updatedItems }));
-  };
-
   const handleHistory = async (sale) => {
     if (!sale._id) {
       console.error("Sale Id missing:", sale);
@@ -839,6 +811,26 @@ const SalePOS = () => {
                       </select>
                     </div>
                     <div className="col-md-6">
+                      <label>
+                        Warehouse <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        name="warehouseId"
+                        value={form.warehouseId}
+                        onChange={handleChange}
+                        className="form-select bg-light"
+                        required
+                      >
+                        <option value="">Select Warehouse</option>
+                        {warehouses.map((w) => (
+                          <option key={w._id} value={w._id}>
+                            {w.store_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="col-md-6">
                       <label>Payment Mode</label>
                       <select
                         name="payment_mode"
@@ -882,25 +874,23 @@ const SalePOS = () => {
                                 value={item.product_id}
                                 onChange={(e) => handleItemChange(index, e)}
                                 className="form-control"
+                                disabled={!form.warehouseId}
                               >
                                 <option value="">Select Product</option>
 
                                 {products.map((p) => {
-                                  const productInQty = stockss
-                                    .filter(
-                                      (s) =>
-                                        String(
-                                          s.productId?._id || s.productId
-                                        ) === String(p._id)
-                                    )
-                                    .reduce(
-                                      (sum, s) => sum + Number(s.inQty || 0),
-                                      0
-                                    );
+                                  const availableQty = getAvailableStock(
+                                    p._id,
+                                    form.warehouseId
+                                  );
 
                                   return (
-                                    <option key={p._id} value={p._id}>
-                                      {p.name} (InQty: {productInQty})
+                                    <option
+                                      key={p._id}
+                                      value={p._id}
+                                      disabled={availableQty <= 0}
+                                    >
+                                      {p.name} (Stock: {availableQty})
                                     </option>
                                   );
                                 })}
@@ -911,9 +901,13 @@ const SalePOS = () => {
                                 type="number"
                                 name="qty"
                                 value={item.qty}
+                                min="1"
+                                max={getAvailableStock(
+                                  item.product_id,
+                                  form.warehouseId
+                                )}
                                 onChange={(e) => handleItemChange(index, e)}
                                 className="form-control"
-                                min="1"
                               />
                             </td>
                             <td>

@@ -1,4 +1,4 @@
-const Stockledger = require("../models/Stockledger")
+const Stockledger = require("../models/Stockledger");
 exports.getStockledger = async (req, res) => {
   try {
     let ledgers;
@@ -6,7 +6,6 @@ exports.getStockledger = async (req, res) => {
       ledgers = await Stockledger.find({
         created_by_role: { $in: ["super_admin", "admin", "user"] },
       })
-        .limit(500)
         .populate("productId", "name")
         .populate("warehouseId", "store_name")
         .lean()
@@ -26,15 +25,43 @@ exports.getStockledger = async (req, res) => {
 
 exports.postStockledger = async (req, res) => {
   try {
+    const { productId, warehouseId, inQty } = req.body;
+
+    if (!productId || !warehouseId) {
+      return res
+        .status(400)
+        .json({ error: "Product and Warehouse are required" });
+    }
+
+    const qty = Number(inQty);
+    if (!qty || qty <= 0) {
+      return res.status(400).json({ error: "In Qty must be greater than 0" });
+    }
+
+    const lastLedger = await Stockledger.findOne({
+      productId,
+      warehouseId,
+    }).sort({ createdAt: -1 });
+
+    const oldQty = lastLedger ? Number(lastLedger.balanceQty) : 0;
+
     const ledger = new Stockledger({
-      ...req.body,
+      productId,
+      warehouseId,
+      txnType: "PURCHASE",
+      txnId: `TD-${Date.now()}`,
+      txnDate: new Date(),
+      inQty: qty,
+      outQty: 0,
+      balanceQty: oldQty + qty,
       created_by: req.user._id,
       created_by_role: req.user.role,
     });
+
     await ledger.save();
     res.status(201).json(ledger);
   } catch (err) {
-    console.error("Error saving stocks", err);
+    console.error("Stockledger error:", err);
     res.status(400).json({ error: err.message });
   }
 };
@@ -93,36 +120,3 @@ exports.getStockById = async (req, res) => {
     res.status(500).json({ error: "Server Error" });
   }
 };
-
-// exports.getStockSummary = async (req, res) => {
-//   try {
-//     const summary = await StockLedger.aggregate([
-//       { $sort: { createdAt: -1 } },
-//       {
-//         $group: {
-//           _id: { productId: "$productId", warehouseId: "$warehouseId" },
-//           balanceQty: { $first: "$balanceQty" },
-//         },
-//       },
-//       {
-//         $lookup: { from: "products", localField: "_id.productId", foreignField: "_id", as: "product" },
-//       },
-//       {
-//         $lookup: { from: "warehouses", localField: "_id.warehouseId", foreignField: "_id", as: "warehouse" },
-//       },
-//       {
-//         $project: {
-//           productId: "$_id.productId",
-//           productName: { $arrayElemAt: ["$product.name", 0] },
-//           warehouseId: "$_id.warehouseId",
-//           warehouseName: { $arrayElemAt: ["$warehouse.store_name", 0] },
-//           availableQty: "$balanceQty",
-//         },
-//       },
-//     ]);
-
-//     res.json(summary);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
