@@ -49,10 +49,12 @@ exports.postStockledger = async (req, res) => {
       productId,
       warehouseId,
       txnType: "PURCHASE",
-      txnId: `TD-${Date.now()}`,
+      txnId: `TD-${Math.floor(1000 + Math.random() * 9000)}`,
+
       txnDate: new Date(),
       inQty: qty,
       outQty: 0,
+      quantity:0,
       balanceQty: oldQty + qty,
       created_by: req.user._id,
       created_by_role: req.user.role,

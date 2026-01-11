@@ -1,43 +1,33 @@
-const Salereport = require("../models/Salereport");
+const Sale = require("../models/Sale");
+
 
 exports.getSaleReports = async (req, res) => {
   try {
-    let salereports;
-    if (req.user.role === "user") {
-      salereports = await Salereport.find({
-        created_by_role: { $in: ["super_admin", "admin", "user"] },
-      }).populate("customer_id", "name");
-    } else {
-      salereports = await Salereport.find().populate("customer_id", "name");
+    const { from_date, to_date } = req.query;
+
+    if (!from_date || !to_date) {
+      return res.status(400).json({ message: "From date & To date required" });
     }
-    res.json(salereports);
+
+    const sales = await Sale.find({
+      invoice_date_time: {
+        $gte: new Date(from_date + "T00:00:00"),
+        $lte: new Date(to_date + "T23:59:59"),
+      },
+    })
+      .populate("customer_id", "name phone")
+      .populate("items.product_id", "name")
+      .populate("items.tax_rate_id", "name")
+      .sort({ invoice_date_time: -1 });
+
+    res.status(200).json(sales);
   } catch (err) {
+    console.error("Sales report error:", err);
     res.status(500).json({ error: err.message });
   }
 };
 
-exports.addSaleReport = async (req, res) => {
-  try {
-    const salereport = new Salereport({
-      ...req.body,
-      created_by_role: req.user.role,
-    });
-    await salereport.save();
-    await salereport.populate("customer_id", "name");
-    res.json(salereport);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
 
-exports.deleteSaleReport = async (req, res) => {
-  try {
-    const deleted = await Salereport.findByIdAndDelete(req.params.id);
-    if (!deleted) {
-      return res.status(404).json({ message: "Reports not found" });
-    }
-    res.json({ message: "Reports deleted" });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-};
+
+
+

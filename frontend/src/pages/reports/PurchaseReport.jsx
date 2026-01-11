@@ -1,179 +1,256 @@
-import  { useEffect, useState } from "react";
-import { MdDeleteForever } from "react-icons/md";
+import { useState } from "react";
 import { FaSearch } from "react-icons/fa";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchsuppliers } from "../../redux/supplierSlice";
-import { addpurchasereport, deletepurchasereport, fetchpurchasereports } from "../../redux/purchasereportSlice";
+import { fetchpurchasereports } from "../../redux/purchasereportSlice";
+import { setAuthToken } from "../../services/userService";
 import ExportButtons from "../../components/ExportButtons";
-import * as XLSX from "xlsx"
-import { saveAs } from "file-saver";
-import jsPDF from "jspdf";
-import autoTable from "jspdf-autotable";
+import ReusableTable from "../../components/ReusableTable";
 const PurchaseReport = () => {
-  const dispatch = useDispatch()
-  const { items: purchasereports, status } = useSelector((state) => state.purchasereports)
-  const { items: suppliers } = useSelector((state) => state.suppliers)
-
-
-  const [form, setForm] = useState({
+  const dispatch = useDispatch();
+  const { items: purchasereports, status } = useSelector(
+    (state) => state.purchasereports
+  );
+const user = JSON.parse(localStorage.getItem("user"));
+  const token = user?.token;
+const [form, setForm] = useState({
     from_date: "",
     to_date: "",
-    supplier_id: "",
-  })
-
-  useEffect(() => {
-    dispatch(fetchsuppliers())
-
-    dispatch(fetchpurchasereports())
-  }, [])
-  const handleChange = (e) => {
-    const { name, value } = e.target
-    setForm({ ...form, [name]: value })
-  }
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    try {
-      dispatch(addpurchasereport(form))
-      setForm({
-        from_date: "",
-        to_date: "",
-        supplier_id: "",
-      })
-    }
-    catch (err) {
-      console.error(err.response?.data || err.message)
-    }
-  }
-  const [search, setSearch] = useState("");
-  const filteredreports = purchasereports.filter((p) => {
-    const supplierName = p.supplier_id?.name || p.supplier_id?.toString() || "";
-    return (
-      supplierName.toLowerCase().includes(search.toLowerCase()) ||
-      p.from_date.toString().toLowerCase().includes(search.toLowerCase())
-    );
   });
 
-
-  const handleDelete = async (id) => {
-    dispatch(deletepurchasereport(id))
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
-  const handleExportExcel = () => {
-      const data = filteredreports.map((r) => ({
-        "From Date": r.from_date ? new Date(r.from_date).toISOString().split("T")[0] : "-",
-        "To Date": r.to_date ? new Date(r.to_date).toISOString().split("T")[0] : "-",
-        Supplier: r.supplier_id?.name || r.supplier_id,
-      
-      }));
-  
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "PurchaseReport");
-  
-      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
-      saveAs(new Blob([excelBuffer], { type: "application/octet-stream" }), "PurchaseReport.xlsx");
-    };
 
-    const handleExportPDF = () => {
-        const doc = new jsPDF();
-        doc.text("Sales Report", 14, 15);
-    
-        const tableData = filteredreports.map((r) => [
-          r.from_date ? new Date(r.from_date).toISOString().split("T")[0] : "-",
-          r.to_date ? new Date(r.to_date).toISOString().split("T")[0] : "-",
-        r.supplier_id?.name || r.supplier_id,
-     
-        ]);
-    
-         autoTable(doc, {
-        startY: 20,
-        head: [["From Date", "To Date", "Supplier", ]],
-        body: tableData,
-      });
-    
-        doc.save("PurchaseReport.pdf");
-      };
-    const handlePrint = () => {
-    window.print();
+  const handleSubmit = (e) => {
+    e.preventDefault();
+if (!form.from_date || !form.to_date) {
+      alert("Please select From & To date");
+      return;
+    }
+ setAuthToken(token);
+    dispatch(fetchpurchasereports(form));
   };
+
+const totalPurchaseAmount = purchasereports.reduce(
+  (sum, purchase) => sum + (purchase.grand_total || 0),
+  0
+);
+
+
+const totalSuppliers = new Set(
+  purchasereports
+    .map((purchase) =>
+      typeof purchase.supplier_id === "object"
+        ? purchase.supplier_id?._id
+        : purchase.supplier_id
+    )
+    .filter(Boolean)
+).size;
+
+const productQtyMap = {};
+
+purchasereports.forEach((purchase) => {
+  purchase.items?.forEach((item) => {
+    const productName =
+      item.product_id?.name || "Unknown Product";
+    const qty = item.qty || 0;
+
+    productQtyMap[productName] =
+      (productQtyMap[productName] || 0) + qty;
+  });
+});
+
+let topProduct = "N/A";
+let topProductQty = 0;
+
+Object.entries(productQtyMap).forEach(([product, qty]) => {
+  if (qty > topProductQty) {
+    topProduct = product;
+    topProductQty = qty;
+  }
+});
+
+  const purchaseReportColumns = [
+  {
+    key: "date",
+    header: "Date",
+    headerStyle: { width: "110px" },
+    render: (purchase) =>
+      purchase.invoice_date
+        ? new Date(purchase.invoice_date).toLocaleDateString()
+        : "N/A",
+  },
+  {
+    key: "invoice_no",
+    header: "Invoice No",
+    headerStyle: { width: "130px" },
+    render: (purchase) => purchase.invoice_no || "N/A",
+  },
+  {
+    key: "supplier",
+    header: "Supplier",
+    headerStyle: { width: "160px" },
+    render: (purchase) => purchase.supplier_id?.name || "N/A",
+  },
+  {
+    key: "items",
+    header: "Items",
+    headerStyle: { width: "240px" },
+    render: (purchase) =>
+      purchase.items
+        ?.map(
+          (i) =>
+            `${i.product_id?.name ?? "Unknown"} (${i.qty ?? 0})`
+        )
+        .join(", "),
+  },
+  {
+    key: "warehouse",
+    header: "Warehouse",
+    headerStyle: { width: "140px" },
+    render: (purchase) =>
+      purchase.warehouse_id?.store_name ||
+      purchase.warehouse_id?.name ||
+      "-",
+  },
+  {
+    key: "total",
+    header: "Total Amount",
+    headerStyle: { width: "120px" },
+    render: (purchase) =>
+      `₹${purchase.grand_total?.toFixed(2) || "0.00"}`,
+  },
+  {
+    key: "payment_mode",
+    header: "Payment Mode",
+    headerStyle: { width: "120px" },
+    render: (purchase) => purchase.payment_mode || "-",
+  },
+];
 
 
   return (
-    <div className="container mt-4 bg-gradient-warning">
+    <div className="container mt-4 bg-white p-4 rounded shadow">
+      <h4 className="mb-3">Purchase Report</h4>
 
-<ExportButtons onExcel={handleExportExcel}  onPdf={handleExportPDF} onPrint={handlePrint}/>
-      <form className="row g-3" onSubmit={handleSubmit}>
-        <div className="col-md-6">
-          <label className="form-label">From Date <span className="text-danger">*</span></label>
-          <input type="date" className="form-control bg-light" name="from_date" value={form.from_date} onChange={handleChange} />
+     <ExportButtons
+  data={purchasereports}
+  columns={purchaseReportColumns}
+  title="Purchase Report"
+/>
+
+      <form className="row g-3 mb-4" onSubmit={handleSubmit}>
+        <div className="col-md-4">
+          <label>From Date <span className="text-danger">*</span></label>
+          <input
+            type="date"
+            className="form-control"
+            name="from_date"
+            value={form.from_date}
+            onChange={handleChange}
+          />
         </div>
-        <div className="col-md-6">
-          <label className="form-label">To Date <span className="text-danger">*</span></label>
-          <input type="date" className="form-control bg-light" name="to_date" value={form.to_date} onChange={handleChange} />
+
+        <div className="col-md-4">
+          <label>To Date <span className="text-danger">*</span></label>
+          <input
+            type="date"
+            className="form-control"
+            name="to_date"
+            value={form.to_date}
+            onChange={handleChange}
+          />
         </div>
-        <div className="col-md-6">
-          <label className="form-label">Supplier <span className="text-danger">*</span></label>
-          <select className="form-select bg-light" name="supplier_id" value={form.supplier_id} onChange={handleChange}>
-            <option value="">-- Select Supplier --</option>
-            {suppliers.map(s => (<option key={s._id} value={s._id}>{s.name}</option>))}
-          </select>
+
+        <div className="col-md-4 d-flex align-items-end">
+          <button className="btn text-white w-100"  style={{backgroundColor:"#182235"}}>
+           Search
+          </button>
         </div>
-        <div className="col-12">
-          <button type="submit" className="btn  px-4 d-flex align-center justify-center text-white" style={{backgroundColor:"#182235"}}>
-           Save </button>
+      </form>
+{purchasereports.length > 0 && (
+  <div className="row mb-4">
+    <div className="col-12">
+      <div className="card">
+        <div className="card-header add text-white">
+          <h5 className="mb-0">Purchase Summary</h5>
         </div>
-      </form><br />
-      <div className=" card shadow-sm">
+
         <div className="card-body">
-          <h5 className="mb-3">PurchaseReport Tree</h5>
-          <div className="mt-4 mb-2 input-group">
-            <input type="text" className="form-control" placeholder="Search Supplier name" value={search} onChange={(e) => setSearch(e.target.value)} />
-            <span className="input-group-text"><FaSearch /></span>
+          <div className="row">
+
+            <div className="col-md-4 mb-3">
+              <div className="card border-primary">
+                <div className="card-body text-center py-3">
+                  <h6 className="card-title text-muted mb-2">
+                    Total Purchases
+                  </h6>
+                  <h4 className="fw-bold" style={{ color: "#4D9AD4" }}>
+                    ₹{totalPurchaseAmount.toFixed(2)}
+                  </h4>
+                  <small className="text-muted">Grand Total</small>
+                </div>
+              </div>
+            </div>
+
+           
+            <div className="col-md-4 mb-3">
+              <div className="card border-primary">
+                <div className="card-body text-center py-3">
+                  <h6 className="card-title text-muted mb-2">
+                    Total Suppliers
+                  </h6>
+                  <h4 className="fw-bold" style={{ color: "#4D9AD4" }}>
+                    {totalSuppliers}
+                  </h4>
+                  <small className="text-muted">Unique Suppliers</small>
+                </div>
+              </div>
+            </div>
+
+            <div className="col-md-4 mb-3">
+              <div className="card border-primary">
+                <div className="card-body text-center py-3">
+                  <h6 className="card-title text-muted mb-2">
+                    Top Product
+                  </h6>
+                  <h5 className="fw-bold" style={{ color: "#4D9AD4" }}>
+                    {topProduct}
+                  </h5>
+                  <small className="text-muted">
+                    Qty Purchased: {topProductQty}
+                  </small>
+                </div>
+              </div>
+            </div>
+
           </div>
-          <table className="table table-bordered table-striped mt-4">
-            <thead className="table-dark">
-              <tr>
-                <th className="fw-bold">From Date</th>
-                <th className="fw-bold">To Date</th>
-                <th className="fw-bold">Supplier</th>
-                <th className="fw-bold">Actions</th>
-
-
-              </tr>
-            </thead>
-            <tbody>
-              {filteredreports.length === 0 ? (
-  <tr>
-    <td colSpan="11" className="text-center">
-      No reports found.
-    </td>
-  </tr>
-) : (
-  filteredreports.map((p) => (
-
-                  <tr key={p._id}>
-
-                    <td>{p.from_date ? new Date(p.from_date).toISOString().split('T')[0]:"-"}</td>
-                    <td>{p.to_date ? new Date(p.to_date).toISOString().split("T")[0]:"-"}</td>
-                    <td>{p.supplier_id?.name || p.supplier_id || "-"}</td>
-                    <td>
-                      <button
-                        className="btn  btn-sm px-4 d-flex align-items-center justify-content-center"
-                        onClick={() => handleDelete(p._id)}
-                      >
-                        <span className="text-danger me-2 d-flex align-items-center">
-                          <MdDeleteForever />
-                        </span>
-                        
-                      </button>
-                    </td>
-
-
-                  </tr>
-                )))}
-            </tbody>
-          </table>
         </div>
       </div>
+    </div>
+  </div>
+)}
+
+<div className="row mb-4">
+  <div className="col-12">
+    <div className="card">
+      <div className="card-header add text-white">
+        <h5 className="mb-0">Purchase History</h5>
+      </div>
+
+      <div className="card-body">
+        <ReusableTable
+          data={purchasereports}
+          columns={purchaseReportColumns}
+          loading={status === "loading"}
+          searchable={false}
+          emptyMessage="No purchases found for selected date range."
+          className="mt-0"
+        />
+      </div>
+    </div>
+  </div>
+</div>
 
     </div>
   );

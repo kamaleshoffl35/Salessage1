@@ -8,7 +8,7 @@ const Reports = () => {
   const reports = [
     { path: "sales", label: "Sales Report", roles: ["super_admin", "admin", "user"] },
     { path: "purchase", label: "Purchase Report", roles: ["super_admin"] },
-    { path: "stock", label: "Stock Report", roles: ["super_admin", "admin"] },
+    { path: "stock", label: "SalesReturn Report", roles: ["super_admin", "admin"] },
     { path: "gst", label: "GST Report", roles: ["super_admin"] },
     { path: "profitloss", label: "Profit/Loss Report", roles: ["super_admin"] },
   ];

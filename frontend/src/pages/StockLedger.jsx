@@ -8,11 +8,13 @@ import { setAuthToken } from "../services/userService";
 import ReusableTable, {createCustomRoleActions,} from "../components/ReusableTable";
 import API from "../api/axiosInstance";
 import HistoryModal from "../components/HistoryModal";
+import { fetchSalesReturns } from "../redux/salesReturnSlice";
 const StockLedger = () => {
   const dispatch = useDispatch();
   const { items: stocks, status } = useSelector((state) => state.stockss);
   const { items: products } = useSelector((state) => state.products);
   const { items: warehouses } = useSelector((state) => state.warehouses);
+  const {items: salesReturn}=useSelector((state)=>state.salesReturn)
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.role || "user";
   const token = user?.token;
@@ -43,7 +45,7 @@ const StockLedger = () => {
     const { name, value } = e.target;
     setForm((prev) => {
       const updated = { ...prev, [name]: value };
-      if (["inQty", "outQty"].includes(name)) {
+      if (["inQty", "outQty","quantity"].includes(name)) {
         updated.balanceQty =
           Number(updated.oldQty || 0) + Number(updated.inQty || 0);
       }
@@ -100,7 +102,8 @@ const StockLedger = () => {
       txnDate: stock.txnDate ? stock.txnDate.slice(0, 10) : "",
       inQty: stock.inQty || "",
       outQty: stock.outQty || 0,
-      balanceQty: stock.balanceQty || "",
+      quantity: stock.quantity || 0,
+            balanceQty: stock.balanceQty || "",
     });
     setShowModal(true);
   };
@@ -179,10 +182,16 @@ const StockLedger = () => {
       .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
     const oldQty = lastLedger ? Number(lastLedger.balanceQty) : 0;
     const inQty = Number(form.inQty || 0);
+    const lastreturnquantity = salesReturn.filter(
+      (s)=>String(s.productId?._id || s.productId) === String(form.productId) &&
+          String(s.warehouseId?._id || s.warehouseId) ===
+            String(form.warehouseId)
+    ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
     setForm((prev) => ({
       ...prev,
       oldQty,
       outQty: lastLedger ? Number(lastLedger.outQty || 0) : 0,
+      quantity: lastreturnquantity ? Number(lastreturnquantity.quantity || 0) : 0,
       balanceQty: oldQty + inQty,
     }));
   }, [form.productId, form.warehouseId, form.inQty, stocks]);
@@ -231,7 +240,12 @@ const StockLedger = () => {
       headerStyle: { width: "80px" },
       render: (stock) => stock.outQty || "0",
     },
-
+{
+      key: "quantity",
+      header: "Return Qty",
+      headerStyle: { width: "80px" },
+      render: (stock) => stock.quantity || "0",
+    },
     {
       key: "balanceQty",
       header: "Balance Qty",
@@ -438,6 +452,16 @@ const StockLedger = () => {
                       type="number"
                       className="form-control bg-light"
                       value={form.outQty}
+                      readOnly
+                    />
+                  </div>
+
+                    <div className="col-md-6">
+                    <label className="form-label">Return Qty</label>
+                    <input
+                      type="number"
+                      className="form-control bg-light"
+                      value={form.quantity}
                       readOnly
                     />
                   </div>

@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchcustomers } from "../redux/customerSlice";
 import { fetchpayments } from "../redux/customerpaymentSlice";
 import { fetchsales } from "../redux/saleSlice";
+import { createSalesReturn } from "../redux/salesReturnSlice";
 
 import ReusableTable, {
   createRoleBasedActions,
@@ -26,6 +27,7 @@ const SalesReturn = () => {
 
 const [form, setForm] = useState({
   invoice_no: "",
+  invoice_date_time:new Date().toISOString().slice(0, 10),
   product_id: "",
   quantity: "",
   reason: "",
@@ -184,35 +186,40 @@ const handleSubmit = async (e) => {
   }
 
   try {
-    await API.post("/sales-returns", {
-      invoice_no: form.invoice_no,
-      customer_id: selectedSale.customer_id?._id || selectedSale.customer_id,
-      items: [
-        {
-          product_id: form.product_id,
-          quantity: Number(form.quantity),
-          return_amount: Number(form.return_amount),
-        },
-      ],
-      reason: form.reason,
-    });
+    await dispatch(
+      createSalesReturn({
+        invoice_no: form.invoice_no,
+        customer_id:
+          selectedSale.customer_id?._id || selectedSale.customer_id,
+        items: [
+          {
+            product_id: form.product_id,
+            quantity: Number(form.quantity),
+            return_amount: Number(form.return_amount),
+          },
+        ],
+        reason: form.reason,
+      })
+    ).unwrap(); // 🔥 catches backend errors properly
 
     alert("Sales Return Created Successfully");
 
     setForm({
       invoice_no: "",
+      invoice_date_time: new Date().toISOString().slice(0, 10),
       product_id: "",
       quantity: "",
       reason: "",
       return_amount: 0,
     });
 
-    dispatch(fetchsales());
+    dispatch(fetchsales()); // refresh sales list
   } catch (err) {
     console.error("Sales return error:", err);
-    alert(err.response?.data?.message || "Sales return failed");
+    alert(err);
   }
 };
+
 
 
 
@@ -378,6 +385,17 @@ const handleSubmit = async (e) => {
           </select>
         </div>
 
+        <div className="col-md-3">
+                      <label>Invoice Date</label>
+                      <input
+                        type="date"
+                        name="invoice_date_time"
+                        value={form.invoice_date_time}
+                        onChange={handleChange}
+                        className="form-control bg-light"
+                        required
+                      /></div>
+
         <div className="col-md-6">
           <label className="form-label">Product</label>
           <select
@@ -398,6 +416,7 @@ const handleSubmit = async (e) => {
             ))}
           </select>
         </div>
+        
 
         <div className="col-md-6">
   <label className="form-label">Quantity</label>

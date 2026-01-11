@@ -1,22 +1,14 @@
 import { createSlice,createAsyncThunk } from "@reduxjs/toolkit";
 import API from "../api/axiosInstance";
 
-const API_URL="/reports/purchase"
-
-export const fetchpurchasereports=createAsyncThunk("reports/purchase/fetchAll",async () => {
-    const res=await API.get(API_URL)
+export const fetchpurchasereports=createAsyncThunk("purchasereports/fetch",async ({from_date,to_date},{rejectWithValue}) => {
+    try {
+        const res=await API.get( `/reports/purchase?from_date=${from_date}&to_date=${to_date}`)
     return res.data
-})
-
-export const addpurchasereport=createAsyncThunk("reports/purchase/add",async (purchasereport) => {
-    const res=await API.post(API_URL,purchasereport)
-    return res.data
-})
-
-export const deletepurchasereport=createAsyncThunk("reports/purchase/delete",async (id) => {
-    await API.delete(`${API_URL}/${id}`)
-    return id
-})
+}
+  catch (err) {
+      return rejectWithValue(err.response?.data || err.message);
+    }})
 
 const purchasereportSlice=createSlice({
     name:"purchasereports",
@@ -39,12 +31,7 @@ const purchasereportSlice=createSlice({
             state.status="failed"
             state.error=action.error.message
         })
-        .addCase(addpurchasereport.fulfilled,(state,action)=>{
-            state.items.push(action.payload)
-        })
-        .addCase(deletepurchasereport.fulfilled,(state,action)=>{
-            state.items=state.items.filter((p)=>p._id !== action.payload)
-        })
+        
     }
 })
 

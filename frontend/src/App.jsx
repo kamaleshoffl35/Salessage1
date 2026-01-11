@@ -15,7 +15,7 @@ import StockAdjustment from "./pages/StockAdjustment";
 import SalesReport from "./pages/reports/SalesReport";
 import Reports from "./pages/Reports";
 import PurchaseReport from "./pages/reports/PurchaseReport";
-import StockReport from "./pages/reports/StockReport";
+
 import GstReport from "./pages/reports/GSTReport";
 import ProfitLossReport from "./pages/reports/ProfitLossReport";
 import StockLedger from "./pages/StockLedger";
@@ -31,6 +31,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { isTokenExpired } from "./utils/Tokenexp";
 import  SalesReturn  from "./pages/SalesReturn";
+import SalesReturnReport from "./pages/reports/SalesReturnReport";
 
 const token = localStorage.getItem("token");
 if (token) setAuthToken(token);
@@ -104,7 +105,7 @@ function App() {
             <Route index element={<SalesReport />} />
             <Route path="sales" element={<SalesReport />} />
             <Route path="purchase" element={<PurchaseReport />} />
-            <Route path="stock" element={<StockReport />} />
+            <Route path="stock" element={<SalesReturnReport />} />
             <Route path="gst" element={<GstReport />} />
             <Route path="profitloss" element={<ProfitLossReport />} />
           </Route>

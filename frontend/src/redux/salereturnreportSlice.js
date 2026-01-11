@@ -1,12 +1,12 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import API from "../api/axiosInstance";
 
-export const fetchsalereports = createAsyncThunk(
-  "salereports/fetch",
+export const fetchsalereturnreports = createAsyncThunk(
+  "salereturnreports/fetch",
   async ({ from_date, to_date }, { rejectWithValue }) => {
     try {
       const res = await API.get(
-  `/reports/sales?from_date=${from_date}&to_date=${to_date}`
+  `/reports/salesreturns?from_date=${from_date}&to_date=${to_date}`
 )
 
       return res.data;
@@ -16,8 +16,8 @@ export const fetchsalereports = createAsyncThunk(
   }
 );
 
-const salereportSlice = createSlice({
-  name: "salereports",
+const salereturnreportSlice = createSlice({
+  name: "salereturnreports",
   initialState: {
     items: [],
     status: "idle",
@@ -26,18 +26,18 @@ const salereportSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     builder
-      .addCase(fetchsalereports.pending, (state) => {
+      .addCase(fetchsalereturnreports.pending, (state) => {
         state.status = "loading";
       })
-      .addCase(fetchsalereports.fulfilled, (state, action) => {
+      .addCase(fetchsalereturnreports.fulfilled, (state, action) => {
         state.status = "succeeded";
         state.items = action.payload;
       })
-      .addCase(fetchsalereports.rejected, (state, action) => {
+      .addCase(fetchsalereturnreports.rejected, (state, action) => {
         state.status = "failed";
         state.error = action.payload;
       });
   },
 });
 
-export default salereportSlice.reducer;
+export default salereturnreportSlice.reducer;

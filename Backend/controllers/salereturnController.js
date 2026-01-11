@@ -1,39 +1,60 @@
 const SalesReturn = require("../models/SalesReturn");
 const Sale = require("../models/Sale");
-const Customer = require("../models/Customer");
 const Product= require("../models/Product")
 const StockLedger = require("../models/Stockledger");
 
 exports.addSalesReturn = async (req, res) => {
   try {
-    const { invoice_no, customer_id, items, reason } = req.body;
-
-    const sale = await Sale.findById(invoice_no);
-    if (!sale) return res.status(404).json({ message: "Invoice not found." });
-
+    const { invoice_no, items, reason } = req.body;
+        const sale = await Sale.findById(invoice_no).populate("customer_id");
+    if (!sale) {
+      return res.status(404).json({ message: "Invoice not found." });
+    }
+const updatedItems = [];
+    for (const item of items) {
+      const product = await Product.findById(item.product_id);
+      if (!product) {
+        return res.status(404).json({ message: "Product not found." });
+      }
+      updatedItems.push({
+        product_id: item.product_id,
+        product_name: product.name,   
+        quantity: item.quantity,
+        return_amount: item.return_amount,
+      });
+}
     const salesReturn = new SalesReturn({
-      ...req.body,
-      created_by: req.user._id,
+      invoice_no: sale._id,
+      invoice_number: sale.invoice_no,            
+      invoice_date_time: sale.invoice_date_time,  
+customer_id: sale.customer_id._id,
+      customer_name: sale.customer_id.name,      
+      customer_phone: sale.customer_id.phone,
+items: updatedItems,
+      reason,
+created_by: req.user._id,
       created_by_name: req.user.name,
     });
+await salesReturn.save();
 
-    await salesReturn.save();
-
-    for (const item of items) {
+    for (const item of updatedItems) {
       const lastLedger = await StockLedger.findOne({
         productId: item.product_id,
         warehouseId: sale.warehouse_id,
       }).sort({ createdAt: -1 });
+      const returnquantity = Number(item.quantity)
 
       const previousBalance = lastLedger ? lastLedger.balanceQty : 0;
 
       await StockLedger.create({
         productId: item.product_id,
         warehouseId: sale.warehouse_id,
-        txnType: "SALES_RETURN",
+       
+         txnDate: new Date(), 
         txnId: salesReturn._id.toString(),
         inQty: item.quantity,
         outQty: 0,
+        quantity:returnquantity,
         rate: item.return_amount,
         balanceQty: previousBalance + item.quantity,
         created_by: req.user._id,
@@ -41,13 +62,17 @@ exports.addSalesReturn = async (req, res) => {
       });
     }
 
-    res.status(201).json({ message: "Sales Return Created Successfully", salesReturn });
+    res.status(201).json({
+      message: "Sales Return Created Successfully",
+      salesReturn,
+    });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server Error", error: err.message });
+    console.error("Sales Return Error:", err);
+    res.status(500).json({
+      message: err.message || "Sales return failed",
+    });
   }
 };
-
 
 exports.getSalesReturns = async (req, res) => {
   try {

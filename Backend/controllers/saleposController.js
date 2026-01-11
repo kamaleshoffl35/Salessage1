@@ -126,3 +126,27 @@ exports.getSaleById = async (req, res) => {
     res.status(500).json({ error: err.message });
   }
 };
+
+
+exports.getSalesByDateRange = async (req, res) => {
+  try {
+    const { from_date, to_date } = req.query;
+
+    if (!from_date || !to_date) {
+      return res.status(400).json({ message: "From date & To date required" });
+    }
+
+    const sales = await Sale.find({
+      invoice_date_time: {
+        $gte: new Date(from_date),
+        $lte: new Date(to_date),
+      },
+    })
+      .populate("customer_id", "name")
+      .populate("items.product_id", "name");
+
+    res.json(sales);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
