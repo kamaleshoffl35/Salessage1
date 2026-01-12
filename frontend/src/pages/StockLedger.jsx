@@ -170,31 +170,29 @@ const StockLedger = () => {
     );
   };
 
-  useEffect(() => {
-    if (!form.productId || !form.warehouseId) return;
-    const lastLedger = stocks
-      .filter(
-        (s) =>
-          String(s.productId?._id || s.productId) === String(form.productId) &&
-          String(s.warehouseId?._id || s.warehouseId) ===
-            String(form.warehouseId)
-      )
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-    const oldQty = lastLedger ? Number(lastLedger.balanceQty) : 0;
-    const inQty = Number(form.inQty || 0);
-    const lastreturnquantity = salesReturn.filter(
-      (s)=>String(s.productId?._id || s.productId) === String(form.productId) &&
-          String(s.warehouseId?._id || s.warehouseId) ===
-            String(form.warehouseId)
-    ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
-    setForm((prev) => ({
-      ...prev,
-      oldQty,
-      outQty: lastLedger ? Number(lastLedger.outQty || 0) : 0,
-      quantity: lastreturnquantity ? Number(lastreturnquantity.quantity || 0) : 0,
-      balanceQty: oldQty + inQty,
-    }));
-  }, [form.productId, form.warehouseId, form.inQty, stocks]);
+useEffect(() => {
+  if (!form.productId || !form.warehouseId) return;
+
+  const relatedLedgers = stocks.filter(
+    (s) =>
+      String(s.productId?._id || s.productId) === String(form.productId) &&
+      String(s.warehouseId?._id || s.warehouseId) === String(form.warehouseId)
+  );
+
+  const lastLedger = relatedLedgers
+    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))[0];
+
+  setForm((prev) => ({
+    ...prev,
+    oldQty: lastLedger ? Number(lastLedger.balanceQty) : 0,
+    outQty: lastLedger ? Number(lastLedger.outQty || 0) : 0,
+    quantity: 0,            
+    balanceQty: lastLedger ? Number(lastLedger.balanceQty) : 0,
+  }));
+}, [form.productId, form.warehouseId, stocks]);
+
+
+
 
   const tableColumns = [
     {
@@ -241,11 +239,16 @@ const StockLedger = () => {
       render: (stock) => stock.outQty || "0",
     },
 {
-      key: "quantity",
-      header: "Return Qty",
-      headerStyle: { width: "80px" },
-      render: (stock) => stock.quantity || "0",
-    },
+  key: "quantity",
+  header: "Return Qty",
+  render: (stock) => {
+    if (stock.txnType === "SALES_RETURN") {
+      return stock.quantity || 0;
+    }
+    return "-";
+  },
+}
+,
     {
       key: "balanceQty",
       header: "Balance Qty",
@@ -335,6 +338,30 @@ const StockLedger = () => {
       setShowHistoryModal(true);
     }
   };
+
+  const returnSummary = filteredStocks
+  .filter((s) => s.txnType === "SALES_RETURN")
+  .reduce((acc, curr) => {
+    const productId =
+      typeof curr.productId === "object" ? curr.productId._id : curr.productId;
+
+    const productName =
+      typeof curr.productId === "object"
+        ? curr.productId.name
+        : products.find((p) => p._id === curr.productId)?.name || "Unknown";
+
+    if (!acc[productId]) {
+      acc[productId] = {
+        productId,
+        productName,
+        totalQty: 0,
+      };
+    }
+
+    acc[productId].totalQty += Number(curr.quantity || 0);
+    return acc;
+  }, {});
+
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
@@ -456,16 +483,6 @@ const StockLedger = () => {
                     />
                   </div>
 
-                    <div className="col-md-6">
-                    <label className="form-label">Return Qty</label>
-                    <input
-                      type="number"
-                      className="form-control bg-light"
-                      value={form.quantity}
-                      readOnly
-                    />
-                  </div>
-
                   <div className="col-md-6">
                     <label className="form-label">Old Qty</label>
                     <input
@@ -535,6 +552,24 @@ const StockLedger = () => {
           setSearchType("");
         }}
       />
+<br />
+      {Object.values(returnSummary).length > 0 && (
+  <div className="row mb-4">
+    {Object.values(returnSummary).map((item) => (
+      <div className="col-md-3" key={item.productId}>
+        <div className="card shadow-sm border-primary h-100">
+          <div className="card-body text-center">
+            <h6 className="fw-bold text-primary mb-2">{item.productName}</h6>
+            <p className="mb-0 fs-5">
+              Returned: <strong>{item.totalQty}</strong>
+            </p>
+          </div>
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
       <HistoryModal
         open={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}

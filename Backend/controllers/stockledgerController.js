@@ -1,27 +1,23 @@
 const Stockledger = require("../models/Stockledger");
 exports.getStockledger = async (req, res) => {
   try {
-    let ledgers;
+    let query = {};
     if (req.user.role === "user") {
-      ledgers = await Stockledger.find({
-        created_by_role: { $in: ["super_admin", "admin", "user"] },
-      })
-        .populate("productId", "name")
-        .populate("warehouseId", "store_name")
-        .lean()
-        .populate("created_by", "name email role");
+      query.created_by_role = { $in: ["super_admin", "admin", "user"] };
     }
-    ledgers = await Stockledger.find()
+const ledgers = await Stockledger.find(query)
       .limit(500)
       .populate("productId", "name")
-      .populate("warehouseId", "store_name")
-      .lean()
-      .populate("created_by", "name email role");
+      .populate("warehouseId", "store_name") 
+      .populate("created_by", "name email role")
+      .lean();
+
     res.json(ledgers);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
+
 
 exports.postStockledger = async (req, res) => {
   try {
@@ -112,6 +108,8 @@ exports.updateStockledger = async (req, res) => {
 exports.getStockById = async (req, res) => {
   try {
     const stock = await Stockledger.findById(req.params.id)
+     .populate("productId", "name")
+      .populate("warehouseId", "store_name")
       .populate("created_by", "name email role")
       .populate("updated_by", "name email role");
     if (!stock) {

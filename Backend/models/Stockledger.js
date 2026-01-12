@@ -4,7 +4,7 @@ const StockLedgerSchema = new mongoose.Schema(
     productId:{type:mongoose.Schema.Types.ObjectId,ref:"Product",required: true,},
     created_by_role:{type:String,required:true},
     warehouseId: {type: mongoose.Schema.Types.ObjectId,ref: "Warehouse",},
-    txnType: {type: String,enum: ["SALE", "PURCHASE", "ADJUSTMENT",]},
+    txnType: {type: String,enum: ["SALE", "PURCHASE", "ADJUSTMENT","SALES_RETURN"]},
     txnId: {type: String,required: true,},
     txnDate: {type: Date,required: true,},
     inQty: {type: Number,default: 0, },

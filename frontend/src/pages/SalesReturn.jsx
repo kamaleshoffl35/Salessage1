@@ -116,7 +116,6 @@ useEffect(() => {
     return;
   }
 
-  // ✅ NET per-unit price from invoice total
   const perUnitAmount = totalInvoiceAmount / totalProductQty;
 
   const returnAmount = perUnitAmount * returnQty;
@@ -344,7 +343,7 @@ const handleSubmit = async (e) => {
      
       {selectedCustomer && (
   <>
-    {/* ================= Sales History Table ================= */}
+  
     <div className="row mb-4">
       <div className="col-12">
         <div className="card">
@@ -365,11 +364,10 @@ const handleSubmit = async (e) => {
       </div>
     </div>
 
-    {/* ================= Sales Return Form ================= */}
     <form onSubmit={handleSubmit}>
       <div className="row">
         <div className="col-md-6">
-          <label className="form-label">Invoice No</label>
+          <label className="form-label">Invoice No <span className="text-danger">*</span></label>
           <select
             className="form-select bg-light"
             name="invoice_no"
@@ -385,8 +383,8 @@ const handleSubmit = async (e) => {
           </select>
         </div>
 
-        <div className="col-md-3">
-                      <label>Invoice Date</label>
+        <div className="col-md-6">
+                      <label>Invoice Date <span className="text-danger">*</span></label>
                       <input
                         type="date"
                         name="invoice_date_time"
@@ -397,7 +395,7 @@ const handleSubmit = async (e) => {
                       /></div>
 
         <div className="col-md-6">
-          <label className="form-label">Product</label>
+          <label className="form-label">Product <span className="text-danger">*</span></label>
           <select
             className="form-select bg-light"
             name="product_id"
@@ -419,7 +417,7 @@ const handleSubmit = async (e) => {
         
 
         <div className="col-md-6">
-  <label className="form-label">Quantity</label>
+  <label className="form-label">Quantity <span className="text-danger">*</span></label>
   <input
     type="number"
     className="form-control bg-light"
@@ -435,14 +433,13 @@ const handleSubmit = async (e) => {
     onChange={handleChange}
   />
   <small className="text-muted">
-    Sold Qty: {selectedSaleItem?.qty || 0} |  
-    Available Stock: {getAvailableStock(form.product_id)}
+    Sold Qty: {selectedSaleItem?.qty || 0} 
   </small>
 </div>
 
 
         <div className="col-md-6">
-          <label className="form-label">Return Amount</label>
+          <label className="form-label">Return Amount <span className="text-danger">*</span></label>
           <input
             type="text"
             className="form-control bg-light"
@@ -452,7 +449,7 @@ const handleSubmit = async (e) => {
         </div>
 
         <div className="col-md-6">
-          <label className="form-label">Reason</label>
+          <label className="form-label">Reason <span className="text-danger">*</span></label>
           <input
             type="text"
             className="form-control bg-light"

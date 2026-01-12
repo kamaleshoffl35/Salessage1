@@ -6,7 +6,10 @@ const StockLedger = require("../models/Stockledger");
 exports.addSalesReturn = async (req, res) => {
   try {
     const { invoice_no, items, reason } = req.body;
-        const sale = await Sale.findById(invoice_no).populate("customer_id");
+       const sale = await Sale.findById(invoice_no)
+  .populate("customer_id")
+  .populate("warehouseId"); 
+
     if (!sale) {
       return res.status(404).json({ message: "Invoice not found." });
     }
@@ -37,30 +40,36 @@ created_by: req.user._id,
     });
 await salesReturn.save();
 
-    for (const item of updatedItems) {
-      const lastLedger = await StockLedger.findOne({
-        productId: item.product_id,
-        warehouseId: sale.warehouse_id,
-      }).sort({ createdAt: -1 });
-      const returnquantity = Number(item.quantity)
+  for (const item of updatedItems) {
+  const lastLedger = await StockLedger.findOne({
+    productId: item.product_id,
+    warehouseId: sale.warehouseId._id || sale.warehouseId,
 
-      const previousBalance = lastLedger ? lastLedger.balanceQty : 0;
+  }).sort({ createdAt: -1 });
 
-      await StockLedger.create({
-        productId: item.product_id,
-        warehouseId: sale.warehouse_id,
-       
-         txnDate: new Date(), 
-        txnId: salesReturn._id.toString(),
-        inQty: item.quantity,
-        outQty: 0,
-        quantity:returnquantity,
-        rate: item.return_amount,
-        balanceQty: previousBalance + item.quantity,
-        created_by: req.user._id,
-        created_by_role: req.user.role,
-      });
-    }
+  const previousBalance = lastLedger ? lastLedger.balanceQty : 0;
+
+  await StockLedger.create({
+    productId: item.product_id,
+  warehouseId: sale.warehouseId._id || sale.warehouseId,
+
+
+
+    txnType: "SALES_RETURN",
+    txnDate: new Date(),
+    txnId: `TD-${Math.floor(1000 + Math.random() * 9000)}`,
+
+
+    inQty: 0,
+    outQty: 0,
+    quantity: item.quantity,
+    balanceQty: previousBalance,
+    created_by: req.user._id,
+    created_by_role: req.user.role,
+  });
+}
+
+
 
     res.status(201).json({
       message: "Sales Return Created Successfully",
