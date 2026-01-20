@@ -9,6 +9,7 @@ const StockLedgerSchema = new mongoose.Schema(
     txnDate: {type: Date,required: true,},
     inQty: {type: Number,default: 0, },
     outQty: {type: Number,default: 0,},
+    rate: {type: Number,required: true,default: 0},
     quantity:{type:Number,default:0},
     balanceQty: {type: Number,default: 0,},
     created_by:{type:mongoose.Schema.Types.ObjectId,ref:"User",required:false},
@@ -23,7 +24,5 @@ const StockLedgerSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-module.exports =
- 
-  mongoose.model("StockLedger", StockLedgerSchema);
+module.exports =mongoose.model("StockLedger", StockLedgerSchema);
 

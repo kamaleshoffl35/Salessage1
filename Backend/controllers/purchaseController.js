@@ -89,7 +89,7 @@ exports.updatePurchase = async (req, res) => {
     const updated = await Purchase.findByIdAndUpdate(
       req.params.id,
       allowedFields,
-      { new: true }
+      { new: true },
     )
       .populate("created_by", "name email role")
       .populate("updated_by", "name email role");

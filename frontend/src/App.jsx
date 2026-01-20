@@ -16,7 +16,7 @@ import SalesReport from "./pages/reports/SalesReport";
 import Reports from "./pages/Reports";
 import PurchaseReport from "./pages/reports/PurchaseReport";
 
-import GstReport from "./pages/reports/GSTReport";
+
 import ProfitLossReport from "./pages/reports/ProfitLossReport";
 import StockLedger from "./pages/StockLedger";
 import Expenses from "./pages/Expenses";
@@ -32,6 +32,7 @@ import { useEffect } from "react";
 import { isTokenExpired } from "./utils/Tokenexp";
 import  SalesReturn  from "./pages/SalesReturn";
 import SalesReturnReport from "./pages/reports/SalesReturnReport";
+import ExpenseReport from "./pages/reports/ExpenseReport";
 
 const token = localStorage.getItem("token");
 if (token) setAuthToken(token);
@@ -106,7 +107,7 @@ function App() {
             <Route path="sales" element={<SalesReport />} />
             <Route path="purchase" element={<PurchaseReport />} />
             <Route path="stock" element={<SalesReturnReport />} />
-            <Route path="gst" element={<GstReport />} />
+            <Route path="gst" element={<ExpenseReport />} />
             <Route path="profitloss" element={<ProfitLossReport />} />
           </Route>
         </Route>
