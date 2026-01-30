@@ -1,6 +1,6 @@
 import { configureStore } from "@reduxjs/toolkit";
 import productReducer from "./productSlice";
-import categoryReducer from "./categorySlice";
+// import categoryReducer from "./categorySlice";
 // import unitReducer from "./unitSlice"
 import taxReducer from "./taxSlice";
 import customerReducer from "./customerSlice";
@@ -10,7 +10,6 @@ import purchaseReducer from "./purchaseSlice";
 import saleReducer from "./saleSlice";
 import customerPaymentReducer from "./customerpaymentSlice";
 import supplierPaymentReducer from "./supplierpaymentSlice";
-import stockadjReducer from "./stockadjSlice";
 import stockledgerReducer from "./stockledgerSlice";
 import expenseReducer from "./expenseSlice";
 import salesReturnReducer from "./salesReturnSlice";
@@ -25,7 +24,7 @@ import profitlossReducer from "./profitlossSlice";
 export const store = configureStore({
   reducer: {
     products: productReducer,
-    categories: categoryReducer,
+    // categories: categoryReducer,
     // units:unitReducer,
     taxes: taxReducer,
     customers: customerReducer,
@@ -35,7 +34,6 @@ export const store = configureStore({
     sales: saleReducer,
     cus_payments: customerPaymentReducer,
     sup_payments: supplierPaymentReducer,
-    stocks: stockadjReducer,
     stockss: stockledgerReducer,
     salesReturn: salesReturnReducer,
     salereports: salereportReducer,

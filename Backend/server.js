@@ -4,7 +4,7 @@ const cors = require("cors");
 const path = require("path");
 require("dotenv").config();
 const productRoutes = require("./routes/productRoutes");
-const categoryRoutes = require("./routes/categoryRoutes");
+// const categoryRoutes = require("./routes/categoryRoutes");
 const taxRoutes = require("./routes/taxRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
@@ -14,7 +14,7 @@ const saleposRoutes = require("./routes/saleposRoutes");
 const salereturnRoutes = require("./routes/salereturnRoutes")
 const customerpaymentRoutes = require("./routes/customerpaymentRoutes");
 const supplierpaymentRoutes = require("./routes/supplierpaymentRoutes");
-const stockadjustmentRoutes = require("./routes/stockadjRoutes");
+// const stockadjustmentRoutes = require("./routes/stockadjRoutes");
 const stockledgerRoutes = require("./routes/stockledgerRoutes");
 const expenseRoutes = require("./routes/expenseRoutes");
 const reportRoutes = require("./routes/reportRoutes");
@@ -37,7 +37,7 @@ mongoose.connect(process.env.MONGO_URI)
     await importGoogleTaxonomyIfEmpty(); })
 .catch(err => console.log(err));
 app.use("/api/products", productRoutes);
-app.use("/api/categories", categoryRoutes);
+// app.use("/api/categories", categoryRoutes);
 app.use("/api/taxes", taxRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/suppliers", supplierRoutes);
@@ -47,7 +47,7 @@ app.use("/api/sales", saleposRoutes);
 app.use("/api/sales-returns",salereturnRoutes)
 app.use("/api/cus_payments", customerpaymentRoutes);
 app.use("/api/sup_payments", supplierpaymentRoutes);
-app.use("/api/stocks", stockadjustmentRoutes);
+// app.use("/api/stocks", stockadjustmentRoutes);
 app.use("/api/stockledger", stockledgerRoutes);
 app.use("/api/expenses", expenseRoutes);
 app.use("/api/reports", reportRoutes);

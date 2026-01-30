@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import Product from "./pages/Product";
-import Category from "./pages/Category";
+// import Category from "./pages/Category";
 import Tax from "./pages/Tax";
 import Customer from "./pages/Customer";
 import Supplier from "./pages/Supplier";
@@ -61,7 +61,7 @@ function App() {
         <Route element={<ProtectedRoute roles={["super_admin", "admin", "user"]} />}>
           <Route path="/" element={<Dashboard />}>
             <Route path="products" element={<Product />} />
-            <Route path="categories" element={<Category />} />
+            {/* <Route path="categories" element={<Category />} /> */}
             <Route path="taxes" element={<Tax />} />
             <Route path="customers" element={<Customer />} />
             <Route path="suppliers" element={<Supplier />} />

@@ -25,7 +25,7 @@ const Purchase = () => {
 const navigate = useNavigate();
   const [purchase, setPurchase] = useState({
     supplier_id: "",
-    invoice_no: "",
+ invoice_no: "",
     invoice_date: "",
     warehouse_id: "",
     items: [
@@ -379,6 +379,7 @@ useEffect(() => {
       .join(", ");
   };
 
+
   const calculateTotalsFromItems = (items) => {
     let subtotal = 0;
 
@@ -694,19 +695,20 @@ useEffect(() => {
                     </select>
                   </div>
 
-                  <div className="col-md-6">
+                  {/* <div className="col-md-6">
                     <label className="form-label">
                       Invoice No <span className="text-danger">*</span>
                     </label>
-                    <input
-                      type="text"
-                      name="invoice_no"
-                      className="form-control bg-light"
-                      value={purchase.invoice_no}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
+                <input
+  type="text"
+  name="invoice_no"
+  className="form-control bg-light"
+  value={purchase.invoice_no}
+  disabled
+/>
+
+
+                  </div> */}
                   <div className="col-md-6">
                     <label className="form-label">
                       Invoice Date <span className="text-danger">*</span>

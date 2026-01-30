@@ -36,8 +36,6 @@ const Product = () => {
     sale_price: "",
     status: true,
   });
-
-  const [brands, setBrands] = useState([]);
   const [searchNameSku, setSearchNameSku] = useState("");
   const [searchCategory, setSearchCategory] = useState("");
   const [categories, setCategories] = useState([]);
@@ -99,6 +97,7 @@ const Product = () => {
       ...prev,
       category_id: categoryId,
       subcategory_id: "",
+       brand_name: "",
     }));
 
     if (!categoryId) {
@@ -262,6 +261,11 @@ const Product = () => {
       header: "Category",
       render: (p) => p.category_id?.name || p.category_id || "",
     },
+     {
+    key: "subcategory",
+    header: "Subcategory",
+    render: (p) => p.subcategory_id?.name || p.subcategory_id || "-", // Add this
+  },
     { key: "brand_name", header: "Brand", render: (p) => p.brand_name || "-" },
     {
       key: "warehouse",
@@ -469,24 +473,18 @@ const Product = () => {
                     </div>
                   )}
 
-                  {brands.length > 0 && (
-                    <div className="col-md-6">
-                      <label className="form-label">Brand (Optional)</label>
-                      <select
-                        className="form-select bg-light"
-                        name="brand_name"
-                        value={form.brand_name}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select Brand</option>
-                        {brands.map((brand, index) => (
-                          <option key={index} value={brand}>
-                            {brand}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                 <div className="col-md-6">
+  <label className="form-label">Brand (Optional)</label>
+  <input
+    type="text"
+    className="form-control bg-light"
+    name="brand_name"
+    value={form.brand_name}
+    onChange={handleChange}
+    placeholder="Enter Brand Name"
+  />
+</div>
+
 
                   <div className="col-md-6">
                     <label className="form-label">Variant</label>

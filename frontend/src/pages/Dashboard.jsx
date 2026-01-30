@@ -48,7 +48,7 @@ useEffect(() => {
   const modules = [
     { name: "Dashboard", path: "/", icon: <AiOutlineDashboard />, roles: ["super_admin", "admin", "user"] },
     { name: "Products", path: "/products", icon: <MdProductionQuantityLimits />, roles: ["super_admin", "admin", "user"] },
-    { name: "Categories", path: "/categories", icon: <MdOutlineCategory />, roles: ["super_admin", "admin", "user"] },
+    // { name: "Categories", path: "/categories", icon: <MdOutlineCategory />, roles: ["super_admin", "admin", "user"] },
     { name: "Tax Rates", path: "/taxes", icon: <MdOutlineAttachMoney />, roles: ["super_admin", "admin", "user"] },
     { name: "Customers", path: "/customers", icon: <IoIosContact />, roles: ["super_admin", "admin", "user"] },
     { name: "Suppliers", path: "/suppliers", icon: <IoIosContact />, roles: ["super_admin", "admin", "user"] },

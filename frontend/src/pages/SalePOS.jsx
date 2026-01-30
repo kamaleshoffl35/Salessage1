@@ -975,7 +975,7 @@ const handleItemChange = (index, e) => {
                             <td className="text-center">
                               <button
                                 type="button"
-                                className="btn btn-sm btn-danger"
+                                className="btn btn-sm text-danger"
                                 onClick={() => removeItem(index)}
                               >
                                 <MdDeleteForever size={20} />
