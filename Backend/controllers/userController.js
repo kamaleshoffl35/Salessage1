@@ -73,10 +73,17 @@ exports.login = async (req, res) => {
     const token = generateToken(user);
     res.cookie("token", token, {
   httpOnly: true,
-  sameSite: "lax",
-  secure: false, 
-  maxAge: 60 * 60 * 1000 
+  secure: true,        // REQUIRED for HTTPS + cross domain
+  sameSite: "none",    // REQUIRED for different domains
+  maxAge: 60 * 60 * 1000
 });
+
+//     res.cookie("token", token, {
+//   httpOnly: true,
+//   sameSite: "lax",
+//   secure: false, 
+//   maxAge: 60 * 60 * 1000 
+// });
 
 res.json({ user: userObj });
   } catch (err) {
@@ -228,8 +235,11 @@ exports.resetPassword = async (req, res) => {
 exports.logout = (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
-    sameSite: "lax",
-    secure: false, 
+    secure: true,
+sameSite: "none"
+
+    // sameSite: "lax",
+    // secure: false, 
   });
   res.json({ message: "Logged out" });
 };
