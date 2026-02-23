@@ -31,13 +31,12 @@ const router = express.Router();
 // ✅ PUBLIC ROUTE FIRST
 router.get("/public", getPublicProducts);
 
-// Other routes
+// PROTECTED ROUTES
 router.get("/check-exists", protect, authorize("super_admin", "admin", "user"), checkProductExists);
 router.get("/", protect, authorize("super_admin", "admin", "user"), getProducts);
 router.post("/", protect, authorize("super_admin", "admin"), addProduct);
 router.post("/bulk", protect, authorize("super_admin", "admin"), bulkInsertProducts);
-router.put("/:id", protect, authorize("super_admin", "admin"), updateProduct);
-router.delete("/:id", protect, authorize("super_admin", "admin"), deleteProduct);
-router.get("/:id", protect, authorize("super_admin", "admin", "user"), getProductById);
-
+router.put("/id/:id", protect, authorize("super_admin", "admin"), updateProduct);
+router.delete("/id/:id", protect, authorize("super_admin", "admin"), deleteProduct);
+router.get("/id/:id", protect, authorize("super_admin", "admin", "user"), getProductById);
 module.exports = router;
