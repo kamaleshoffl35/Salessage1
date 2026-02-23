@@ -198,12 +198,12 @@ exports.bulkInsertProducts = async (req, res) => {
 
 exports.getPublicProducts = async (req, res) => {
   try {
-    const products = await Product.find({ status: true })
+    const products = await Product.find({})
       .select("name category_name sale_price mrp brand_name")
       .lean();
 
     res.json(products);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
+  } catch (error) {
+    res.status(500).json({ message: "Server Error" });
   }
 };
