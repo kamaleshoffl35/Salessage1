@@ -71,6 +71,9 @@ app.use("/api/reports", reportRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/google-categories", require("./routes/googleCategory"));
 
+app.get("/test-public", (req, res) => {
+  res.json({ message: "SERVER UPDATED" });
+});
 
 const __dirname1 = path.resolve();
 if (process.env.NODE_ENV === "production") {
