@@ -9,12 +9,15 @@
   import { useNavigate } from "react-router-dom";
   import useTableActions from "../components/useTableActions";
   import AddButton from "../components/AddButton";
+  import ImportExcelButton from "../components/ImportExcelButton";
+  import { bulkAddProducts } from "../redux/productSlice";
   const Product = () => {
     const dispatch = useDispatch();
     const { items: products, status } = useSelector((state) => state.products);
     const { items: warehouses } = useSelector((state) => state.warehouses);
     const [role, setRole] = useState("user");
     const [showProductForm, setShowProductForm] = useState(false);
+    const [importedProducts, setImportedProducts] = useState([]);
     const navigate = useNavigate();
     const [form, setForm] = useState({
       name: "",
@@ -39,7 +42,6 @@
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [historyInfo, setHistoryInfo] = useState(null);
     const tableActions = useTableActions(role);
-
     useEffect(() => {
       API.get("/users/me")
         .then((res) => {
@@ -217,7 +219,32 @@
       });
       setSubcategories([]);
     };
-    const tableColumns = [
+const handleExcelImport = async (rows) => {
+  try {
+    const mapped = rows.map((r) => ({
+      name: r["Name"] || "",
+      sku: r["SKU"] || "",
+      category_name: r["Category"] || "",
+      subcategory_name: r["Subcategory"] || "",
+      brand_name: r["Brand"] || "",
+      unit_id: r["UoM"] || "Kg",
+      tax_rate_id: r["Tax"] || "18%",
+      mrp: Number(r["MRP"]) || 0,
+      purchase_price: Number(r["Purchase"]) || 0,
+      sale_price: Number(r["Sale"]) || 0,
+      warehouse: r["Warehouse"],
+      status: true,
+    }));
+    setImportedProducts(mapped);
+    await dispatch(bulkAddProducts(mapped)).unwrap();
+    dispatch(fetchProducts());
+  } catch (err) {
+    console.error(err);
+  }
+};
+
+const combinedProducts = [...filteredProducts, ...importedProducts];
+const tableColumns = [
       { key: "sku", header: "SKU", width: 120 },
       { key: "name", header: "Name", width: 200 },
       {
@@ -234,7 +261,7 @@
       {
         key: "warehouse",
         header: "Warehouse",
-        render: (p) => p.warehouse?.store_name || "",
+        render: (p) => typeof p.warehouse === "object"? p.warehouse?.store_name: p.warehouse || "",
       },
       { key: "unit_id", header: "UoM", width: 80 },
       { key: "tax_rate_id", header: "Tax", width: 80 },
@@ -329,7 +356,11 @@
           <div className="col-12">
             <div className="d-flex gap-2">
               {["super_admin", "admin"].includes(role) && (
-                <AddButton text="Add Product" onClick={() => setShowProductForm(true)} />
+                <div className="d-flex gap-2">
+  <AddButton text="Add Product" onClick={() => setShowProductForm(true)} />
+  <ImportExcelButton onImport={handleExcelImport} />
+</div>
+
               )}
             </div>
           </div>
@@ -590,7 +621,7 @@
           </div>
         )}
         <ReusableTable
-          data={filteredProducts}
+          data={combinedProducts} 
           columns={tableColumns}
           loading={status === "loading"}
           searchable={true}

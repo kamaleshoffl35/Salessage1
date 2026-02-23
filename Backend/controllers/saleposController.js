@@ -27,21 +27,22 @@ exports.addSalePOS = async (req, res) => {
     if (!req.body.customer_id)
       return res.status(400).json({ error: "Customer is required" });
     const customer = await Customer.findById(req.body.customer_id).select("name");
-    const warehouse = await Warehouse.findById(req.body.warehouseId).select("name");
+    const warehouse = await Warehouse.findById(req.body.warehouseId).select("store_name");
+    const user = req.user;
     const itemsWithNames = [];
     for (const item of req.body.items) {
       const product = await Product.findById(item.product_id).select("name");
       itemsWithNames.push({...item,product_name: product?.name || "",});
     }
-    const sale = new Sale({
-      ...req.body,
-      items: itemsWithNames,
-      customer_name: customer?.name || "",
-      warehouse_name: warehouse?.name || "",
-      created_by: req.user._id,
-      created_by_name: req.user.name,
-      invoice_date_time: new Date(req.body.invoice_date_time),
-    });
+   const sale = new Sale({
+    ...req.body,
+    items: itemsWithNames,
+    customer_name: customer?.name || "",
+    warehouse_name: warehouse?.store_name || "",
+    created_by: user._id,
+    created_by_name: user.name,
+    invoice_date_time: new Date(req.body.invoice_date_time),
+});
     await sale.save();
     for (const item of sale.items) {
       const lastLedger = await StockLedger.findOne({
@@ -99,6 +100,7 @@ exports.updateSale = async (req, res) => {
     delete allowedFields.id;
     delete allowedFields._id;
     allowedFields.updated_by = req.user._id;
+    allowedFields.updated_by_name = req.user.name;
     allowedFields.updated_by_role = req.user.role;
     allowedFields.updatedAt = new Date();
     allowedFields.history = {

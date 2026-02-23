@@ -25,7 +25,12 @@ const importGoogleTaxonomyIfEmpty = require("./utils/importGoogleTaxonomy");
 app.use(cookieParser());
 const allowedOrigins = [
   "https://salessage.vyoobam.com",
-  // "http://localhost:5173"
+  "http://localhost:5173",
+
+  // Allow Chakkarapani frontend
+  "https://chakkarapani.com",
+  "http://localhost:3000",
+  "http://localhost:5173"
 ];
 const corsOptions = {
   origin: function (origin, callback) {

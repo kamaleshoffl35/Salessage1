@@ -39,13 +39,9 @@ exports.addProduct = async (req, res) => {
       barcode,
       status,
     } = req.body;
-    const warehouseDoc =
-      await Warehouse.findById(warehouse).select("store_name");
-    const categoryDoc =
-      await GoogleCategory.findById(category_id).select("name");
-    const subCategoryDoc = subcategory_id
-      ? await GoogleCategory.findById(subcategory_id).select("name")
-      : null;
+    const warehouseDoc = await Warehouse.findById(warehouse).select("store_name");
+    const categoryDoc = await GoogleCategory.findById(category_id).select("name");
+    const subCategoryDoc = subcategory_id ? await GoogleCategory.findById(subcategory_id).select("name") : null;
     const product = new Product({
       sku,
       name,
@@ -145,5 +141,69 @@ exports.getProductById = async (req, res) => {
     res.json(product);
   } catch (err) {
     res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.bulkInsertProducts = async (req, res) => {
+  try {
+    const user = req.user;
+    const products = req.body.products;
+    const operations = [];
+    for (const p of products) {
+      let warehouseDoc = await Warehouse.findOne({store_name: new RegExp(`^${p.warehouse?.trim()}$`, "i"),});
+      if (!warehouseDoc) {
+        warehouseDoc = await Warehouse.create({store_name: p.warehouse?.trim() || "Default",});
+      }
+      let categoryDoc = await GoogleCategory.findOne({
+        name: new RegExp(`^${p.category_name?.trim()}$`, "i"),
+      });
+      if (!categoryDoc) {
+        categoryDoc = await GoogleCategory.create({
+          name: p.category_name?.trim() || "General",
+        });
+      }
+      operations.push({
+        updateOne: {
+          filter: { sku: p.sku?.trim() }, 
+          update: {
+            $set: {
+              ...p,
+              sku: p.sku?.trim(),
+              name: p.name?.trim(),
+              warehouse: warehouseDoc._id,
+              warehouse_name: warehouseDoc.store_name,
+              category_id: categoryDoc._id,
+              category_name: categoryDoc.name,
+              created_by: user._id,
+              created_by_name: user.name,
+              created_by_role: user.role,
+            },
+          },
+          upsert: true, 
+        },
+      });
+    }
+    const result = await Product.bulkWrite(operations);
+    res.json({
+      totalRows: products.length,
+      inserted: result.upsertedCount,
+      updated: result.modifiedCount,
+      message: "All products stored successfully (no skips)",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.getPublicProducts = async (req, res) => {
+  try {
+    const products = await Product.find({ status: true })
+      .select("name category_name sale_price mrp brand_name")
+      .lean();
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 };

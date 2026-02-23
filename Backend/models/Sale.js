@@ -36,8 +36,7 @@ const SaleSchema = new mongoose.Schema({
   updated_by_name:{type:String},
   updated_by_role:String,
   updatedAt:Date,
-  history: {oldValue: String,newValue: String
-    },
+  history: {oldValue: String,newValue: String},
   items:[SaleItemSchema]
 }, { timestamps: true });
 
