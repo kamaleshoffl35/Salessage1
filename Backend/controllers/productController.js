@@ -194,7 +194,7 @@ exports.bulkInsertProducts = async (req, res) => {
     console.error(err);
     res.status(500).json({ message: err.message });
   }
-};
+}
 
 exports.getPublicProducts = async (req, res) => {
   try {
@@ -204,6 +204,50 @@ exports.getPublicProducts = async (req, res) => {
 
     res.json(products);
   } catch (error) {
+    res.status(500).json({ message: "Server Error" });
+  }
+}
+
+exports.getPublicCategories = async (req, res) => {
+  try {
+    const categories = await GoogleCategory.find({})
+      .select("name")
+      .lean();
+
+    res.json(categories);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+exports.getPublicProductsByCategory = async (req, res) => {
+  try {
+    const { category } = req.params;
+
+    const products = await Product.find({
+      category_name: category,
+    })
+      .select("name category_name sale_price mrp brand_name")
+      .lean();
+
+    res.json(products);
+  } catch (err) {
+    res.status(500).json({ message: "Server Error" });
+  }
+};
+
+exports.getPublicProductById = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .select("name category_name sale_price mrp brand_name")
+      .lean();
+
+    if (!product) {
+      return res.status(404).json({ message: "Product not found" });
+    }
+
+    res.json(product);
+  } catch (err) {
     res.status(500).json({ message: "Server Error" });
   }
 };

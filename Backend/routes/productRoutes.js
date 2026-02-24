@@ -30,6 +30,7 @@ const router = express.Router();
 
 // ✅ PUBLIC ROUTE FIRST
 router.get("/public", getPublicProducts);
+router.get("/public-categories", getPublicCategories);
 
 // PROTECTED ROUTES
 router.get("/check-exists", protect, authorize("super_admin", "admin", "user"), checkProductExists);
@@ -39,4 +40,6 @@ router.post("/bulk", protect, authorize("super_admin", "admin"), bulkInsertProdu
 router.put("/id/:id", protect, authorize("super_admin", "admin"), updateProduct);
 router.delete("/id/:id", protect, authorize("super_admin", "admin"), deleteProduct);
 router.get("/id/:id", protect, authorize("super_admin", "admin", "user"), getProductById);
+router.get("/public/category/:category", getPublicProductsByCategory);
+router.get("/public/:id", getPublicProductById);
 module.exports = router;
