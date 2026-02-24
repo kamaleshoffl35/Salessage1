@@ -21,7 +21,10 @@ const {
   updateProduct,
   getProductById,
   bulkInsertProducts,
-  getPublicProducts
+  getPublicProducts,
+  getPublicCategories,
+  getPublicProductById,
+  getPublicProductsByCategory
 } = require("../controllers/productController");
 
 const { protect, authorize } = require("../middleware/auth");
