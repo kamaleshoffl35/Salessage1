@@ -21,6 +21,7 @@
     const navigate = useNavigate();
     const [form, setForm] = useState({
       name: "",
+      image: null,
       sku: "",
       category_id: "",
       subcategory_id: "",
@@ -136,13 +137,19 @@
             subcategory_id: form.subcategory_id || null,
             warehouse: form.warehouse || null,
           };
-          const formData = new FormData();
-          Object.keys(cleanForm).forEach((key) => {
-            formData.append(key, cleanForm[key]);
-          });
-        if (form.image) {
-          formData.append("image", form.image);
-        }
+        const formData = new FormData();
+
+// append everything EXCEPT image
+Object.entries(cleanForm).forEach(([key, value]) => {
+  if (key !== "image" && value !== null && value !== undefined) {
+    formData.append(key, value);
+  }
+});
+
+// append image ONLY once
+if (form.image instanceof File) {
+  formData.append("image", form.image);
+}
         await dispatch(addProduct(formData)).unwrap();
         }
         setForm({

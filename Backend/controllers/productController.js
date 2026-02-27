@@ -203,7 +203,7 @@ exports.bulkInsertProducts = async (req, res) => {
 exports.getPublicProducts = async (req, res) => {
   try {
     const products = await Product.find({})
-      .select("name category_name sale_price mrp brand_name")
+      .select("name image category_name subcategory_name brand_name variant unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
       .lean();
 
     res.json(products);
@@ -231,7 +231,7 @@ exports.getPublicProductsByCategory = async (req, res) => {
     const products = await Product.find({
       category_name: category,
     })
-      .select("name category_name sale_price mrp brand_name")
+      .select("name image category_name subcategory_name brand_name variant unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
       .lean();
 
     res.json(products);
@@ -243,7 +243,7 @@ exports.getPublicProductsByCategory = async (req, res) => {
 exports.getPublicProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .select("name category_name sale_price mrp brand_name")
+      .select("name image category_name subcategory_name brand_name variant unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
       .lean();
 
     if (!product) {
