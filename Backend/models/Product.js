@@ -3,6 +3,7 @@ const productSchema = new mongoose.Schema(
   {
     sku: { type: String, required: true, unique: true },
     name: { type: String, required: true },
+    image: { type: String },
     category_id: {type: mongoose.Schema.Types.ObjectId,ref: "GoogleCategory",required: true,},
     category_name: { type: String },
     subcategory_id: {type: mongoose.Schema.Types.ObjectId,ref: "GoogleCategory",default: null,},

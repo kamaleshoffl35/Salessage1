@@ -136,7 +136,14 @@
             subcategory_id: form.subcategory_id || null,
             warehouse: form.warehouse || null,
           };
-          await dispatch(addProduct(cleanForm)).unwrap();
+          const formData = new FormData();
+          Object.keys(cleanForm).forEach((key) => {
+            formData.append(key, cleanForm[key]);
+          });
+        if (form.image) {
+          formData.append("image", form.image);
+        }
+        await dispatch(addProduct(formData)).unwrap();
         }
         setForm({
           name: "",
@@ -247,6 +254,16 @@ const combinedProducts = [...filteredProducts, ...importedProducts];
 const tableColumns = [
       { key: "sku", header: "SKU", width: 120 },
       { key: "name", header: "Name", width: 200 },
+      {
+      key: "image",
+      header: "Image",
+      render: (p) =>
+        p.image ? (
+          <img src={p.image} alt={p.name} width="50" />
+        ) : (
+          "No Image"
+        ),
+       },
       {
         key: "category",
         header: "Category",
@@ -401,6 +418,18 @@ const tableColumns = [
                         required
                       />
                     </div>
+                    <div className="col-md-6">
+  <label className="form-label">Product Image</label>
+  <input
+    type="file"
+    className="form-control"
+    name="image"
+    accept="image/*"
+    onChange={(e) =>
+      setForm({ ...form, image: e.target.files[0] })
+    }
+  />
+</div>
 
                     <div className="col-md-6">
                       <label className="form-label">

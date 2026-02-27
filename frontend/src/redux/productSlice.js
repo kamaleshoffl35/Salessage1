@@ -5,21 +5,24 @@ export const fetchProducts = createAsyncThunk("products/fetchAll", async () => {
   const res = await API.get(API_URL);
   return res.data;
 });
-export const addProduct = createAsyncThunk("products/addProduct", async (product) => {
-  const filtered = { ...product };
-  delete filtered.created_by;
-  delete filtered.created_by_role;
-  const res = await API.post(API_URL, filtered);
-  return res.data;
-});
+export const addProduct = createAsyncThunk(
+  "products/addProduct",
+  async (product) => {
+    const res = await API.post(API_URL, product);
+    return res.data;
+  }
+);
 export const deleteProduct = createAsyncThunk("products/delete", async (id) => {
   await API.delete(`${API_URL}/${id}`);
   return id;
 });
-export const updateProduct = createAsyncThunk("products/update", async ({ id, updatedData }) => {
-  const res = await API.put(`${API_URL}/${id}`, updatedData);
-  return res.data;
-});
+export const updateProduct = createAsyncThunk(
+  "products/update",
+  async ({ id, updatedData }) => {
+    const res = await API.put(`${API_URL}/${id}`, updatedData);
+    return res.data;
+  }
+);
 export const bulkAddProducts = createAsyncThunk("products/bulkAdd",async (products) => {
     const res = await API.post("/products/bulk", { products });
     return res.data;

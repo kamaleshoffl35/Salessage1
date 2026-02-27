@@ -62,6 +62,7 @@ exports.addProduct = async (req, res) => {
       min_stock,
       barcode,
       status,
+     image: req.file ? req.file.path : null,
       created_by: req.user._id,
       created_by_name: req.user.name,
       created_by_role: req.user.role,
@@ -92,6 +93,9 @@ exports.updateProduct = async (req, res) => {
     allowedFields.updated_by_name = user.name;
     allowedFields.updated_by_role = user.role;
     allowedFields.updatedAt = new Date();
+    if (req.file) {
+  allowedFields.image = req.file.path;
+}
     if (allowedFields.warehouse) {
       const warehouseDoc = await Warehouse.findById(allowedFields.warehouse,).select("store_name");
       if (warehouseDoc) {

@@ -54,6 +54,7 @@ mongoose.connect(process.env.MONGO_URI)
     await importGoogleTaxonomyIfEmpty(); })
 .catch(err => console.log(err));
 app.use("/api/products", productRoutes);
+app.use("/uploads", express.static("uploads"));
 // app.use("/api/categories", categoryRoutes);
 app.use("/api/taxes", taxRoutes);
 app.use("/api/customers", customerRoutes);
