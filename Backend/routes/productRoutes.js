@@ -59,6 +59,7 @@ const {
   getPublicProducts,
   getPublicProductById,
   getPublicProductsByCategory,
+  getPublicSubcategories,
 } = require("../controllers/productController");
 
 const { protect, authorize } = require("../middleware/auth");
@@ -71,7 +72,7 @@ const upload = require("../middleware/upload");
 
 router.get("/public", getPublicProducts);
 
-
+router.get("/public/subcategories", getPublicSubcategories);
 router.get("/public/category/:category", getPublicProductsByCategory);
 
 router.get("/public/:id", getPublicProductById);

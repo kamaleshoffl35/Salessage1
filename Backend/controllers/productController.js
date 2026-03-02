@@ -556,3 +556,33 @@ exports.getPublicProductById = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
+exports.getPublicSubcategories = async (req, res) => {
+  try {
+    const { website } = req.query;
+
+    if (!website) {
+      return res.status(400).json({ message: "Website is required" });
+    }
+
+    const products = await Product.find({
+      website: website,
+      status: true,
+    }).select("subcategory_name");
+
+    const subcategories = [
+      ...new Set(
+        products
+          .map((p) => p.subcategory_name)
+          .filter((s) => typeof s === "string" && s.trim() !== "")
+      ),
+    ];
+
+    res.json(subcategories);
+  } catch (err) {
+    console.error("Subcategory Error:", err);
+    res.status(500).json({
+      message: "Error fetching subcategories",
+      error: err.message,
+    });
+  }
+};
