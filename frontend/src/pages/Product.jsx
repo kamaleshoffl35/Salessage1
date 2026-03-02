@@ -89,7 +89,7 @@
   {
     id: "paintings",
     name: "Paintings",
-    subcategories: ["1", "2", "3", "4"],
+    subcategories: ["Hindu Deities – Rama", "2", "3", "4"],
   },
   {
     id: "sculptures",
@@ -141,11 +141,23 @@ const handleCategoryChange = (e) => {
           console.log("Product Updated Successfully");
         } else {
           const cleanForm = {
-            ...form,
-            category_id: form.category_id || null,
-            subcategory_id: form.subcategory_id || null,
-            warehouse: form.warehouse || null,
-          };
+  sku: form.sku,
+  name: form.name,
+  category_name:
+    staticCategories.find((c) => c.id === form.category_id)?.name || "",
+  subcategory_name: form.subcategory_id || "",
+  brand_name: form.brand_name,
+  variant: form.variant,
+  dimension: form.dimension,
+  unit_id: form.unit_id,
+  warehouse: form.warehouse,
+  hsn_code: form.hsn_code,
+  tax_rate_id: form.tax_rate_id,
+  mrp: form.mrp,
+  purchase_price: form.purchase_price,
+  sale_price: form.sale_price,
+  status: form.status,
+};
         const formData = new FormData();
 
 // append everything EXCEPT image

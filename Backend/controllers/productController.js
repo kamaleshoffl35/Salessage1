@@ -503,10 +503,21 @@ exports.bulkInsertProducts = async (req, res) => {
 
 
 // ================= PUBLIC APIs =================
+// ================= PUBLIC APIs =================
 exports.getPublicProducts = async (req, res) => {
   try {
-    const products = await Product.find({})
-      .select("name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
+    const { website } = req.query;
+
+    const filter = {};
+
+    if (website) {
+      filter.website = website;
+    }
+
+    const products = await Product.find(filter)
+      .select(
+        "name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+      )
       .lean();
 
     res.json(products);
@@ -514,7 +525,6 @@ exports.getPublicProducts = async (req, res) => {
     res.status(500).json({ message: "Server Error" });
   }
 };
-
 exports.getPublicProductsByCategory = async (req, res) => {
   try {
     const { category } = req.params;

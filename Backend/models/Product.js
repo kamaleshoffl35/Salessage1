@@ -132,6 +132,11 @@ const productSchema = new mongoose.Schema(
     updatedAt: {
       type: Date,
     },
+    website: {
+  type: String,
+  enum: ["vyoobam", "chakrapani"],
+  default: "vyoobam",
+},
   },
   { timestamps: true }
 );
