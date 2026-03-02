@@ -509,7 +509,7 @@ exports.getPublicProducts = async (req, res) => {
   try {
     const products = await Product.find({
       category_name: "Paintings",
-      status: true
+   
     })
       .select(
         "name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
