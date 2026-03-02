@@ -57,7 +57,6 @@ const {
   getProductById,
   bulkInsertProducts,
   getPublicProducts,
-  getPublicCategories,
   getPublicProductById,
   getPublicProductsByCategory,
 } = require("../controllers/productController");
@@ -72,7 +71,6 @@ const upload = require("../middleware/upload");
 
 router.get("/public", getPublicProducts);
 
-router.get("/public-categories", getPublicCategories);
 
 router.get("/public/category/:category", getPublicProductsByCategory);
 
