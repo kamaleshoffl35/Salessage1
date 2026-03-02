@@ -328,6 +328,7 @@ exports.addProduct = async (req, res) => {
       purchase_price,
       sale_price,
       status,
+      website: req.body.website || "vyoobam",
       image: req.file ? req.file.path : null,
       created_by: req.user._id,
       created_by_name: req.user.name,
