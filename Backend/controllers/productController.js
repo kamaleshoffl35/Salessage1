@@ -566,7 +566,6 @@ exports.getPublicSubcategories = async (req, res) => {
 
     const products = await Product.find({
       website: website,
-      status: true,
     }).select("subcategory_name");
 
     const subcategories = [
