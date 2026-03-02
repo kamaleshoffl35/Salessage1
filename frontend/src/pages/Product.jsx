@@ -33,11 +33,11 @@
       mrp: "",
       purchase_price: "",
       sale_price: "",
+       dimension: "", 
       status: true,
     });
     const [searchNameSku, setSearchNameSku] = useState("");
     const [searchCategory, setSearchCategory] = useState("");
-    const [categories, setCategories] = useState([]);
     const [subcategories, setSubcategories] = useState([]);
     const [editingProduct, setEditingProduct] = useState(null);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -52,13 +52,7 @@
           navigate("/login");
         });
     }, [navigate]);
-    useEffect(() => {
-      if (showProductForm) {
-        API.get("/google-categories/root")
-          .then((res) => setCategories(res.data))
-          .catch((err) => console.error("Category load failed", err));
-      }
-    }, [showProductForm]);
+  
     useEffect(() => {
       dispatch(fetchProducts());
       dispatch(fetchwarehouses());
@@ -83,25 +77,7 @@
     const delayDebounce = setTimeout(checkProduct, 400);
       return () => clearTimeout(delayDebounce);
     }, [form.name]);
-    const handleCategoryChange = async (e) => {
-      const categoryId = e.target.value;
-      setForm((prev) => ({
-        ...prev,
-        category_id: categoryId,
-        subcategory_id: "",
-        brand_name: "",
-      }));
-      if (!categoryId) {
-        setSubcategories([]);
-        return;
-      }
-      try {
-        const res = await API.get(`/google-categories/children/${categoryId}`);
-        setSubcategories(res.data);
-      } catch (err) {
-        console.error("Failed to load subcategories", err);
-      }
-    };
+    
     const handleChange = (e) => {
       const { name, value, type, checked } = e.target;
       setForm({
@@ -109,6 +85,39 @@
         [name]: type === "checkbox" ? checked : value,
       });
     };
+    const staticCategories = [
+  {
+    id: "paintings",
+    name: "Paintings",
+    subcategories: ["1", "2", "3", "4"],
+  },
+  {
+    id: "sculptures",
+    name: "Sculptures",
+    subcategories: ["Small", "Medium", "Large"],
+  },
+];
+const handleCategoryChange = (e) => {
+  const selectedId = e.target.value;
+
+  const selectedCategory = staticCategories.find(
+    (cat) => cat.id === selectedId
+  );
+
+  setForm((prev) => ({
+    ...prev,
+    category_id: selectedId,
+    subcategory_id: "",
+    variant:"",
+ dimension: "",
+  }));
+
+  if (selectedCategory) {
+    setSubcategories(selectedCategory.subcategories);
+  } else {
+    setSubcategories([]);
+  }
+};
     const handleSubmit = async (e) => {
       e.preventDefault();
       if (
@@ -228,11 +237,13 @@ if (form.image instanceof File) {
         tax_rate_id: "18%",
         mrp: "",
         purchase_price: "",
+         dimension: "", 
         sale_price: "",
       status: true,
       });
       setSubcategories([]);
     };
+    const paintingDimensions = ["1", "2", "3", "4"];
 const handleExcelImport = async (rows) => {
   try {
     const mapped = rows.map((r) => ({
@@ -455,43 +466,43 @@ const tableColumns = [
                       <label className="form-label">
                         Category <span className="text-danger">*</span>
                       </label>
-                      <select
-                        className="form-select bg-light"
-                        value={form.category_id}
-                        onChange={handleCategoryChange}
-                        required
-                      >
-                        <option value="">Select Category</option>
-                        {categories.map((cat) => (
-                          <option key={cat._id} value={cat._id}>
-                            {cat.name}
-                          </option>
-                        ))}
-                      </select>
+                     <select
+  className="form-select bg-light"
+  value={form.category_id}
+  onChange={handleCategoryChange}
+  required
+>
+  <option value="">Select Category</option>
+  {staticCategories.map((cat) => (
+    <option key={cat.id} value={cat.id}>
+      {cat.name}
+    </option>
+  ))}
+</select>
                     </div>
 
-                    {subcategories.length > 0 && (
-                      <div className="col-md-6">
-                        <label className="form-label">Subcategory</label>
-                        <select
-                          className="form-select bg-light"
-                          value={form.subcategory_id || ""}
-                          onChange={(e) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              subcategory_id: e.target.value,
-                            }))
-                          }
-                        >
-                          <option value="">Select Subcategory</option>
-                          {subcategories.map((sub) => (
-                            <option key={sub._id} value={sub._id}>
-                              {sub.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                    )}
+                   {subcategories.length > 0 && (
+  <div className="col-md-6">
+    <label className="form-label">Subcategory</label>
+    <select
+      className="form-select bg-light"
+      value={form.subcategory_id || ""}
+      onChange={(e) =>
+        setForm((prev) => ({
+          ...prev,
+          subcategory_id: e.target.value,
+        }))
+      }
+    >
+      <option value="">Select Subcategory</option>
+      {subcategories.map((sub, index) => (
+        <option key={index} value={sub}>
+          {sub}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
 
                     <div className="col-md-6">
                       <label className="form-label">Brand (Optional)</label>
@@ -505,29 +516,44 @@ const tableColumns = [
                       />
                     </div>
 
-                    <div className="col-md-6">
-                      <label className="form-label">Variant</label>
-                      <select
-                        className="form-select bg-light"
-                        name="variant"
-                        value={form.variant}
-                        onChange={handleChange}
-                      >
-                        <option value="">Select Variant</option>
-                        {Object.keys(variants).map((group) => (
-                          <optgroup
-                            key={group}
-                            label={group.replace(/([A-Z])/g, " $1")}
-                          >
-                            {variants[group].map((v) => (
-                              <option key={v.value} value={v.value}>
-                                {v.label}
-                              </option>
-                            ))}
-                          </optgroup>
-                        ))}
-                      </select>
-                    </div>
+                 {/* Show Dimension ONLY for Paintings */}
+{form.category_id === "paintings" ? (
+  <div className="col-md-6">
+    <label className="form-label">Dimension</label>
+    <input
+      type="text"
+      className="form-control bg-light"
+      name="dimension"
+      value={form.dimension}
+      onChange={handleChange}
+      placeholder="Enter Dimension (e.g. 12x18 inches)"
+    />
+  </div>
+) : (
+  <div className="col-md-6">
+    <label className="form-label">Variant</label>
+    <select
+      className="form-select bg-light"
+      name="variant"
+      value={form.variant}
+      onChange={handleChange}
+    >
+      <option value="">Select Variant</option>
+      {Object.keys(variants).map((group) => (
+        <optgroup
+          key={group}
+          label={group.replace(/([A-Z])/g, " $1")}
+        >
+          {variants[group].map((v) => (
+            <option key={v.value} value={v.value}>
+              {v.label}
+            </option>
+          ))}
+        </optgroup>
+      ))}
+    </select>
+  </div>
+)}
 
                     <div className="col-md-6">
                       <label>
