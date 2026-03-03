@@ -90,7 +90,7 @@
   {
     id: "paintings",
     name: "Paintings",
-    subcategories: ["Hindu Deities – Rama", "2", "3", "4"],
+    subcategories: ["Hindu Deities – Rama", "Hindu Deities – Vishnu", "Hindu Deities – Shiva", "Hindu Deities – Krishna","Hindu Deities – Tridevi","Hindu Deities – Saraswathi","Hindu Deities – Annapoorani","Hindu Deities – Krishna edited testing",""],
   },
   {
     id: "sculptures",
@@ -135,9 +135,41 @@ const handleCategoryChange = (e) => {
       }
       try {
         if (editingProduct) {
-          await dispatch(
-            updateProduct({ id: editingProduct, updatedData: form }),
-          ).unwrap();
+        const formData = new FormData();
+
+const cleanForm = {
+  sku: form.sku,
+  name: form.name,
+  description: form.description,
+  category_name:
+    staticCategories.find((c) => c.id === form.category_id)?.name || "",
+  subcategory_name: form.subcategory_id || "",
+  brand_name: form.brand_name,
+  variant: form.variant,
+  dimension: form.dimension,
+  unit_id: form.unit_id,
+  warehouse: form.warehouse,
+  hsn_code: form.hsn_code,
+  tax_rate_id: form.tax_rate_id,
+  mrp: form.mrp,
+  purchase_price: form.purchase_price,
+  sale_price: form.sale_price,
+  status: form.status,
+};
+
+Object.entries(cleanForm).forEach(([key, value]) => {
+  if (value !== null && value !== undefined) {
+    formData.append(key, value);
+  }
+});
+
+if (form.image instanceof File) {
+  formData.append("image", form.image);
+}
+
+await dispatch(
+  updateProduct({ id: editingProduct, updatedData: formData })
+).unwrap();
           setEditingProduct(null);
           console.log("Product Updated Successfully");
         } else {
