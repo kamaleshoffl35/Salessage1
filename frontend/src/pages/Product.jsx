@@ -22,6 +22,7 @@
     const [form, setForm] = useState({
       name: "",
       image: null,
+      description:"",
       sku: "",
       category_id: "",
       subcategory_id: "",
@@ -143,6 +144,7 @@ const handleCategoryChange = (e) => {
           const cleanForm = {
   sku: form.sku,
   name: form.name,
+  description:form.description,
   category_name:
     staticCategories.find((c) => c.id === form.category_id)?.name || "",
   subcategory_name: form.subcategory_id || "",
@@ -176,6 +178,7 @@ if (form.image instanceof File) {
         setForm({
           name: "",
           sku: "",
+          description:"",
           category_id: "",
           brand_name: "",
           unit_id: "Kg",
@@ -201,6 +204,7 @@ if (form.image instanceof File) {
       setForm({
         name: product.name || "",
         sku: product.sku || "",
+        description:product.description || "",
         category_id: product.category_id?._id || product.category_id || "",
         brand_name: product.brand_name || "",
         unit_id: product.unit_id || "Kg",
@@ -241,6 +245,7 @@ if (form.image instanceof File) {
       setForm({
         name: "",
         sku: "",
+        description:"",
         category_id: "",
         brand_name: "",
         unit_id: "Kg",
@@ -284,6 +289,18 @@ const combinedProducts = [...filteredProducts, ...importedProducts];
 const tableColumns = [
       { key: "sku", header: "SKU", width: 120 },
       { key: "name", header: "Name", width: 200 },
+      {
+  key: "description",
+  header: "Description",
+  render: (p) =>
+    p.description ? (
+      <span title={p.description}>
+        {p.description.length > 40
+          ? p.description.substring(0, 40) + "..."
+          : p.description}
+      </span>
+    ) : "-",
+},
       {
       key: "image",
       header: "Image",
@@ -515,7 +532,16 @@ const tableColumns = [
     </select>
   </div>
 )}
-
+<div className="mb-3">
+  <label>Description</label>
+  <textarea
+    name="description"
+    className="form-control"
+    rows="4"
+    value={form.description}
+    onChange={handleChange}
+  />
+</div>
                     <div className="col-md-6">
                       <label className="form-label">Brand (Optional)</label>
                       <input

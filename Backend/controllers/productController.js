@@ -607,6 +607,7 @@ exports.addProduct = async (req, res) => {
     const {
       sku,
       name,
+      description,  
       category_name,
       subcategory_name,
       brand_name,
@@ -632,6 +633,7 @@ exports.addProduct = async (req, res) => {
     const product = new Product({
       sku,
       name,
+      description,  
       category_name,
       subcategory_name: subcategory_name || null,
       brand_name,
@@ -839,7 +841,7 @@ exports.getPublicProducts = async (req, res) => {
 
     const products = await Product.find(filter)
       .select(
-        "name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+        "name description image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
       )
       .lean();
 
@@ -855,7 +857,7 @@ exports.getPublicProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
       .select(
-        "name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+        "name description image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
       )
       .lean();
 
