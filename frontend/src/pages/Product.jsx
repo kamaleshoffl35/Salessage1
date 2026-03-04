@@ -90,7 +90,7 @@
   {
     id: "paintings",
     name: "Paintings",
-    subcategories: ["Hindu Deities – Rama", "Hindu Deities – Vishnu", "Hindu Deities – Shiva", "Hindu Deities – Krishna","Hindu Deities – Tridevi","Hindu Deities – Saraswathi","Hindu Deities – Annapoorani","Hindu Deities – Krishna edited testing",""],
+    subcategories: ["Hindu Deities – Rama", "Hindu Deities – Vishnu", "Hindu Deities – Shiva", "Hindu Deities – Krishna","Hindu Deities – Sridevi","Hindu Deities – Saraswathi","Hindu Deities – Annapoorani","Hindu Deities – Krishna edited testing",""],
   },
   {
     id: "sculptures",
