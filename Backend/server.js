@@ -23,15 +23,35 @@ const app = express();
 const cookieParser = require("cookie-parser");
 const importGoogleTaxonomyIfEmpty = require("./utils/importGoogleTaxonomy");
 app.use(cookieParser());
+// const allowedOrigins = [
+//   "https://salessage.vyoobam.com",
+//   "http://localhost:5173",
+
+//   // Allow Chakkarapani frontend
+//   "https://chakkarapani.com",
+//   "http://localhost:3000",
+//   "http://localhost:5173"
+// ];
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     if (!origin || allowedOrigins.includes(origin)) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"));
+//     }
+//   },
+//   credentials: true,
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"]
+// };
+// app.use(cors(corsOptions)); 
 const allowedOrigins = [
   "https://salessage.vyoobam.com",
-  "http://localhost:5173",
-
-  // Allow Chakkarapani frontend
   "https://chakkarapani.com",
-  "http://localhost:3000",
-  "http://localhost:5173"
+  "http://localhost:5173",
+  "http://localhost:3000"
 ];
+
 const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
@@ -42,9 +62,15 @@ const corsOptions = {
   },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"]
+  allowedHeaders: [
+    "Content-Type",
+    "Authorization",
+    "x-tenant-id"   // 🔥 THIS LINE FIXES YOUR ERROR
+  ]
 };
-app.use(cors(corsOptions)); 
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));  // 🔥 important for preflight
 app.use(express.json());
 // mongoose.connect("mongodb://127.0.0.1:27017/inventory")
 mongoose.connect(process.env.MONGO_URI) 
