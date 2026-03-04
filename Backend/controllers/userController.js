@@ -32,10 +32,137 @@ exports.checkSuperAdminExists = async (req, res) => {
 
 // ================= REGISTER =================
 
+// exports.register = async (req, res) => {
+//   try {
+//     const { name, email, password, phone, role, avatar, address } = req.body;
+
+//     const tenant = req.headers["x-tenant-id"] || null;
+
+//     if (!name || !email || !password)
+//       return res.status(400).json({ error: "Name, email and password required" });
+
+//     const emailNormalized = email.trim().toLowerCase();
+
+//     // ===== ADMIN REGISTRATION (NO TENANT) =====
+//     if (role === "admin" || role === "super_admin") {
+//       const exists = await User.findOne({ email: emailNormalized });
+//       if (exists)
+//         return res.status(400).json({ error: "Email already in use" });
+//       if (role === "super_admin") {
+//         const superAdminExists = await User.findOne({ role: "super_admin" });
+//         if (superAdminExists)
+//           return res.status(400).json({ error: "Super admin already exists" });
+//       }
+
+//       const user = new User({
+//         name,
+//         email: emailNormalized,
+//         password,
+//         phone,
+//         role,
+//         avatar,
+//         address,
+//         tenant: null,
+//       });
+
+//       await user.save();
+
+//       const token = generateToken(user);
+//       const userObj = user.toObject();
+//       delete userObj.password;
+
+//       return res.status(201).json({ user: userObj, token });
+//     }
+
+//     // ===== WEBSITE USER REGISTRATION (TENANT REQUIRED) =====
+
+//     if (!tenant)
+//       return res.status(400).json({ error: "Tenant header required" });
+
+//     const exists = await User.findOne({
+//       email: emailNormalized,
+//       tenant,
+//     });
+
+//     if (exists)
+//       return res
+//         .status(400)
+//         .json({ error: "Email already registered for this website" });
+
+//     const user = new User({
+//       name,
+//       email: emailNormalized,
+//       password,
+//       phone,
+//       role: "user",
+//       avatar,
+//       address,
+//       tenant,
+//     });
+//     await user.save();
+//     const token = generateToken(user);
+//     const userObj = user.toObject();
+//     delete userObj.password;
+//     res.status(201).json({ user: userObj, token });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
+// // ================= LOGIN =================
+
+// exports.login = async (req, res) => {
+//   try {
+//     const { email, password } = req.body;
+//     const tenant = req.headers["x-tenant-id"] || null;
+//     if (!email || !password)
+//       return res.status(400).json({ error: "Email and password required" });
+//     const emailNormalized = email.trim().toLowerCase();
+//     let user;
+//     // ===== WEBSITE LOGIN =====
+//     if (tenant) {
+//       user = await User.findOne({
+//         email: emailNormalized,
+//         tenant,
+//       });
+//     }
+//     // ===== ADMIN LOGIN =====
+//     else {
+//       user = await User.findOne({
+//         email: emailNormalized,
+//         tenant: null,
+//       });
+//     }
+//     if (!user)
+//       return res.status(400).json({ error: "Invalid credentials" });
+//     const ok = await bcrypt.compare(password, user.password);
+//     if (!ok)
+//       return res.status(400).json({ error: "Invalid credentials" });
+
+//     if (user.status && user.status !== "active")
+//       return res.status(403).json({ error: "Account inactive" });
+//     const token = generateToken(user);
+
+//     const userObj = user.toObject();
+//     delete userObj.password;
+
+//     res.cookie("token", token, {
+//       httpOnly: true,
+//       secure: true,
+//       sameSite: "none",
+//       maxAge: 60 * 60 * 1000,
+//     });
+
+//     res.json({ user: userObj, token });
+
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// };
+
 exports.register = async (req, res) => {
   try {
     const { name, email, password, phone, role, avatar, address } = req.body;
-
     const tenant = req.headers["x-tenant-id"] || null;
 
     if (!name || !email || !password)
@@ -43,18 +170,14 @@ exports.register = async (req, res) => {
 
     const emailNormalized = email.trim().toLowerCase();
 
-    // ===== ADMIN REGISTRATION (NO TENANT) =====
+    let user;
+
     if (role === "admin" || role === "super_admin") {
       const exists = await User.findOne({ email: emailNormalized });
       if (exists)
         return res.status(400).json({ error: "Email already in use" });
-      if (role === "super_admin") {
-        const superAdminExists = await User.findOne({ role: "super_admin" });
-        if (superAdminExists)
-          return res.status(400).json({ error: "Super admin already exists" });
-      }
 
-      const user = new User({
+      user = new User({
         name,
         email: emailNormalized,
         password,
@@ -64,46 +187,45 @@ exports.register = async (req, res) => {
         address,
         tenant: null,
       });
+    } else {
+      if (!tenant)
+        return res.status(400).json({ error: "Tenant header required" });
 
-      await user.save();
+      const exists = await User.findOne({ email: emailNormalized, tenant });
+      if (exists)
+        return res
+          .status(400)
+          .json({ error: "Email already registered for this website" });
 
-      const token = generateToken(user);
-      const userObj = user.toObject();
-      delete userObj.password;
-
-      return res.status(201).json({ user: userObj, token });
+      user = new User({
+        name,
+        email: emailNormalized,
+        password,
+        phone,
+        role: "user",
+        avatar,
+        address,
+        tenant,
+      });
     }
 
-    // ===== WEBSITE USER REGISTRATION (TENANT REQUIRED) =====
-
-    if (!tenant)
-      return res.status(400).json({ error: "Tenant header required" });
-
-    const exists = await User.findOne({
-      email: emailNormalized,
-      tenant,
-    });
-
-    if (exists)
-      return res
-        .status(400)
-        .json({ error: "Email already registered for this website" });
-
-    const user = new User({
-      name,
-      email: emailNormalized,
-      password,
-      phone,
-      role: "user",
-      avatar,
-      address,
-      tenant,
-    });
     await user.save();
+
     const token = generateToken(user);
+
+    // 🔥 SET COOKIE HERE
+    res.cookie("token", token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: "none",
+      maxAge: 60 * 60 * 1000,
+    });
+
     const userObj = user.toObject();
     delete userObj.password;
-    res.status(201).json({ user: userObj, token });
+
+    res.status(201).json({ user: userObj });
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -115,37 +237,30 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
     const tenant = req.headers["x-tenant-id"] || null;
+
     if (!email || !password)
       return res.status(400).json({ error: "Email and password required" });
+
     const emailNormalized = email.trim().toLowerCase();
+
     let user;
-    // ===== WEBSITE LOGIN =====
+
     if (tenant) {
-      user = await User.findOne({
-        email: emailNormalized,
-        tenant,
-      });
+      user = await User.findOne({ email: emailNormalized, tenant });
+    } else {
+      user = await User.findOne({ email: emailNormalized, tenant: null });
     }
-    // ===== ADMIN LOGIN =====
-    else {
-      user = await User.findOne({
-        email: emailNormalized,
-        tenant: null,
-      });
-    }
+
     if (!user)
       return res.status(400).json({ error: "Invalid credentials" });
+
     const ok = await bcrypt.compare(password, user.password);
     if (!ok)
       return res.status(400).json({ error: "Invalid credentials" });
 
-    if (user.status && user.status !== "active")
-      return res.status(403).json({ error: "Account inactive" });
     const token = generateToken(user);
 
-    const userObj = user.toObject();
-    delete userObj.password;
-
+    // 🔥 SET COOKIE ONLY
     res.cookie("token", token, {
       httpOnly: true,
       secure: true,
@@ -153,13 +268,15 @@ exports.login = async (req, res) => {
       maxAge: 60 * 60 * 1000,
     });
 
-    res.json({ user: userObj, token });
+    const userObj = user.toObject();
+    delete userObj.password;
+
+    res.json({ user: userObj });
 
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 };
-
 // ================= GET USER BY ID =================
 
 exports.getUserById = async (req, res) => {
