@@ -70,7 +70,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));  // 🔥 important for preflight
+
 app.use(express.json());
 // mongoose.connect("mongodb://127.0.0.1:27017/inventory")
 mongoose.connect(process.env.MONGO_URI) 
