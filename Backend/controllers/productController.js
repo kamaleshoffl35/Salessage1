@@ -1,594 +1,11 @@
-// const Product = require("../models/Product");
-// const Warehouse = require("../models/Warehouse");
-// const User = require("../models/User");
-// const GoogleCategory = require("../models/GoogleCategory");
-
-// exports.getProducts = async (req, res) => {
-//   try {
-//     const query =
-//       req.user.role === "user"
-//         ? { created_by_role: { $in: ["super_admin", "admin"] } }
-//         : {};
-//     const products = await Product.find(query)
-//       .populate("warehouse", "store_name")
-//       .populate("created_by", "name email")
-//       .populate("updated_by", "name email");
-//     res.json(products);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-// exports.addProduct = async (req, res) => {
-//   try {
-//     const {
-//       sku,
-//       name,
-//       category_id,
-//       subcategory_id,
-//       brand_name,
-//       variant,
-//       dimension,
-//       unit_id,
-//       warehouse,
-//       hsn_code,
-//       tax_rate_id,
-//       mrp,
-//       purchase_price,
-//       sale_price,
-//       min_stock,
-//       barcode,
-//       status,
-//     } = req.body;
-//     const warehouseDoc = await Warehouse.findById(warehouse).select("store_name");
-//     const categoryDoc = await GoogleCategory.findById(category_id).select("name");
-//     const subCategoryDoc = subcategory_id ? await GoogleCategory.findById(subcategory_id).select("name") : null;
-//     const product = new Product({
-//       sku,
-//       name,
-//       category_id,
-//       category_name: categoryDoc?.name,
-//       subcategory_id: subcategory_id || null,
-//       subcategory_name: subCategoryDoc?.name || null,
-//       brand_name,
-//       variant,
-//       dimension,
-//       warehouse: warehouseDoc._id,
-//       warehouse_name: warehouseDoc.store_name,
-//       unit_id,
-//       hsn_code,
-//       tax_rate_id,
-//       mrp,
-//       purchase_price,
-//       sale_price,
-//       min_stock,
-//       barcode,
-//       status,
-//      image: req.file ? req.file.path : null,
-//       created_by: req.user._id,
-//       created_by_name: req.user.name,
-//       created_by_role: req.user.role,
-//     });
-//     await product.save();
-//     res.json(product);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-// exports.deleteProduct = async (req, res) => {
-//   try {
-//     await Product.findByIdAndDelete(req.params.id);
-//     res.json({ message: "Product deleted" });
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-// exports.updateProduct = async (req, res) => {
-//   try {
-//     const user = req.user;
-//     const allowedFields = { ...req.body };
-//     delete allowedFields.id;
-//     delete allowedFields._id;
-//     allowedFields.updated_by = user._id;
-//     allowedFields.updated_by_name = user.name;
-//     allowedFields.updated_by_role = user.role;
-//     allowedFields.updatedAt = new Date();
-//     if (req.file) {
-//   allowedFields.image = req.file.path;
-// }
-//     if (allowedFields.warehouse) {
-//       const warehouseDoc = await Warehouse.findById(allowedFields.warehouse,).select("store_name");
-//       if (warehouseDoc) {
-//         allowedFields.warehouse_name = warehouseDoc.store_name;
-//       }
-//     }
-//     if (allowedFields.category_id) {
-//       const cat = await GoogleCategory.findById(allowedFields.category_id,).select("name");
-//       if (cat) 
-//         allowedFields.category_name = cat.name;
-//     }
-
-//     if (allowedFields.subcategory_id) {
-//       const sub = await GoogleCategory.findById(allowedFields.subcategory_id, ).select("name");
-//       if (sub) 
-//         allowedFields.subcategory_name = sub.name;
-//     }
-//     const updated = await Product.findByIdAndUpdate(req.params.id,allowedFields,{ new: true },);
-//     res.json(updated);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-// exports.checkProductExists = async (req, res) => {
-//   const { name } = req.query;
-//   try {
-//     const product = await Product.findOne({
-//       name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
-//     });
-//     res.json({ exists: !!product });
-//   } catch (err) {
-//     console.error("Error checking product:", err);
-//     res.status(500).json({ exists: false });
-//   }
-// };
-
-// exports.getProductById = async (req, res) => {
-//   try {
-//     const product = await Product.findById(req.params.id).populate(
-//       "created_by updated_by",
-//       "name email role",
-//     );
-//     if (!product) {
-//       return res.status(404).json({ error: "Product not found" });
-//     }
-//     res.json(product);
-//   } catch (err) {
-//     res.status(500).json({ error: "Server error" });
-//   }
-// };
-
-// exports.bulkInsertProducts = async (req, res) => {
-//   try {
-//     const user = req.user;
-//     const products = req.body.products;
-//     const operations = [];
-//     for (const p of products) {
-//       let warehouseDoc = await Warehouse.findOne({store_name: new RegExp(`^${p.warehouse?.trim()}$`, "i"),});
-//       if (!warehouseDoc) {
-//         warehouseDoc = await Warehouse.create({store_name: p.warehouse?.trim() || "Default",});
-//       }
-//       let categoryDoc = await GoogleCategory.findOne({
-//         name: new RegExp(`^${p.category_name?.trim()}$`, "i"),
-//       });
-//       if (!categoryDoc) {
-//         categoryDoc = await GoogleCategory.create({
-//           name: p.category_name?.trim() || "General",
-//         });
-//       }
-//       operations.push({
-//         updateOne: {
-//           filter: { sku: p.sku?.trim() }, 
-//           update: {
-//             $set: {
-//               ...p,
-//               sku: p.sku?.trim(),
-//               name: p.name?.trim(),
-//               warehouse: warehouseDoc._id,
-//               warehouse_name: warehouseDoc.store_name,
-//               category_id: categoryDoc._id,
-//               category_name: categoryDoc.name,
-//               created_by: user._id,
-//               created_by_name: user.name,
-//               created_by_role: user.role,
-//             },
-//           },
-//           upsert: true, 
-//         },
-//       });
-//     }
-//     const result = await Product.bulkWrite(operations);
-//     res.json({
-//       totalRows: products.length,
-//       inserted: result.upsertedCount,
-//       updated: result.modifiedCount,
-//       message: "All products stored successfully (no skips)",
-//     });
-//   } catch (err) {
-//     console.error(err);
-//     res.status(500).json({ message: err.message });
-//   }
-// }
-
-// exports.getPublicProducts = async (req, res) => {
-//   try {
-//     const products = await Product.find({})
-//       .select("name image category_name subcategory_name brand_name variant unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
-//       .lean();
-
-//     res.json(products);
-//   } catch (error) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// }
-
-// exports.getPublicCategories = async (req, res) => {
-//   try {
-//     const categories = await GoogleCategory.find({})
-//       .select("name")
-//       .lean();
-
-//     res.json(categories);
-//   } catch (err) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-
-// exports.getPublicProductsByCategory = async (req, res) => {
-//   try {
-//     const { category } = req.params;
-
-//     const products = await Product.find({
-//       category_name: category,
-//     })
-//       .select("name image category_name subcategory_name brand_name variant unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
-//       .lean();
-
-//     res.json(products);
-//   } catch (err) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-
-// exports.getPublicProductById = async (req, res) => {
-//   try {
-//     const product = await Product.findById(req.params.id)
-//       .select("name image category_name subcategory_name brand_name variant unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
-//       .lean();
-
-//     if (!product) {
-//       return res.status(404).json({ message: "Product not found" });
-//     }
-
-//     res.json(product);
-//   } catch (err) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-
-
-// const Product = require("../models/Product");
-// const Warehouse = require("../models/Warehouse");
-
-
-// // ================= GET ALL PRODUCTS =================
-// exports.getProducts = async (req, res) => {
-//   try {
-//     const query =
-//       req.user.role === "user"
-//         ? { created_by_role: { $in: ["super_admin", "admin"] } }
-//         : {};
-
-//     const products = await Product.find(query)
-//       .populate("warehouse", "store_name")
-//       .populate("created_by", "name email")
-//       .populate("updated_by", "name email");
-
-//     res.json(products);
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// };
-
-
-// // ================= ADD PRODUCT =================
-// exports.addProduct = async (req, res) => {
-//   try {
-//     const {
-//       sku,
-//       name,
-//       category_name,
-//       subcategory_name,
-//       brand_name,
-//       variant,
-//       dimension,
-//       unit_id,
-//       warehouse,
-//       hsn_code,
-//       tax_rate_id,
-//       mrp,
-//       purchase_price,
-//       sale_price,
-//       status,
-//     } = req.body;
-
-//     const warehouseDoc = await Warehouse.findById(warehouse).select("store_name");
-//     if (!warehouseDoc) {
-//       return res.status(400).json({ error: "Warehouse not found" });
-//     }
-
-//     const isPainting = category_name === "Paintings";
-
-//     const product = new Product({
-//       sku,
-//       name,
-//       category_name,
-//       subcategory_name: subcategory_name || null,
-//       brand_name,
-//       variant: isPainting ? null : variant,
-//       dimension: isPainting ? dimension : null,
-//       warehouse: warehouseDoc._id,
-//       warehouse_name: warehouseDoc.store_name,
-//       unit_id,
-//       hsn_code,
-//       tax_rate_id,
-//       mrp,
-//       purchase_price,
-//       sale_price,
-//       status,
-//       website: req.body.website || "vyoobam",
-//       image: req.file ? req.file.path : null,
-//       created_by: req.user._id,
-//       created_by_name: req.user.name,
-//       created_by_role: req.user.role,
-//     });
-
-//     await product.save();
-//     res.json(product);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-
-// // ================= UPDATE PRODUCT =================
-// exports.updateProduct = async (req, res) => {
-//   try {
-//     const user = req.user;
-//     const allowedFields = { ...req.body };
-
-//     delete allowedFields.id;
-//     delete allowedFields._id;
-
-//     if (req.file) {
-//       allowedFields.image = req.file.path;
-//     }
-
-//     if (allowedFields.warehouse) {
-//       const warehouseDoc = await Warehouse.findById(allowedFields.warehouse).select("store_name");
-//       if (warehouseDoc) {
-//         allowedFields.warehouse_name = warehouseDoc.store_name;
-//       }
-//     }
-
-//     // Handle dimension vs variant logic
-//     if (allowedFields.category_name) {
-//       const isPainting = allowedFields.category_name === "Paintings";
-
-//       if (isPainting) {
-//         allowedFields.variant = null;
-//       } else {
-//         allowedFields.dimension = null;
-//       }
-//     }
-
-//     allowedFields.updated_by = user._id;
-//     allowedFields.updated_by_name = user.name;
-//     allowedFields.updated_by_role = user.role;
-//     allowedFields.updatedAt = new Date();
-
-//     const updated = await Product.findByIdAndUpdate(
-//       req.params.id,
-//       allowedFields,
-//       { new: true }
-//     );
-
-//     res.json(updated);
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-
-// // ================= DELETE PRODUCT =================
-// exports.deleteProduct = async (req, res) => {
-//   try {
-//     await Product.findByIdAndDelete(req.params.id);
-//     res.json({ message: "Product deleted" });
-//   } catch (err) {
-//     res.status(400).json({ error: err.message });
-//   }
-// };
-
-
-// // ================= CHECK PRODUCT EXISTS =================
-// exports.checkProductExists = async (req, res) => {
-//   const { name } = req.query;
-
-//   try {
-//     const product = await Product.findOne({
-//       name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
-//     });
-
-//     res.json({ exists: !!product });
-//   } catch (err) {
-//     res.status(500).json({ exists: false });
-//   }
-// };
-
-
-// // ================= GET PRODUCT BY ID =================
-// exports.getProductById = async (req, res) => {
-//   try {
-//     const product = await Product.findById(req.params.id).populate(
-//       "created_by updated_by",
-//       "name email role"
-//     );
-
-//     if (!product) {
-//       return res.status(404).json({ error: "Product not found" });
-//     }
-
-//     res.json(product);
-//   } catch (err) {
-//     res.status(500).json({ error: "Server error" });
-//   }
-// };
-
-
-// // ================= BULK INSERT =================
-// exports.bulkInsertProducts = async (req, res) => {
-//   try {
-//     const user = req.user;
-//     const products = req.body.products;
-
-//     const operations = [];
-
-//     for (const p of products) {
-//       let warehouseDoc = await Warehouse.findOne({
-//         store_name: new RegExp(`^${p.warehouse?.trim()}$`, "i"),
-//       });
-
-//       if (!warehouseDoc) {
-//         warehouseDoc = await Warehouse.create({
-//           store_name: p.warehouse?.trim() || "Default",
-//         });
-//       }
-
-//       const isPainting = p.category_name === "Paintings";
-
-//       operations.push({
-//         updateOne: {
-//           filter: { sku: p.sku?.trim() },
-//           update: {
-//             $set: {
-//               sku: p.sku?.trim(),
-//               name: p.name?.trim(),
-//               category_name: p.category_name,
-//               subcategory_name: p.subcategory_name || null,
-//               brand_name: p.brand_name,
-//               variant: isPainting ? null : p.variant,
-//               dimension: isPainting ? p.dimension : null,
-//               warehouse: warehouseDoc._id,
-//               warehouse_name: warehouseDoc.store_name,
-//               unit_id: p.unit_id,
-//               hsn_code: p.hsn_code,
-//               tax_rate_id: p.tax_rate_id,
-//               mrp: p.mrp,
-//               purchase_price: p.purchase_price,
-//               sale_price: p.sale_price,
-//               created_by: user._id,
-//               created_by_name: user.name,
-//               created_by_role: user.role,
-//             },
-//           },
-//           upsert: true,
-//         },
-//       });
-//     }
-
-//     const result = await Product.bulkWrite(operations);
-
-//     res.json({
-//       totalRows: products.length,
-//       inserted: result.upsertedCount,
-//       updated: result.modifiedCount,
-//       message: "All products stored successfully",
-//     });
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
-
-// // ================= PUBLIC APIs =================
-// // ================= PUBLIC APIs =================
-// exports.getPublicProducts = async (req, res) => {
-//   try {
-//     const products = await Product.find({
-//       category_name: "Paintings",
-   
-//     })
-//       .select(
-//         "name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
-//       )
-//       .lean();
-
-//     res.json(products);
-//   } catch (error) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-// exports.getPublicProductsByCategory = async (req, res) => {
-//   try {
-//     const { category } = req.params;
-
-//     const products = await Product.find({
-//       category_name: "Paintings",
-//       subcategory_name: category,
-     
-//     })
-//       .select(
-//         "name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
-//       )
-//       .lean();
-
-//     res.json(products);
-//   } catch (err) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-
-
-// exports.getPublicProductById = async (req, res) => {
-//   try {
-//     const product = await Product.findById(req.params.id)
-//       .select("name image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price")
-//       .lean();
-
-//     if (!product) {
-//       return res.status(404).json({ message: "Product not found" });
-//     }
-
-//     res.json(product);
-//   } catch (err) {
-//     res.status(500).json({ message: "Server Error" });
-//   }
-// };
-// exports.getPublicSubcategories = async (req, res) => {
-//   try {
-//     const products = await Product.find({
-//       category_name: "Paintings",
-//     }).select("subcategory_name");
-
-//     const subcategories = [
-//       ...new Set(
-//         products
-//           .map((p) => p.subcategory_name)
-//           .filter((s) => typeof s === "string" && s.trim() !== "")
-//       ),
-//     ];
-
-//     res.json(subcategories);
-//   } catch (err) {
-//     res.status(500).json({ message: err.message });
-//   }
-// };
-
 const Product = require("../models/Product");
 const Warehouse = require("../models/Warehouse");
-
-
-// ================= GET ALL PRODUCTS (ADMIN) =================
 exports.getProducts = async (req, res) => {
   try {
     const query =
       req.user.role === "user"
         ? { created_by_role: { $in: ["super_admin", "admin"] } }
         : {};
-
     const products = await Product.find(query)
       .populate("warehouse", "store_name")
       .populate("created_by", "name email")
@@ -600,8 +17,6 @@ exports.getProducts = async (req, res) => {
   }
 };
 
-
-// ================= ADD PRODUCT =================
 exports.addProduct = async (req, res) => {
   try {
     const {
@@ -627,9 +42,7 @@ exports.addProduct = async (req, res) => {
     if (!warehouseDoc) {
       return res.status(400).json({ error: "Warehouse not found" });
     }
-
     const isPainting = category_name === "Paintings";
-
     const product = new Product({
       sku,
       name,
@@ -661,56 +74,44 @@ exports.addProduct = async (req, res) => {
   }
 };
 
-
-// ================= UPDATE PRODUCT =================
 exports.updateProduct = async (req, res) => {
   try {
     const user = req.user;
     const allowedFields = { ...req.body };
-
     delete allowedFields.id;
     delete allowedFields._id;
-
     if (req.file) {
       allowedFields.image = req.file.path;
     }
-
     if (allowedFields.warehouse) {
       const warehouseDoc = await Warehouse.findById(allowedFields.warehouse).select("store_name");
       if (warehouseDoc) {
         allowedFields.warehouse_name = warehouseDoc.store_name;
       }
     }
-
     if (allowedFields.category_name) {
       const isPainting = allowedFields.category_name === "Paintings";
-
       if (isPainting) {
         allowedFields.variant = null;
       } else {
         allowedFields.dimension = null;
       }
     }
-
     allowedFields.updated_by = user._id;
     allowedFields.updated_by_name = user.name;
     allowedFields.updated_by_role = user.role;
     allowedFields.updatedAt = new Date();
-
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
       allowedFields,
       { new: true }
     );
-
     res.json(updated);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }
 };
 
-
-// ================= DELETE PRODUCT =================
 exports.deleteProduct = async (req, res) => {
   try {
     await Product.findByIdAndDelete(req.params.id);
@@ -720,24 +121,18 @@ exports.deleteProduct = async (req, res) => {
   }
 };
 
-
-// ================= CHECK PRODUCT EXISTS =================
 exports.checkProductExists = async (req, res) => {
   const { name } = req.query;
-
   try {
     const product = await Product.findOne({
       name: { $regex: new RegExp(`^${name.trim()}$`, "i") },
     });
-
     res.json({ exists: !!product });
   } catch (err) {
     res.status(500).json({ exists: false });
   }
 };
 
-
-// ================= GET PRODUCT BY ID (ADMIN) =================
 exports.getProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id).populate(
@@ -755,15 +150,11 @@ exports.getProductById = async (req, res) => {
   }
 };
 
-
-// ================= BULK INSERT =================
 exports.bulkInsertProducts = async (req, res) => {
   try {
     const user = req.user;
     const products = req.body.products;
-
     const operations = [];
-
     for (const p of products) {
       let warehouseDoc = await Warehouse.findOne({
         store_name: new RegExp(`^${p.warehouse?.trim()}$`, "i"),
@@ -774,9 +165,7 @@ exports.bulkInsertProducts = async (req, res) => {
           store_name: p.warehouse?.trim() || "Default",
         });
       }
-
       const isPainting = p.category_name === "Paintings";
-
       operations.push({
         updateOne: {
           filter: { sku: p.sku?.trim() },
@@ -806,9 +195,7 @@ exports.bulkInsertProducts = async (req, res) => {
         },
       });
     }
-
     const result = await Product.bulkWrite(operations);
-
     res.json({
       totalRows: products.length,
       inserted: result.upsertedCount,
@@ -822,37 +209,28 @@ exports.bulkInsertProducts = async (req, res) => {
 
 
 // ================= PUBLIC APIs (CHAKRAPANI WEBSITE) =================
-
-
-// GET ALL PAINTINGS OR FILTER BY SUBCATEGORY
 exports.getPublicProducts = async (req, res) => {
   try {
     const { subcategory } = req.query;
-
     const filter = {
       category_name: "Paintings",
     };
-
     if (subcategory && subcategory !== "All Paintings") {
       filter.subcategory_name = {
         $regex: new RegExp(subcategory, "i"),
       };
     }
-
     const products = await Product.find(filter)
       .select(
         "name description image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
       )
       .lean();
-
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-
-// GET SINGLE PRODUCT
 exports.getPublicProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
@@ -860,25 +238,20 @@ exports.getPublicProductById = async (req, res) => {
         "name description image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
       )
       .lean();
-
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
-
     res.json(product);
   } catch (err) {
     res.status(500).json({ message: "Server Error" });
   }
 };
 
-
-// GET UNIQUE SUBCATEGORIES
 exports.getPublicSubcategories = async (req, res) => {
   try {
     const products = await Product.find({
       category_name: "Paintings",
     }).select("subcategory_name");
-
     const subcategories = [
       ...new Set(
         products
@@ -886,7 +259,6 @@ exports.getPublicSubcategories = async (req, res) => {
           .filter((s) => typeof s === "string" && s.trim() !== "")
       ),
     ];
-
     res.json(subcategories);
   } catch (err) {
     res.status(500).json({ message: err.message });
