@@ -219,6 +219,7 @@ exports.register = async (req, res) => {
       secure: true,
       sameSite: "none",
       maxAge: 60 * 60 * 1000,
+      path: "/", 
     });
 
     const userObj = user.toObject();
@@ -266,6 +267,7 @@ exports.login = async (req, res) => {
       secure: true,
       sameSite: "none",
       maxAge: 60 * 60 * 1000,
+      path: "/", 
     });
 
     const userObj = user.toObject();
