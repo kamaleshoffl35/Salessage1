@@ -4,11 +4,13 @@ const crypto = require("crypto");
 
 exports.createOrder = async (req, res) => {
   try {
-    const { website, amount, currency, customer_details, products } = req.body;
+    const { amount, currency, customer_details, products } = req.body;
 
-    if (website !== "chakrapani") {
-      return res.status(403).json({ error: "Invalid website" });
-    }
+const website = req.user.tenant; // 🔥 get from JWT middleware
+
+if (!website) {
+  return res.status(403).json({ error: "Invalid tenant" });
+}
 
     const options = {
       amount: amount * 100,
