@@ -148,18 +148,23 @@ const SalePOS = () => {
     if (item.tax_rate_id) {
       const tax = taxes.find((t) => t._id === item.tax_rate_id);
       if (tax) {
-        cgst = taxableAmount * (tax.cgst_percent / 100);
-        sgst = taxableAmount * (tax.sgst_percent / 100);
-        igst = taxableAmount * (tax.igst_percent / 100);
-      }
+  if (tax.igst_percent > 0) {
+    // Inter-state
+    igst = taxableAmount * (tax.igst_percent / 100);
+  } else {
+    // Intra-state
+    cgst = taxableAmount * (tax.cgst_percent / 100);
+    sgst = taxableAmount * (tax.sgst_percent / 100);
+  }
+}
     }
     return {
-      ...item,
-      cgst_amount: cgst,
-      sgst_amount: sgst,
-      igst_amount: igst,
-      line_total: taxableAmount + cgst + sgst + igst,
-    };
+  ...item,
+  cgst_amount: Number(cgst.toFixed(2)),
+  sgst_amount: Number(sgst.toFixed(2)),
+  igst_amount: Number(igst.toFixed(2)),
+  line_total: Number((taxableAmount + cgst + sgst + igst).toFixed(2)),
+};
   };
   const calculateTotals = () => {
     const subtotal = form.items.reduce((sum, item) => {

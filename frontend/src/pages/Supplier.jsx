@@ -31,6 +31,7 @@ const Supplier = () => {
   const [showHistoryModal,setShowHistoryModal]=useState(false)
   const [historyInfo,setHistoryInfo]=useState(null)
   const [role, setRole] = useState("user");
+  const [phoneError, setPhoneError] = useState("");
   useEffect(() => {
   API.get("/users/me")
     .then((res) => {
@@ -98,30 +99,47 @@ useEffect(() => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      if (editingSupplier) {
-        await dispatch(updateSupplier({ id: editingSupplier, updatedData: form })).unwrap();
-        setEditingSupplier(null);
-      } else {
-        await dispatch(addSupplier(form)).unwrap();
-      }
-      setForm({
-        name: "",
-        phone: "",
-        country: "",
-        gstin: "",
-        email: "",
-        address: "",
-        state_code: "",  
-      });
-      setStates([]);
-      setShowSupplierForm(false);
-      dispatch(fetchsuppliers());
-    } catch (err) {
-      console.error(err.response?.data || err.message);
+  e.preventDefault();
+
+  // 🔎 Check duplicate phone (ignore when editing same supplier)
+  const isDuplicate = suppliers.some(s =>
+    s.phone === form.phone &&
+    s._id !== editingSupplier
+  );
+
+  if (isDuplicate) {
+    setPhoneError("Mobile number already exists.");
+    return;
+  }
+
+  setPhoneError("");
+
+  try {
+    if (editingSupplier) {
+      await dispatch(updateSupplier({ id: editingSupplier, updatedData: form })).unwrap();
+      setEditingSupplier(null);
+    } else {
+      await dispatch(addSupplier(form)).unwrap();
     }
-  };
+
+    setForm({
+      name: "",
+      phone: "",
+      country: "",
+      gstin: "",
+      email: "",
+      address: "",
+      state_code: "",
+    });
+
+    setStates([]);
+    setShowSupplierForm(false);
+    dispatch(fetchsuppliers());
+
+  } catch (err) {
+    console.error(err.response?.data || err.message);
+  }
+};
   const handleEdit = (supplier) => {
     setEditingSupplier(supplier._id);
     setForm({
@@ -297,6 +315,11 @@ useEffect(() => {
                         Mobile number must start with 6, 7, 8, or 9
                       </small>
                     )}
+                    {phoneError && (
+    <small className="text-danger d-block">
+      {phoneError}
+    </small>
+  )}
                     <small className="text-muted">Selected country: {form.country || 'None'}</small>
                   </div>
                   <div className="col-md-6">

@@ -22,9 +22,18 @@ exports.addSupplier = async (req, res) => {
     await supplier.save();
     res.status(201).json(supplier);
   } catch (err) {
-    console.error("Error saving supplier", err);
-    res.status(400).json({ error: err.message });
+  console.error("Error saving supplier", err);
+
+  if (err.code === 11000) {
+    return res.status(400).json({
+      message: "Mobile number already exists"
+    });
   }
+
+  res.status(500).json({
+    message: "Server error"
+  });
+}
 };
 
 exports.deleteSupplier = async (req, res) => {
