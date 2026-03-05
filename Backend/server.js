@@ -1,8 +1,9 @@
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
 const path = require("path");
-require("dotenv").config();
+
 const productRoutes = require("./routes/productRoutes");
 // const categoryRoutes = require("./routes/categoryRoutes");
 const taxRoutes = require("./routes/taxRoutes");
@@ -100,6 +101,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
 app.use("/api/google-categories", require("./routes/googleCategory"));
 app.use("/api", require("./routes/orderRoutes"));
+app.use("/api", require("./routes/orderRoutes"))
 app.get("/test-public", (req, res) => {
   res.json({ message: "SERVER UPDATED" });
 });
