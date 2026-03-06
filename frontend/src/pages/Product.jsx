@@ -148,15 +148,18 @@ const cleanForm = {
   sku: form.sku,
   name: form.name,
   description: form.description,
+
   short_description: form.short_description,
   features: form.features,
   spiritual_significance: form.spiritual_significance,
   ideal_placement: form.ideal_placement,
   care_instructions: form.care_instructions,
   tags: form.tags,
+
   category_name:
     staticCategories.find((c) => c.id === form.category_id)?.name || "",
   subcategory_name: form.subcategory_id || "",
+
   brand_name: form.brand_name,
   variant: form.variant,
   dimension: form.dimension,
