@@ -167,6 +167,18 @@ const ReusableTable = ({
               <i className="fas fa-search"></i>
             </span>
           </div>
+           <div className="input-group">
+            <input
+              type="text"
+              className="form-control"
+              placeholder={searchPlaceholder3}
+              value={searchTerm3}
+              onChange={(e) => onSearchChange3(e.target.value)}
+            />
+            <span className="input-group-text">
+              <i className="fas fa-search"></i>
+            </span>
+          </div>
           {showThirdSearch && (
             <div className="input-group">
               <input

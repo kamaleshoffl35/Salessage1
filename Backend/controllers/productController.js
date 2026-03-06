@@ -20,52 +20,69 @@ exports.getProducts = async (req, res) => {
 exports.addProduct = async (req, res) => {
   try {
     const {
-      sku,
-      name,
-      description,  
-      category_name,
-      subcategory_name,
-      brand_name,
-      variant,
-      dimension,
-      unit_id,
-      warehouse,
-      hsn_code,
-      tax_rate_id,
-      mrp,
-      purchase_price,
-      sale_price,
-      status,
-    } = req.body;
+  sku,
+  name,
+  description,
+
+  short_description,
+  features,
+  spiritual_significance,
+  ideal_placement,
+  care_instructions,
+  tags,
+
+  category_name,
+  subcategory_name,
+  brand_name,
+  variant,
+  dimension,
+  unit_id,
+  warehouse,
+  hsn_code,
+  tax_rate_id,
+  mrp,
+  purchase_price,
+  sale_price,
+  status,
+} = req.body;
 
     const warehouseDoc = await Warehouse.findById(warehouse).select("store_name");
     if (!warehouseDoc) {
       return res.status(400).json({ error: "Warehouse not found" });
     }
     const isPainting = category_name === "Paintings";
-    const product = new Product({
-      sku,
-      name,
-      description,  
-      category_name,
-      subcategory_name: subcategory_name || null,
-      brand_name,
-      variant: isPainting ? null : variant,
-      dimension: isPainting ? dimension : null,
-      warehouse: warehouseDoc._id,
-      warehouse_name: warehouseDoc.store_name,
-      unit_id,
-      hsn_code,
-      tax_rate_id,
-      mrp,
-      purchase_price,
-      sale_price,
-      status,
-      image: req.file ? req.file.path : null,
-      created_by: req.user._id,
-      created_by_name: req.user.name,
-      created_by_role: req.user.role,
-    });
+   const product = new Product({
+  sku,
+  name,
+  description,
+
+  short_description,
+  features,
+  spiritual_significance,
+  ideal_placement,
+  care_instructions,
+  tags,
+
+  category_name,
+  subcategory_name: subcategory_name || null,
+  brand_name,
+  variant: isPainting ? null : variant,
+  dimension: isPainting ? dimension : null,
+  warehouse: warehouseDoc._id,
+  warehouse_name: warehouseDoc.store_name,
+  unit_id,
+  hsn_code,
+  tax_rate_id,
+  mrp,
+  purchase_price,
+  sale_price,
+  status,
+  image: req.file ? req.file.path : null,
+
+  created_by: req.user._id,
+  created_by_name: req.user.name,
+  created_by_role: req.user.role,
+});
 
     await product.save();
     res.json(product);
@@ -171,25 +188,35 @@ exports.bulkInsertProducts = async (req, res) => {
           filter: { sku: p.sku?.trim() },
           update: {
             $set: {
-              sku: p.sku?.trim(),
-              name: p.name?.trim(),
-              category_name: p.category_name,
-              subcategory_name: p.subcategory_name || null,
-              brand_name: p.brand_name,
-              variant: isPainting ? null : p.variant,
-              dimension: isPainting ? p.dimension : null,
-              warehouse: warehouseDoc._id,
-              warehouse_name: warehouseDoc.store_name,
-              unit_id: p.unit_id,
-              hsn_code: p.hsn_code,
-              tax_rate_id: p.tax_rate_id,
-              mrp: p.mrp,
-              purchase_price: p.purchase_price,
-              sale_price: p.sale_price,
-              created_by: user._id,
-              created_by_name: user.name,
-              created_by_role: user.role,
-            },
+  sku: p.sku?.trim(),
+  name: p.name?.trim(),
+
+  description: p.description || "",
+  short_description: p.short_description || "",
+  features: p.features || "",
+  spiritual_significance: p.spiritual_significance || "",
+  ideal_placement: p.ideal_placement || "",
+  care_instructions: p.care_instructions || "",
+  tags: p.tags || "",
+
+  category_name: p.category_name,
+  subcategory_name: p.subcategory_name || null,
+  brand_name: p.brand_name,
+  variant: isPainting ? null : p.variant,
+  dimension: isPainting ? p.dimension : null,
+  warehouse: warehouseDoc._id,
+  warehouse_name: warehouseDoc.store_name,
+  unit_id: p.unit_id,
+  hsn_code: p.hsn_code,
+  tax_rate_id: p.tax_rate_id,
+  mrp: p.mrp,
+  purchase_price: p.purchase_price,
+  sale_price: p.sale_price,
+
+  created_by: user._id,
+  created_by_name: user.name,
+  created_by_role: user.role,
+}
           },
           upsert: true,
         },
@@ -222,8 +249,8 @@ exports.getPublicProducts = async (req, res) => {
     }
     const products = await Product.find(filter)
       .select(
-        "name description image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
-      )
+  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+)
       .lean();
     res.json(products);
   } catch (error) {
@@ -234,9 +261,9 @@ exports.getPublicProducts = async (req, res) => {
 exports.getPublicProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-      .select(
-        "name description image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
-      )
+    .select(
+  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+)
       .lean();
     if (!product) {
       return res.status(404).json({ message: "Product not found" });

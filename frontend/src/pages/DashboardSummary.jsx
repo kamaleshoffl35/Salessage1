@@ -32,10 +32,9 @@ const DashboardSummary = () => {
     0
   );
   const totalSales = sales.reduce(
-    (acc, s) =>
-      acc + ((Number(s.grand_total) || 0) - (Number(s.discount_amount) || 0)),
-    0
-  );
+  (acc, s) => acc + (Number(s.grand_total) || 0),
+  0
+);
   const topSellingProducts = useMemo(() => {
     const productCount = {};
     sales.forEach((sale) => {
@@ -61,8 +60,7 @@ const DashboardSummary = () => {
     const purchasesByDate = {};
     sales.forEach((s) => {
       const date = formatDate(s.invoice_date_time);
-      const total =
-        (Number(s.grand_total) || 0) - (Number(s.discount_amount) || 0);
+      const total = Number(s.grand_total) || 0;
       salesByDate[date] = (salesByDate[date] || 0) + total;
     });
     purchases.forEach((p) => {

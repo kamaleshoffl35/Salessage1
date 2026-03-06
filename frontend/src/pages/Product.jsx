@@ -19,26 +19,33 @@
     const [showProductForm, setShowProductForm] = useState(false);
     const [importedProducts, setImportedProducts] = useState([]);
     const navigate = useNavigate();
-    const [form, setForm] = useState({
-      name: "",
-      image: null,
-      description:"",
-      sku: "",
-      category_id: "",
-      subcategory_id: "",
-      brand_name: "",
-      unit_id: "Kg",
-      warehouse: "",
-      hsn_code: "",
-      tax_rate_id: "18%",
-      mrp: "",
-      purchase_price: "",
-      sale_price: "",
-       dimension: "", 
-      status: true,
-    });
+   const [form, setForm] = useState({
+  name: "",
+  image: null,
+  description: "",
+  short_description: "",
+  features: "",
+  spiritual_significance: "",
+  ideal_placement: "",
+  care_instructions: "",
+  tags: "",
+  sku: "",
+  category_id: "",
+  subcategory_id: "",
+  brand_name: "",
+  unit_id: "Kg",
+  warehouse: "",
+  hsn_code: "",
+  tax_rate_id: "18%",
+  mrp: "",
+  purchase_price: "",
+  sale_price: "",
+  dimension: "",
+  status: true,
+});
     const [searchNameSku, setSearchNameSku] = useState("");
     const [searchCategory, setSearchCategory] = useState("");
+    const [searchMRP, setSearchMRP] = useState("");
     const [subcategories, setSubcategories] = useState([]);
     const [editingProduct, setEditingProduct] = useState(null);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -141,6 +148,12 @@ const cleanForm = {
   sku: form.sku,
   name: form.name,
   description: form.description,
+  short_description: form.short_description,
+  features: form.features,
+  spiritual_significance: form.spiritual_significance,
+  ideal_placement: form.ideal_placement,
+  care_instructions: form.care_instructions,
+  tags: form.tags,
   category_name:
     staticCategories.find((c) => c.id === form.category_id)?.name || "",
   subcategory_name: form.subcategory_id || "",
@@ -156,7 +169,6 @@ const cleanForm = {
   sale_price: form.sale_price,
   status: form.status,
 };
-
 Object.entries(cleanForm).forEach(([key, value]) => {
   if (value !== null && value !== undefined) {
     formData.append(key, value);
@@ -255,22 +267,31 @@ if (form.image instanceof File) {
         dispatch(deleteProduct(id));
       }
     };
-    const filteredProducts = products.filter((p) => {
-      const name = (p.name || "").toLowerCase();
-      const sku = (p.sku || "").toLowerCase();
-      const categoryName =
-        typeof p.category_id === "object"
-          ? p.category_id?.name?.toLowerCase() || ""
-          : (p.category_id || "").toLowerCase();
-      const matchNameSku =
-        searchNameSku.trim() === "" ||
-        name.includes(searchNameSku.toLowerCase()) ||
-        sku.includes(searchNameSku.toLowerCase());
-      const matchCategory =
-        searchCategory.trim() === "" ||
-        categoryName.includes(searchCategory.toLowerCase());
-      return matchNameSku && matchCategory;
-    });
+   const filteredProducts = products.filter((p) => {
+  const name = (p.name || "").toLowerCase();
+  const sku = (p.sku || "").toLowerCase();
+  const categoryName = (p.category_name || "").toLowerCase();
+  const subcategoryName = (p.subcategory_name || "").toLowerCase();
+
+  const nameSkuSearch = searchNameSku.toLowerCase().trim();
+  const categorySearch = searchCategory.toLowerCase().trim();
+  const mrpSearch = searchMRP.trim();
+
+  const matchNameSku =
+    !nameSkuSearch ||
+    name.includes(nameSkuSearch) ||
+    sku.includes(nameSkuSearch);
+
+  const matchCategory =
+    !categorySearch ||
+    categoryName.includes(categorySearch) ||
+    subcategoryName.includes(categorySearch);
+
+  const matchMRP =
+    !mrpSearch || Number(p.mrp) === Number(mrpSearch);
+
+  return matchNameSku && matchCategory && matchMRP;
+});
     const handleCloseForm = () => {
       setShowProductForm(false);
       setEditingProduct(null);
@@ -379,6 +400,7 @@ const tableColumns = [
     const handlereset = () => {
       setSearchNameSku("");
       setSearchCategory("");
+      setSearchMRP("");
     };
     const handleHistory = async (product) => {
       if (!product?._id) {
@@ -574,6 +596,68 @@ const tableColumns = [
     onChange={handleChange}
   />
 </div>
+<div className="mb-3">
+  <label>Short Description</label>
+  <textarea
+    name="short_description"
+    className="form-control"
+    rows="2"
+    value={form.short_description}
+    onChange={handleChange}
+  />
+</div>
+<div className="mb-3">
+  <label>Features</label>
+  <textarea
+    name="features"
+    className="form-control"
+    rows="4"
+    placeholder="Enter product features"
+    value={form.features}
+    onChange={handleChange}
+  />
+</div>
+<div className="mb-3">
+  <label>Spiritual Significance</label>
+  <textarea
+    name="spiritual_significance"
+    className="form-control"
+    rows="3"
+    value={form.spiritual_significance}
+    onChange={handleChange}
+  />
+</div>
+<div className="mb-3">
+  <label>Ideal Placement</label>
+  <textarea
+    name="ideal_placement"
+    className="form-control"
+    rows="3"
+    value={form.ideal_placement}
+    onChange={handleChange}
+  />
+</div>
+<div className="mb-3">
+  <label>Care Instructions</label>
+  <textarea
+    name="care_instructions"
+    className="form-control"
+    rows="3"
+    value={form.care_instructions}
+    onChange={handleChange}
+  />
+</div>
+<div className="mb-3">
+  <label>Tags</label>
+  <input
+    type="text"
+    className="form-control"
+    name="tags"
+    placeholder="Enter tags separated by comma"
+    value={form.tags}
+    onChange={handleChange}
+  />
+</div>
                     <div className="col-md-6">
                       <label className="form-label">Brand (Optional)</label>
                       <input
@@ -752,22 +836,32 @@ const tableColumns = [
             </div>
           </div>
         )}
-        <ReusableTable
-          data={combinedProducts} 
-          columns={tableColumns}
-          loading={status === "loading"}
-          searchable={true}
-          searchTerm1={searchNameSku}
-          searchTerm2={searchCategory}
-          onSearchChange1={setSearchNameSku}
-          onSearchChange2={setSearchCategory}
-          searchPlaceholder1="Search by Name or Sku"
-          searchPlaceholder2="Search by Category"
-          actions={tableActions}
-          onActionClick={handleTableAction}
-          emptyMessage="No products found."
-          onResetSearch={handlereset}
-        />
+        <div className="row mb-3">
+  
+</div>
+       <ReusableTable
+  data={combinedProducts}
+  columns={tableColumns}
+  loading={status === "loading"}
+  searchable={true}
+
+  searchTerm1={searchNameSku}
+  searchTerm2={searchCategory}
+  searchTerm3={searchMRP}
+
+  onSearchChange1={setSearchNameSku}
+  onSearchChange2={setSearchCategory}
+  onSearchChange3={setSearchMRP}
+
+  searchPlaceholder1="Search by Name or SKU"
+  searchPlaceholder2="Search by Category or Subcategory"
+  searchPlaceholder3="Search by MRP"
+
+  actions={tableActions}
+  onActionClick={handleTableAction}
+  emptyMessage="No products found."
+  onResetSearch={handlereset}
+/>
         <HistoryModal
           open={showHistoryModal}
           onClose={() => setShowHistoryModal(false)}
