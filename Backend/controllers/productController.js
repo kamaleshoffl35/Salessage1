@@ -36,6 +36,7 @@ exports.addProduct = async (req, res) => {
   brand_name,
   variant,
   dimension,
+   dimensions,
   unit_id,
   warehouse,
   hsn_code,
@@ -51,6 +52,16 @@ exports.addProduct = async (req, res) => {
       return res.status(400).json({ error: "Warehouse not found" });
     }
     const isPainting = category_name === "Paintings";
+    let parsedDimensions = [];
+
+if (dimensions) {
+  try {
+    parsedDimensions =
+      typeof dimensions === "string" ? JSON.parse(dimensions) : dimensions;
+  } catch {
+    parsedDimensions = [];
+  }
+}
    const product = new Product({
   sku,
   name,
@@ -67,15 +78,16 @@ exports.addProduct = async (req, res) => {
   subcategory_name: subcategory_name || null,
   brand_name,
   variant: isPainting ? null : variant,
-  dimension: isPainting ? dimension : null,
+ dimension: isPainting ? dimension : null,
+dimensions: isPainting ? parsedDimensions : [],
   warehouse: warehouseDoc._id,
   warehouse_name: warehouseDoc.store_name,
   unit_id,
   hsn_code,
   tax_rate_id,
-  mrp,
-  purchase_price,
-  sale_price,
+  mrp: mrp ? Number(mrp) : 0,
+  purchase_price: purchase_price ? Number(purchase_price) : 0,
+  sale_price: sale_price ? Number(sale_price) : 0,
   status,
   image: req.file ? req.file.path : null,
 
@@ -107,17 +119,29 @@ exports.updateProduct = async (req, res) => {
       }
     }
     if (allowedFields.category_name) {
-      const isPainting = allowedFields.category_name === "Paintings";
-      if (isPainting) {
-        allowedFields.variant = null;
-      } else {
-        allowedFields.dimension = null;
-      }
-    }
+  const isPainting = allowedFields.category_name === "Paintings";
+
+  if (isPainting) {
+    allowedFields.variant = null;
+  } else {
+    allowedFields.dimension = null;
+    allowedFields.dimensions = [];
+  }
+}
     allowedFields.updated_by = user._id;
     allowedFields.updated_by_name = user.name;
     allowedFields.updated_by_role = user.role;
     allowedFields.updatedAt = new Date();
+    if (allowedFields.dimensions) {
+  try {
+    allowedFields.dimensions =
+      typeof allowedFields.dimensions === "string"
+        ? JSON.parse(allowedFields.dimensions)
+        : allowedFields.dimensions;
+  } catch {
+    allowedFields.dimensions = [];
+  }
+}
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
       allowedFields,
@@ -204,6 +228,7 @@ exports.bulkInsertProducts = async (req, res) => {
   brand_name: p.brand_name,
   variant: isPainting ? null : p.variant,
   dimension: isPainting ? p.dimension : null,
+  dimensions: isPainting ? p.dimensions || [] : [],
   warehouse: warehouseDoc._id,
   warehouse_name: warehouseDoc.store_name,
   unit_id: p.unit_id,
@@ -248,8 +273,8 @@ exports.getPublicProducts = async (req, res) => {
       };
     }
     const products = await Product.find(filter)
-      .select(
-  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+     .select(
+  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
 )
       .lean();
     res.json(products);
@@ -262,7 +287,7 @@ exports.getPublicProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
     .select(
-  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
 )
       .lean();
     if (!product) {

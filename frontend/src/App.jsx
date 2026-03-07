@@ -27,6 +27,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import API from "./api/axiosInstance";
 import { Outlet } from "react-router-dom";
+window.global = window;
 const ProtectedRoute = ({ roles }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);

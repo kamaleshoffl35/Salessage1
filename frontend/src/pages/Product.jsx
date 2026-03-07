@@ -11,6 +11,12 @@
   import AddButton from "../components/AddButton";
   import ImportExcelButton from "../components/ImportExcelButton";
   import { bulkAddProducts } from "../redux/productSlice";
+import { Editor } from "react-draft-wysiwyg";
+import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
+import { EditorState, convertToRaw } from "draft-js";
+
+import draftToHtml from "draftjs-to-html";
+import htmlToDraft from "html-to-draftjs";
   const Product = () => {
     const dispatch = useDispatch();
     const { items: products, status } = useSelector((state) => state.products);
@@ -41,6 +47,9 @@
   purchase_price: "",
   sale_price: "",
   dimension: "",
+   dimensions: [
+    { size: "", mrp: "", purchase_price: "", sale_price: "" }
+  ],
   status: true,
 });
     const [searchNameSku, setSearchNameSku] = useState("");
@@ -50,6 +59,11 @@
     const [editingProduct, setEditingProduct] = useState(null);
     const [showHistoryModal, setShowHistoryModal] = useState(false);
     const [historyInfo, setHistoryInfo] = useState(null);
+    const [featuresEditor, setFeaturesEditor] = useState(EditorState.createEmpty());
+const [spiritualEditor, setSpiritualEditor] = useState(EditorState.createEmpty());
+const [placementEditor, setPlacementEditor] = useState(EditorState.createEmpty());
+const [careEditor, setCareEditor] = useState(EditorState.createEmpty());
+const [tagsEditor, setTagsEditor] = useState(EditorState.createEmpty());
     const tableActions = useTableActions(role);
     useEffect(() => {
       API.get("/users/me")
@@ -126,24 +140,86 @@ const handleCategoryChange = (e) => {
     setSubcategories([]);
   }
 };
+const handleDimensionChange = (index, field, value) => {
+  const updated = [...form.dimensions];
+  updated[index][field] = value;
+
+  setForm((prev) => ({
+    ...prev,
+    dimensions: updated
+  }));
+};
+
+const addDimensionRow = () => {
+  setForm((prev) => ({
+    ...prev,
+    dimensions: [
+      ...prev.dimensions,
+      { size: "", mrp: "", purchase_price: "", sale_price: "" }
+    ]
+  }));
+};
+
+const removeDimensionRow = (index) => {
+  const updated = form.dimensions.filter((_, i) => i !== index);
+
+  setForm((prev) => ({
+    ...prev,
+    dimensions: updated
+  }));
+};
+const cleanEditorHtml = (html) => {
+  if (!html) return "";
+  const stripped = html.replace(/<[^>]*>/g, "").trim();
+  return stripped ? html : "";
+};
     const handleSubmit = async (e) => {
       e.preventDefault();
-      if (
-        !form.name.trim() ||
-        !form.sku.trim() ||
-        !form.category_id ||
-        !form.tax_rate_id ||
-        !form.mrp ||
-        !form.purchase_price ||
-        !form.sale_price
-      ) {
-        alert("Please fill in all required fields before submitting!");
-        return;
-      }
+        console.log("FORM DATA", form);
+      if (!form.name.trim() || !form.sku.trim() || !form.category_id || !form.tax_rate_id) {
+  alert("Please fill in all required fields before submitting!");
+  return;
+}
+
+// validation for paintings
+if (form.category_id === "paintings") {
+  const validDimensions = form.dimensions.filter(
+    (d) => d.size && d.mrp && d.purchase_price && d.sale_price
+  );
+
+  if (validDimensions.length === 0) {
+    alert("Please fill at least one dimension with price.");
+    return;
+  }
+}
+
+// validation for other categories
+if (form.category_id !== "paintings") {
+  if (!form.mrp || !form.purchase_price || !form.sale_price) {
+    alert("Please fill in MRP, Purchase Price and Sale Price.");
+    return;
+  }
+}
+// Fix price for paintings
+if (form.category_id === "paintings" && form.dimensions.length > 0) {
+  const firstDimension = form.dimensions.find(
+    (d) => d.size && d.mrp && d.purchase_price && d.sale_price
+  );
+
+  if (firstDimension) {
+    form.mrp = firstDimension.mrp;
+    form.purchase_price = firstDimension.purchase_price;
+    form.sale_price = firstDimension.sale_price;
+  }
+}
       try {
         if (editingProduct) {
         const formData = new FormData();
-
+if (form.category_id === "paintings" && form.dimensions.length > 0) {
+  form.mrp = form.dimensions[0].mrp;
+  form.purchase_price = form.dimensions[0].purchase_price;
+  form.sale_price = form.dimensions[0].sale_price;
+}
 const cleanForm = {
   sku: form.sku,
   name: form.name,
@@ -163,6 +239,8 @@ const cleanForm = {
   brand_name: form.brand_name,
   variant: form.variant,
   dimension: form.dimension,
+   dimensions: JSON.stringify(form.dimensions),
+
   unit_id: form.unit_id,
   warehouse: form.warehouse,
   hsn_code: form.hsn_code,
@@ -171,6 +249,7 @@ const cleanForm = {
   purchase_price: form.purchase_price,
   sale_price: form.sale_price,
   status: form.status,
+   created_by_role: role 
 };
 Object.entries(cleanForm).forEach(([key, value]) => {
   if (value !== null && value !== undefined) {
@@ -188,24 +267,38 @@ await dispatch(
           setEditingProduct(null);
           console.log("Product Updated Successfully");
         } else {
-          const cleanForm = {
+ const cleanForm = {
   sku: form.sku,
   name: form.name,
-  description:form.description,
+  description: form.description,
+
+  short_description: form.short_description,
+  features: form.features,
+  spiritual_significance: form.spiritual_significance,
+  ideal_placement: form.ideal_placement,
+  care_instructions: form.care_instructions,
+  tags: form.tags,
+
   category_name:
     staticCategories.find((c) => c.id === form.category_id)?.name || "",
+
   subcategory_name: form.subcategory_id || "",
   brand_name: form.brand_name,
   variant: form.variant,
   dimension: form.dimension,
+ dimensions: JSON.stringify(form.dimensions),
+
   unit_id: form.unit_id,
   warehouse: form.warehouse,
   hsn_code: form.hsn_code,
   tax_rate_id: form.tax_rate_id,
+
   mrp: form.mrp,
   purchase_price: form.purchase_price,
   sale_price: form.sale_price,
+
   status: form.status,
+   created_by_role: role 
 };
         const formData = new FormData();
 
@@ -223,21 +316,32 @@ if (form.image instanceof File) {
         await dispatch(addProduct(formData)).unwrap();
         }
         setForm({
-          name: "",
-          sku: "",
-          description:"",
-          category_id: "",
-          brand_name: "",
-          unit_id: "Kg",
-          warehouse: "",
-          hsn_code: "",
-          tax_rate_id: "18%",
-          mrp: "",
-          purchase_price: "",
-          sale_price: "",
-
-          status: true,
-        });
+  name: "",
+  image: null,
+  description: "",
+  short_description: "",
+  features: "",
+  spiritual_significance: "",
+  ideal_placement: "",
+  care_instructions: "",
+  tags: "",
+  sku: "",
+  category_id: "",
+  subcategory_id: "",
+  brand_name: "",
+  unit_id: "Kg",
+  warehouse: "",
+  hsn_code: "",
+  tax_rate_id: "18%",
+  mrp: "",
+  purchase_price: "",
+  sale_price: "",
+  dimension: "",
+  dimensions: [
+  { size: "", mrp: "", purchase_price: "", sale_price: "" }
+],
+  status: true,
+});
         setSubcategories([]);
         setShowProductForm(false);
         dispatch(fetchProducts());
@@ -246,25 +350,6 @@ if (form.image instanceof File) {
       }
     };
 
-    const handleEdit = (product) => {
-      setEditingProduct(product._id);
-      setForm({
-        name: product.name || "",
-        sku: product.sku || "",
-        description:product.description || "",
-        category_id: product.category_id?._id || product.category_id || "",
-        brand_name: product.brand_name || "",
-        unit_id: product.unit_id || "Kg",
-        warehouse: product.warehouse?._id || product.warehouse || "",
-        hsn_code: product.hsn_code || "",
-        tax_rate_id: product.tax_rate_id || "18%",
-        mrp: product.mrp || "",
-        purchase_price: product.purchase_price || "",
-        sale_price: product.sale_price || "",
-        status: product.status || false,
-      }); 
-      setShowProductForm(true);
-    };
     const handleDelete = (id) => {
       if (window.confirm("Are you sure you want to delete this product?")) {
         dispatch(deleteProduct(id));
@@ -311,6 +396,9 @@ if (form.image instanceof File) {
         mrp: "",
         purchase_price: "",
          dimension: "", 
+         dimensions: [
+  { size: "", mrp: "", purchase_price: "", sale_price: "" }
+],
         sale_price: "",
       status: true,
       });
@@ -611,56 +699,127 @@ const tableColumns = [
 </div>
 <div className="mb-3">
   <label>Features</label>
-  <textarea
-    name="features"
-    className="form-control"
-    rows="4"
-    placeholder="Enter product features"
-    value={form.features}
-    onChange={handleChange}
+
+  <Editor
+    editorState={featuresEditor}
+    onEditorStateChange={(state) => {
+      setFeaturesEditor(state);
+
+      const html = draftToHtml(
+  convertToRaw(state.getCurrentContent())
+);
+
+      setForm((prev) => ({
+        ...prev,
+        features: html
+      }));
+    }}
+    toolbar={{
+      options: ["inline", "list", "textAlign", "history"],
+      list: { options: ["unordered", "ordered"] },
+      textAlign: { options: ["left", "center", "right"] }
+    }}
   />
 </div>
 <div className="mb-3">
   <label>Spiritual Significance</label>
-  <textarea
-    name="spiritual_significance"
-    className="form-control"
-    rows="3"
-    value={form.spiritual_significance}
-    onChange={handleChange}
+
+  <Editor
+    editorState={spiritualEditor}
+    onEditorStateChange={(state) => {
+      setSpiritualEditor(state);
+
+      const html = draftToHtml(
+  convertToRaw(state.getCurrentContent())
+);
+
+      setForm((prev) => ({
+        ...prev,
+        spiritual_significance: html
+      }));
+    }}
+    toolbar={{
+      options: ["inline", "list", "textAlign", "history"],
+      list: { options: ["unordered", "ordered"] },
+      textAlign: { options: ["left", "center", "right"] }
+    }}
   />
 </div>
+
 <div className="mb-3">
   <label>Ideal Placement</label>
-  <textarea
-    name="ideal_placement"
-    className="form-control"
-    rows="3"
-    value={form.ideal_placement}
-    onChange={handleChange}
+
+  <Editor
+    editorState={placementEditor}
+    onEditorStateChange={(state) => {
+      setPlacementEditor(state);
+
+      const html = draftToHtml(
+  convertToRaw(state.getCurrentContent())
+);
+      setForm((prev) => ({
+        ...prev,
+        ideal_placement: html
+      }));
+    }}
+    toolbar={{
+      options: ["inline", "list", "textAlign", "history"],
+      list: { options: ["unordered", "ordered"] },
+      textAlign: { options: ["left", "center", "right"] }
+    }}
   />
 </div>
+
+
 <div className="mb-3">
   <label>Care Instructions</label>
-  <textarea
-    name="care_instructions"
-    className="form-control"
-    rows="3"
-    value={form.care_instructions}
-    onChange={handleChange}
+
+  <Editor
+    editorState={careEditor}
+    onEditorStateChange={(state) => {
+      setCareEditor(state);
+const html = draftToHtml(
+  convertToRaw(state.getCurrentContent())
+);
+      setForm((prev) => ({
+        ...prev,
+        care_instructions: html
+      }));
+    }}
+    toolbar={{
+      options: ["inline", "list", "textAlign", "history"],
+      list: { options: ["unordered", "ordered"] },
+      textAlign: { options: ["left", "center", "right"] }
+    }}
   />
 </div>
+
+
 <div className="mb-3">
   <label>Tags</label>
-  <input
-    type="text"
-    className="form-control"
-    name="tags"
-    placeholder="Enter tags separated by comma"
-    value={form.tags}
-    onChange={handleChange}
+
+  <Editor
+    editorState={tagsEditor}
+    onEditorStateChange={(state) => {
+      setTagsEditor(state);
+
+     const html = draftToHtml(
+  convertToRaw(state.getCurrentContent())
+);
+
+      setForm((prev) => ({
+        ...prev,
+      tags: html
+      }));
+    }}
+    toolbar={{
+      options: ["inline", "list", "textAlign", "history"],
+      list: { options: ["unordered", "ordered"] },
+      textAlign: { options: ["left", "center", "right"] }
+    }}
   />
 </div>
+
                     <div className="col-md-6">
                       <label className="form-label">Brand (Optional)</label>
                       <input
@@ -674,17 +833,106 @@ const tableColumns = [
                     </div>
 
                  {/* Show Dimension ONLY for Paintings */}
+
+
+                    <div className="col-md-6">
+                      <label>
+                        Warehouse <span className="text-danger">*</span>
+                      </label>
+                      <select
+                        name="warehouse"
+                        value={form.warehouse}
+                        onChange={handleChange}
+                        className="form-select bg-light"
+                        required
+                      >
+                        <option value="">Select Warehouse</option>
+                        {warehouses.map((c) => (
+                          <option key={c._id} value={c._id}>
+                            {c.store_name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 {form.category_id === "paintings" ? (
-  <div className="col-md-6">
-    <label className="form-label">Dimension</label>
-    <input
-      type="text"
-      className="form-control bg-light"
-      name="dimension"
-      value={form.dimension}
-      onChange={handleChange}
-      placeholder="Enter Dimension (e.g. 12x18 inches)"
-    />
+  <div className="col-md-12">
+   {form.category_id === "paintings" && (
+  <div className="col-md-12">
+    <label className="form-label">Dimensions & Prices</label>
+
+    {form.dimensions.map((d, index) => (
+      <div className="row mb-2" key={index}>
+
+        <div className="col-md-3">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Size (12x18)"
+            value={d.size}
+            onChange={(e) =>
+              handleDimensionChange(index, "size", e.target.value)
+            }
+          />
+        </div>
+
+        <div className="col-md-2">
+          <input
+            type="number"
+            className="form-control"
+            placeholder="MRP"
+            value={d.mrp}
+            onChange={(e) =>
+              handleDimensionChange(index, "mrp", e.target.value)
+            }
+          />
+        </div>
+
+        <div className="col-md-3">
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Purchase"
+            value={d.purchase_price}
+            onChange={(e) =>
+              handleDimensionChange(index, "purchase_price", e.target.value)
+            }
+          />
+        </div>
+
+        <div className="col-md-3">
+          <input
+            type="number"
+            className="form-control"
+            placeholder="Sale"
+            value={d.sale_price}
+            onChange={(e) =>
+              handleDimensionChange(index, "sale_price", e.target.value)
+            }
+          />
+        </div>
+
+        <div className="col-md-1">
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={() => removeDimensionRow(index)}
+          >
+            ✕
+          </button>
+        </div>
+
+      </div>
+    ))}
+
+    <button
+      type="button"
+      className="btn btn-sm btn-primary mt-2"
+      onClick={addDimensionRow}
+    >
+      + Add Size
+    </button>
+  </div>
+)}
   </div>
 ) : (
   <div className="col-md-6">
@@ -711,27 +959,6 @@ const tableColumns = [
     </select>
   </div>
 )}
-
-                    <div className="col-md-6">
-                      <label>
-                        Warehouse <span className="text-danger">*</span>
-                      </label>
-                      <select
-                        name="warehouse"
-                        value={form.warehouse}
-                        onChange={handleChange}
-                        className="form-select bg-light"
-                        required
-                      >
-                        <option value="">Select Warehouse</option>
-                        {warehouses.map((c) => (
-                          <option key={c._id} value={c._id}>
-                            {c.store_name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
                     <div className="col-md-6">
                       <label className="form-label">HSN Code (Optional)</label>
                       <input
@@ -762,49 +989,53 @@ const tableColumns = [
                       </select>
                     </div>
 
-                    <div className="col-md-6">
-                      <label className="form-label">
-                        MRP <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="form-control bg-light"
-                        name="mrp"
-                        value={form.mrp}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
+                    {form.category_id !== "paintings" && (
+<>
+<div className="col-md-6">
+  <label className="form-label">
+    MRP <span className="text-danger">*</span>
+  </label>
+  <input
+    type="number"
+    step="0.01"
+    className="form-control bg-light"
+    name="mrp"
+    value={form.mrp}
+    onChange={handleChange}
+    required
+  />
+</div>
 
-                    <div className="col-md-6">
-                      <label className="form-label">
-                        Purchase Price <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        className="form-control bg-light"
-                        name="purchase_price"
-                        value={form.purchase_price}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
+<div className="col-md-6">
+  <label className="form-label">
+    Purchase Price <span className="text-danger">*</span>
+  </label>
+  <input
+    type="number"
+    className="form-control bg-light"
+    name="purchase_price"
+    value={form.purchase_price}
+    onChange={handleChange}
+    required
+  />
+</div>
 
-                    <div className="col-md-6">
-                      <label className="form-label">
-                        Sale Price <span className="text-danger">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        className="form-control bg-light"
-                        name="sale_price"
-                        value={form.sale_price}
-                        onChange={handleChange}
-                        required
-                      />
-                    </div>
+<div className="col-md-6">
+  <label className="form-label">
+    Sale Price <span className="text-danger">*</span>
+  </label>
+  <input
+    type="number"
+    step="0.01"
+    className="form-control bg-light"
+    name="sale_price"
+    value={form.sale_price}
+    onChange={handleChange}
+    required
+  />
+</div>
+</>
+)}
 
                     <div className="col-md-4 form-check">
                       <input
