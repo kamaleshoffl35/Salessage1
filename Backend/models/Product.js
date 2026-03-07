@@ -90,14 +90,17 @@ const productSchema = new mongoose.Schema(
   dimension: { type: String, default: null, trim: true },
 
   // ✅ NEW ARRAY FOR MULTIPLE SIZES
-  dimensions: [
+  dimensions: {
+  type: [
     {
-      size: { type: String, trim: true },   // 12x18
-      mrp: { type: Number },
-      purchase_price: { type: Number },
-      sale_price: { type: Number }
+      size: { type: String, trim: true },
+      mrp: Number,
+      purchase_price: Number,
+      sale_price: Number
     }
   ],
+  default: []
+},
 
   unit_id: { type: String, default: null },
 

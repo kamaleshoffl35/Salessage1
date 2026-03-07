@@ -856,7 +856,7 @@ const html = draftToHtml(
                     </div>
 {form.category_id === "paintings" ? (
   <div className="col-md-12">
-   {form.category_id === "paintings" && (
+   
   <div className="col-md-12">
     <label className="form-label">Dimensions & Prices</label>
 
@@ -932,7 +932,7 @@ const html = draftToHtml(
       + Add Size
     </button>
   </div>
-)}
+
   </div>
 ) : (
   <div className="col-md-6">

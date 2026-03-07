@@ -52,14 +52,17 @@ exports.addProduct = async (req, res) => {
       return res.status(400).json({ error: "Warehouse not found" });
     }
     const isPainting = category_name === "Paintings";
-    let parsedDimensions = [];
+ let parsedDimensions = [];
 
 if (dimensions) {
-  try {
-    parsedDimensions =
-      typeof dimensions === "string" ? JSON.parse(dimensions) : dimensions;
-  } catch {
-    parsedDimensions = [];
+  if (typeof dimensions === "string") {
+    try {
+      parsedDimensions = JSON.parse(dimensions);
+    } catch (err) {
+      parsedDimensions = [];
+    }
+  } else {
+    parsedDimensions = dimensions;
   }
 }
    const product = new Product({
@@ -273,7 +276,7 @@ exports.getPublicProducts = async (req, res) => {
       };
     }
     const products = await Product.find(filter)
-     .select(
+   .select(
   "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
 )
       .lean();
@@ -286,7 +289,7 @@ exports.getPublicProducts = async (req, res) => {
 exports.getPublicProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
-    .select(
+   .select(
   "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
 )
       .lean();
