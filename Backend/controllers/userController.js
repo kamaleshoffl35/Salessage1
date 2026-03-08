@@ -15,7 +15,7 @@ const generateToken = (user) => {
       tenant: user.tenant || null,
     },
     process.env.JWT_SECRET,
-    { expiresIn: "1h" }
+    { expiresIn: "7d" }
   );
 };
 
@@ -218,7 +218,7 @@ exports.register = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      maxAge: 60 * 60 * 1000,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/", 
     });
 
@@ -266,7 +266,7 @@ exports.login = async (req, res) => {
       httpOnly: true,
       secure: true,
       sameSite: "none",
-      maxAge: 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/", 
     });
 

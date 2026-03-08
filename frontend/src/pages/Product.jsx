@@ -161,6 +161,13 @@ const [subCategoryOptions, setSubCategoryOptions] = useState([]);
     }
   }
 ];
+const resetEditors = () => {
+  setFeaturesEditor(EditorState.createEmpty());
+  setSpiritualEditor(EditorState.createEmpty());
+  setPlacementEditor(EditorState.createEmpty());
+  setCareEditor(EditorState.createEmpty());
+  setTagsEditor(EditorState.createEmpty());
+};
 const handleCategoryChange = (e) => {
   const selectedId = e.target.value;
 
@@ -274,9 +281,12 @@ if (form.category_id === "paintings" && form.dimensions.length > 0) {
         if (editingProduct) {
         const formData = new FormData();
 if (form.category_id === "paintings" && form.dimensions.length > 0) {
-  form.mrp = form.dimensions[0].mrp;
-  form.purchase_price = form.dimensions[0].purchase_price;
-  form.sale_price = form.dimensions[0].sale_price;
+  setForm((prev) => ({
+    ...prev,
+    mrp: prev.dimensions[0].mrp,
+    purchase_price: prev.dimensions[0].purchase_price,
+    sale_price: prev.dimensions[0].sale_price
+  }));
 }
 const cleanForm = {
   sku: form.sku,
@@ -359,9 +369,14 @@ await dispatch(
 variant: form.variant || null,
   dimension: form.dimension,
 dimensions: JSON.stringify(
-  form.dimensions.filter(
-    (d) => d.size && d.mrp && d.purchase_price && d.sale_price
-  )
+  form.dimensions
+    .filter((d) => d.size && d.mrp)
+    .map((d) => ({
+      size: d.size,
+      mrp: Number(d.mrp),
+      purchase_price: Number(d.purchase_price || 0),
+      sale_price: Number(d.sale_price || 0),
+    }))
 ),
 
   unit_id: form.unit_id,
@@ -427,6 +442,7 @@ subcategory1: "",
         setSubcategories([]);
         setShowProductForm(false);
         dispatch(fetchProducts());
+        resetEditors();
       } catch (err) {
         console.error("Error adding product:", err.response?.data || err.message);
       }
@@ -462,30 +478,41 @@ subcategory1: "",
 
   return matchNameSku && matchCategory && matchMRP;
 });
-    const handleCloseForm = () => {
-      setShowProductForm(false);
-      setEditingProduct(null);
-      setForm({
-        name: "",
-        sku: "",
-        description:"",
-        category_id: "",
-        brand_name: "",
-        unit_id: "Kg",
-        warehouse: "",
-        hsn_code: "",
-        tax_rate_id: "18%",
-        mrp: "",
-        purchase_price: "",
-         dimension: "", 
-         dimensions: [
-  { size: "", mrp: "", purchase_price: "", sale_price: "" }
-],
-        sale_price: "",
-      status: true,
-      });
-      setSubcategories([]);
-    };
+   const handleCloseForm = () => {
+  setShowProductForm(false);
+  setEditingProduct(null);
+
+  resetEditors(); 
+
+  setForm({
+    name: "",
+    image: null,
+    description: "",
+    short_description: "",
+    features: "",
+    spiritual_significance: "",
+    ideal_placement: "",
+    care_instructions: "",
+    tags: "",
+    sku: "",
+    category_id: "",
+    subcategory: "",
+    subcategory1: "",
+    brand_name: "",
+    unit_id: "Kg",
+    warehouse: "",
+    hsn_code: "",
+    tax_rate_id: "18%",
+    mrp: "",
+    purchase_price: "",
+    sale_price: "",
+    dimension: "",
+    dimensions: [{ size: "", mrp: "", purchase_price: "", sale_price: "" }],
+    status: true,
+  });
+
+  setSubcategories([]);
+};
     const paintingDimensions = ["1", "2", "3", "4"];
 const handleExcelImport = async (rows) => {
   try {
@@ -553,15 +580,60 @@ const tableColumns = [
         header: "Warehouse",
         render: (p) => typeof p.warehouse === "object"? p.warehouse?.store_name: p.warehouse || "",
       },
-      { key: "unit_id", header: "UoM", width: 80 },
+     
       { key: "tax_rate_id", header: "Tax", width: 80 },
-      { key: "mrp", header: "MRP", render: (p) => `₹${p.mrp}` },
-      {
-        key: "purchase_price",
-        header: "Purchase",
-        render: (p) => `₹${p.purchase_price}`,
-      },
-      { key: "sale_price", header: "Sale", render: (p) => `₹${p.sale_price}` },
+     {
+  key: "unit_id",
+  header: "UoM",
+  width: 80,
+  render: (p) =>
+    p.category_name === "Paintings" ? "-" : p.unit_id || "-"
+},
+
+{
+  key: "mrp",
+  header: "MRP",
+  render: (p) => {
+    if (p.category_name === "Paintings" && p.dimensions?.length > 0) {
+      return p.dimensions.map((d, i) => (
+        <div key={i}>
+          {d.size} : ₹{d.mrp}
+        </div>
+      ));
+    }
+    return `₹${p.mrp}`;
+  }
+},
+
+{
+  key: "purchase_price",
+  header: "Purchase",
+  render: (p) => {
+    if (p.category_name === "Paintings" && p.dimensions?.length > 0) {
+      return p.dimensions.map((d, i) => (
+        <div key={i}>
+          {d.size} : ₹{d.purchase_price}
+        </div>
+      ));
+    }
+    return `₹${p.purchase_price}`;
+  }
+},
+
+{
+  key: "sale_price",
+  header: "Sale",
+  render: (p) => {
+    if (p.category_name === "Paintings" && p.dimensions?.length > 0) {
+      return p.dimensions.map((d, i) => (
+        <div key={i}>
+          {d.size} : ₹{d.sale_price}
+        </div>
+      ));
+    }
+    return `₹${p.sale_price}`;
+  }
+}
     ];
 const handleEdit = (product) => {
   setEditingProduct(product._id);
@@ -692,7 +764,14 @@ const handleEdit = (product) => {
             <div className="d-flex gap-2">
               {["super_admin", "admin"].includes(role) && (
                 <div className="d-flex gap-2">
-  <AddButton text="Add Product" onClick={() => setShowProductForm(true)} />
+ <AddButton
+  text="Add Product"
+  onClick={() => {
+    resetEditors();
+    setEditingProduct(null);
+    setShowProductForm(true);
+  }}
+/>
   <ImportExcelButton onImport={handleExcelImport} />
 </div>
 
