@@ -108,7 +108,7 @@ subcategory_name: { type: String, trim: true },
   warehouse: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "Warehouse",
-    required: true,
+    
   },
 
   warehouse_name: { type: String },

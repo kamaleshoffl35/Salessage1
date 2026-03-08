@@ -49,23 +49,28 @@ exports.addProduct = async (req, res) => {
   status,
 } = req.body;
 
-    const warehouseDoc = await Warehouse.findById(warehouse).select("store_name");
-    if (!warehouseDoc) {
-      return res.status(400).json({ error: "Warehouse not found" });
-    }
-    const isPainting = category_name === "Paintings";
- let parsedDimensions = [];
+   let warehouseDoc = null;
 
-if (dimensions) {
-  if (typeof dimensions === "string") {
-    try {
-      parsedDimensions = JSON.parse(dimensions);
-    } catch (err) {
-      parsedDimensions = [];
-    }
-  } else {
-    parsedDimensions = dimensions;
+if (warehouse && warehouse !== "undefined" && warehouse !== "null") {
+  warehouseDoc = await Warehouse.findById(warehouse).select("store_name");
+
+  if (!warehouseDoc) {
+    console.log("Invalid warehouse id:", warehouse);
   }
+}
+    const isPainting = category_name === "Paintings";
+let parsedDimensions = [];
+
+try {
+  parsedDimensions =
+    typeof dimensions === "string" ? JSON.parse(dimensions) : dimensions || [];
+} catch (err) {
+  parsedDimensions = [];
+}
+const existingSku = await Product.findOne({ sku });
+
+if (existingSku) {
+  return res.status(400).json({ error: "SKU already exists" });
 }
    const product = new Product({
   sku,
@@ -86,14 +91,14 @@ subcategory_name: subcategory_name || null,
   variant: isPainting ? null : variant,
  dimension: isPainting ? dimension : null,
 dimensions: isPainting ? parsedDimensions : [],
-  warehouse: warehouseDoc._id,
-  warehouse_name: warehouseDoc.store_name,
+warehouse: warehouseDoc ? warehouseDoc._id : null,
+warehouse_name: warehouseDoc ? warehouseDoc.store_name : null,
   unit_id,
   hsn_code,
   tax_rate_id,
-  mrp: mrp ? Number(mrp) : 0,
-  purchase_price: purchase_price ? Number(purchase_price) : 0,
-  sale_price: sale_price ? Number(sale_price) : 0,
+mrp: mrp ? Number(mrp) : 0,
+purchase_price: purchase_price ? Number(purchase_price) : 0,
+sale_price: sale_price ? Number(sale_price) : 0,
   status,
   image: req.file ? req.file.path : null,
 
@@ -105,8 +110,9 @@ dimensions: isPainting ? parsedDimensions : [],
     await product.save();
     res.json(product);
   } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
+  console.error("ADD PRODUCT ERROR:", err);
+  res.status(400).json({ error: err.message });
+}
 };
 
 exports.updateProduct = async (req, res) => {

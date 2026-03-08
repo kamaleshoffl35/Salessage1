@@ -36,6 +36,7 @@ import htmlToDraft from "html-to-draftjs";
   care_instructions: "",
   tags: "",
   sku: "",
+   category_id: "",
   subcategory: "",     // new
   subcategory1: "",    
   brand_name: "",
@@ -289,26 +290,41 @@ const cleanForm = {
   care_instructions: form.care_instructions,
   tags: form.tags,
 
-  category_name: staticCategories.find((c) => c.id === form.category_id)?.name,
+  category_name:
+  staticCategories.find((c) => c.id === form.category_id)?.name || "",
   subcategory: form.subcategory,
   subcategory_name: form.subcategory1,
   brand_name: form.brand_name,
-  variant: form.variant,
+  variant: form.variant || null,
   dimension: form.dimension,
-   dimensions: JSON.stringify(form.dimensions),
+dimensions: JSON.stringify(
+  form.dimensions
+    .filter((d) => d.size && d.mrp)
+    .map((d) => ({
+      size: d.size,
+      mrp: Number(d.mrp),
+      purchase_price: Number(d.purchase_price || 0),
+      sale_price: Number(d.sale_price || 0),
+    }))
+),
 
   unit_id: form.unit_id,
-  warehouse: form.warehouse,
+warehouse: form.warehouse || null,
   hsn_code: form.hsn_code,
   tax_rate_id: form.tax_rate_id,
   mrp: form.mrp,
   purchase_price: form.purchase_price,
   sale_price: form.sale_price,
   status: form.status,
-   created_by_role: role 
+   
 };
 Object.entries(cleanForm).forEach(([key, value]) => {
-  if (value !== null && value !== undefined) {
+  if (
+    key !== "image" &&
+    value !== null &&
+    value !== undefined &&
+    value !== ""
+  ) {
     formData.append(key, value);
   }
 });
@@ -335,16 +351,21 @@ await dispatch(
   care_instructions: form.care_instructions,
   tags: form.tags,
 
- category_name: staticCategories.find((c) => c.id === form.category_id)?.name,
+ category_name:
+  staticCategories.find((c) => c.id === form.category_id)?.name || "",
   subcategory: form.subcategory,
   subcategory_name: form.subcategory1,
   brand_name: form.brand_name,
-  variant: form.variant,
+variant: form.variant || null,
   dimension: form.dimension,
- dimensions: JSON.stringify(form.dimensions),
+dimensions: JSON.stringify(
+  form.dimensions.filter(
+    (d) => d.size && d.mrp && d.purchase_price && d.sale_price
+  )
+),
 
   unit_id: form.unit_id,
-  warehouse: form.warehouse,
+warehouse: form.warehouse || null,
   hsn_code: form.hsn_code,
   tax_rate_id: form.tax_rate_id,
 
@@ -353,13 +374,18 @@ await dispatch(
   sale_price: form.sale_price,
 
   status: form.status,
-   created_by_role: role 
+  
 };
         const formData = new FormData();
 
 // append everything EXCEPT image
 Object.entries(cleanForm).forEach(([key, value]) => {
-  if (key !== "image" && value !== null && value !== undefined) {
+  if (
+    key !== "image" &&
+    value !== null &&
+    value !== undefined &&
+    value !== ""
+  ) {
     formData.append(key, value);
   }
 });
@@ -382,7 +408,8 @@ if (form.image instanceof File) {
   tags: "",
   sku: "",
   category_id: "",
-  subcategory_id: "",
+  subcategory: "",
+subcategory1: "",
   brand_name: "",
   unit_id: "Kg",
   warehouse: "",
@@ -953,14 +980,14 @@ const html = draftToHtml(
 
                     <div className="col-md-6">
                       <label>
-                        Warehouse <span className="text-danger">*</span>
+                        Warehouse 
                       </label>
                       <select
                         name="warehouse"
                         value={form.warehouse}
                         onChange={handleChange}
                         className="form-select bg-light"
-                        required
+                      
                       >
                         <option value="">Select Warehouse</option>
                         {warehouses.map((c) => (
