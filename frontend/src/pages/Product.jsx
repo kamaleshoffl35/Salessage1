@@ -36,8 +36,8 @@ import htmlToDraft from "html-to-draftjs";
   care_instructions: "",
   tags: "",
   sku: "",
-  category_id: "",
-  subcategory_id: "",
+  subcategory: "",     // new
+  subcategory1: "",    
   brand_name: "",
   unit_id: "Kg",
   warehouse: "",
@@ -64,6 +64,8 @@ const [spiritualEditor, setSpiritualEditor] = useState(EditorState.createEmpty()
 const [placementEditor, setPlacementEditor] = useState(EditorState.createEmpty());
 const [careEditor, setCareEditor] = useState(EditorState.createEmpty());
 const [tagsEditor, setTagsEditor] = useState(EditorState.createEmpty());
+const [subCategoryLevels, setSubCategoryLevels] = useState([]);
+const [subCategoryOptions, setSubCategoryOptions] = useState([]);
     const tableActions = useTableActions(role);
     useEffect(() => {
       API.get("/users/me")
@@ -107,17 +109,56 @@ const [tagsEditor, setTagsEditor] = useState(EditorState.createEmpty());
         [name]: type === "checkbox" ? checked : value,
       });
     };
-    const staticCategories = [
+  const staticCategories = [
   {
     id: "paintings",
     name: "Paintings",
-    subcategories: ["Hindu Deities – Rama", "Hindu Deities – Vishnu", "Hindu Deities – Shiva", "Hindu Deities – Krishna","Hindu Deities – Sridevi","Hindu Deities – Saraswathi","Hindu Deities – Annapoorani","Hindu Deities – Krishna edited testing",""],
+    subcategories: {
+      "Tanjore Paintings": [
+        "Lord Ganesha",
+        "Lord Murugan",
+        "Lord Ayyappa",
+        "Goddess Lakshmi",
+        "Goddess Saraswati",
+        "Lord Krishna",
+        "Dashavatar (Ten Avatars of Vishnu)",
+        "Custom Tanjore Paintings",
+      ],
+      "Handcrafted Gifts": [
+        "Religious Gifts",
+        "Wedding Favors",
+        "Housewarming Gifts",
+      ],
+      "Home Décor": [
+        "Wall Hangings",
+        "Wooden Frames",
+        "Lamps and Diyas",
+      ],
+      "Sculptures and Idols":[
+        "Brass Idols",
+        "Wooden Carvings",
+        "Stone Statues",
+      ],
+       "Seasonal Collections":[
+        "Festival Specials (e.g., Diwali, Navratri)",
+        "New Arrivals",
+        "Limited Editions",
+      ],
+       "Custom Creations":[
+        "Personalized Art",
+        "Made-to-Order Pieces"
+      ]
+    }
   },
   {
     id: "sculptures",
     name: "Sculptures",
-    subcategories: ["Small", "Medium", "Large"],
-  },
+    subcategories: {
+      "1": ["Small"],
+      "2": ["Medium"],
+      "3": ["Large"]
+    }
+  }
 ];
 const handleCategoryChange = (e) => {
   const selectedId = e.target.value;
@@ -129,15 +170,31 @@ const handleCategoryChange = (e) => {
   setForm((prev) => ({
     ...prev,
     category_id: selectedId,
-    subcategory_id: "",
-    variant:"",
- dimension: "",
+    subcategory: "",
+    subcategory1: ""
   }));
 
   if (selectedCategory) {
-    setSubcategories(selectedCategory.subcategories);
+    setSubCategoryLevels(Object.keys(selectedCategory.subcategories));
   } else {
-    setSubcategories([]);
+    setSubCategoryLevels([]);
+  }
+};
+const handleSubcategoryChange = (e) => {
+  const level = e.target.value;
+
+  const selectedCategory = staticCategories.find(
+    (cat) => cat.id === form.category_id
+  );
+
+  setForm((prev) => ({
+    ...prev,
+    subcategory: level,
+    subcategory1: ""
+  }));
+
+  if (selectedCategory) {
+    setSubCategoryOptions(selectedCategory.subcategories[level] || []);
   }
 };
 const handleDimensionChange = (index, field, value) => {
@@ -184,7 +241,7 @@ const cleanEditorHtml = (html) => {
 // validation for paintings
 if (form.category_id === "paintings") {
   const validDimensions = form.dimensions.filter(
-    (d) => d.size && d.mrp && d.purchase_price && d.sale_price
+    (d) => d.size && d.mrp 
   );
 
   if (validDimensions.length === 0) {
@@ -232,10 +289,9 @@ const cleanForm = {
   care_instructions: form.care_instructions,
   tags: form.tags,
 
-  category_name:
-    staticCategories.find((c) => c.id === form.category_id)?.name || "",
-  subcategory_name: form.subcategory_id || "",
-
+  category_name: staticCategories.find((c) => c.id === form.category_id)?.name,
+  subcategory: form.subcategory,
+  subcategory_name: form.subcategory1,
   brand_name: form.brand_name,
   variant: form.variant,
   dimension: form.dimension,
@@ -279,10 +335,9 @@ await dispatch(
   care_instructions: form.care_instructions,
   tags: form.tags,
 
-  category_name:
-    staticCategories.find((c) => c.id === form.category_id)?.name || "",
-
-  subcategory_name: form.subcategory_id || "",
+ category_name: staticCategories.find((c) => c.id === form.category_id)?.name,
+  subcategory: form.subcategory,
+  subcategory_name: form.subcategory1,
   brand_name: form.brand_name,
   variant: form.variant,
   dimension: form.dimension,
@@ -481,7 +536,51 @@ const tableColumns = [
       },
       { key: "sale_price", header: "Sale", render: (p) => `₹${p.sale_price}` },
     ];
+const handleEdit = (product) => {
+  setEditingProduct(product._id);
 
+  setForm({
+    name: product.name || "",
+    sku: product.sku || "",
+    description: product.description || "",
+    short_description: product.short_description || "",
+    features: product.features || "",
+    spiritual_significance: product.spiritual_significance || "",
+    ideal_placement: product.ideal_placement || "",
+    care_instructions: product.care_instructions || "",
+    tags: product.tags || "",
+    image: product.image || null,
+
+    category_id:
+      staticCategories.find((c) => c.name === product.category_name)?.id || "",
+
+    subcategory: product.subcategory || "",
+    subcategory1: product.subcategory_name || "",
+
+    brand_name: product.brand_name || "",
+    unit_id: product.unit_id || "Kg",
+    warehouse:
+      typeof product.warehouse === "object"
+        ? product.warehouse?._id
+        : product.warehouse || "",
+
+    hsn_code: product.hsn_code || "",
+    tax_rate_id: product.tax_rate_id || "18%",
+    mrp: product.mrp || "",
+    purchase_price: product.purchase_price || "",
+    sale_price: product.sale_price || "",
+
+    dimension: product.dimension || "",
+    dimensions:
+      product.dimensions && product.dimensions.length > 0
+        ? product.dimensions
+        : [{ size: "", mrp: "", purchase_price: "", sale_price: "" }],
+
+    status: product.status ?? true,
+  });
+
+  setShowProductForm(true);
+};
     const handleTableAction = (actionType, product) => {
       if (actionType === "edit") handleEdit(product);
       else if (actionType === "delete") handleDelete(product._id);
@@ -655,21 +754,38 @@ const tableColumns = [
 </select>
                     </div>
 
-                   {subcategories.length > 0 && (
+{subCategoryLevels.length > 0 && (
   <div className="col-md-6">
-    <label className="form-label">Subcategory</label>
+    <label>Subcategory</label>
     <select
-      className="form-select bg-light"
-      value={form.subcategory_id || ""}
+      className="form-select"
+      value={form.subcategory}
+      onChange={handleSubcategoryChange}
+    >
+      <option value="">Select Subcategory</option>
+      {subCategoryLevels.map((level) => (
+        <option key={level} value={level}>
+          {level}
+        </option>
+      ))}
+    </select>
+  </div>
+)}
+{subCategoryOptions.length > 0 && (
+  <div className="col-md-6">
+    <label>Subcategory 1</label>
+    <select
+      className="form-select"
+      value={form.subcategory1}
       onChange={(e) =>
         setForm((prev) => ({
           ...prev,
-          subcategory_id: e.target.value,
+          subcategory1: e.target.value
         }))
       }
     >
-      <option value="">Select Subcategory</option>
-      {subcategories.map((sub, index) => (
+      <option value="">Select Subcategory 1</option>
+      {subCategoryOptions.map((sub, index) => (
         <option key={index} value={sub}>
           {sub}
         </option>
@@ -796,7 +912,7 @@ const html = draftToHtml(
 
 
 <div className="mb-3">
-  <label>Tags</label>
+  <label>Categories & Tags</label>
 
   <Editor
     editorState={tagsEditor}

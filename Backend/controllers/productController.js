@@ -32,7 +32,9 @@ exports.addProduct = async (req, res) => {
   tags,
 
   category_name,
-  subcategory_name,
+  subcategory,        // ✅ NEW FIELD (1,2,3)
+  subcategory_name,   // ✅ actual name
+
   brand_name,
   variant,
   dimension,
@@ -78,7 +80,8 @@ if (dimensions) {
   tags,
 
   category_name,
-  subcategory_name: subcategory_name || null,
+ subcategory: subcategory || null,           // ✅ new level
+subcategory_name: subcategory_name || null, 
   brand_name,
   variant: isPainting ? null : variant,
  dimension: isPainting ? dimension : null,
@@ -144,6 +147,13 @@ exports.updateProduct = async (req, res) => {
   } catch {
     allowedFields.dimensions = [];
   }
+}
+if (allowedFields.subcategory === "") {
+  allowedFields.subcategory = null;
+}
+
+if (allowedFields.subcategory_name === "") {
+  allowedFields.subcategory_name = null;
 }
     const updated = await Product.findByIdAndUpdate(
       req.params.id,
@@ -227,7 +237,8 @@ exports.bulkInsertProducts = async (req, res) => {
   tags: p.tags || "",
 
   category_name: p.category_name,
-  subcategory_name: p.subcategory_name || null,
+subcategory: p.subcategory || null,            // ✅ NEW
+subcategory_name: p.subcategory_name || null, 
   brand_name: p.brand_name,
   variant: isPainting ? null : p.variant,
   dimension: isPainting ? p.dimension : null,
@@ -266,18 +277,24 @@ exports.bulkInsertProducts = async (req, res) => {
 // ================= PUBLIC APIs (CHAKRAPANI WEBSITE) =================
 exports.getPublicProducts = async (req, res) => {
   try {
-    const { subcategory } = req.query;
-    const filter = {
-      category_name: "Paintings",
-    };
-    if (subcategory && subcategory !== "All Paintings") {
-      filter.subcategory_name = {
-        $regex: new RegExp(subcategory, "i"),
-      };
-    }
+    const { subcategory, subcategory_name } = req.query;
+
+const filter = {
+  category_name: "Paintings",
+};
+
+if (subcategory) {
+  filter.subcategory = subcategory;
+}
+
+if (subcategory_name) {
+  filter.subcategory_name = {
+    $regex: new RegExp(subcategory_name, "i"),
+  };
+}
     const products = await Product.find(filter)
    .select(
-  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
 )
       .lean();
     res.json(products);
@@ -290,7 +307,7 @@ exports.getPublicProductById = async (req, res) => {
   try {
     const product = await Product.findById(req.params.id)
    .select(
-  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
 )
       .lean();
     if (!product) {

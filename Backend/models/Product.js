@@ -82,7 +82,8 @@ const productSchema = new mongoose.Schema(
   image: { type: String, default: null },
 
   category_name: { type: String, required: true, trim: true },
-  subcategory_name: { type: String, default: null, trim: true },
+  subcategory: { type: String, trim: true },   // 1,2,3
+subcategory_name: { type: String, trim: true },
   brand_name: { type: String, trim: true },
 
   // keep existing
