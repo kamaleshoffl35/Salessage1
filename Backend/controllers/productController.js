@@ -49,34 +49,38 @@ exports.addProduct = async (req, res) => {
   status,
 } = req.body;
 
-   let warehouseDoc = null;
+  let warehouseId = null;
+let warehouseName = null;
 
-if (warehouse && warehouse !== "undefined" && warehouse !== "null") {
-  warehouseDoc = await Warehouse.findById(warehouse).select("store_name");
+if (warehouse) {
+  const w = await Warehouse.findById(warehouse)
+    .select("store_name")
+    .lean();
 
-  if (!warehouseDoc) {
-    console.log("Invalid warehouse id:", warehouse);
+  if (w) {
+    warehouseId = w._id;
+    warehouseName = w.store_name;
   }
 }
     const isPainting = category_name === "Paintings";
 let parsedDimensions = [];
 
-try {
-  parsedDimensions =
-    typeof dimensions === "string" ? JSON.parse(dimensions) : dimensions || [];
-} catch (err) {
-  parsedDimensions = [];
+if (dimensions) {
+  try {
+    parsedDimensions = JSON.parse(dimensions);
+  } catch {
+    parsedDimensions = [];
+  }
 }
 const existingSku = await Product.findOne({ sku });
 
 if (existingSku) {
   return res.status(400).json({ error: "SKU already exists" });
 }
-   const product = new Product({
+const product = await Product.create({
   sku,
   name,
   description,
-
   short_description,
   features,
   spiritual_significance,
@@ -85,29 +89,33 @@ if (existingSku) {
   tags,
 
   category_name,
- subcategory: subcategory || null,           // ✅ new level
-subcategory_name: subcategory_name || null, 
+  subcategory: subcategory || null,
+  subcategory_name: subcategory_name || null,
+
   brand_name,
   variant: isPainting ? null : variant,
- dimension: isPainting ? dimension : null,
-dimensions: isPainting ? parsedDimensions : [],
-warehouse: warehouseDoc ? warehouseDoc._id : null,
-warehouse_name: warehouseDoc ? warehouseDoc.store_name : null,
+
+  dimensions: isPainting ? parsedDimensions : [],
+
+  warehouse: warehouseId,
+  warehouse_name: warehouseName,
+
   unit_id,
   hsn_code,
   tax_rate_id,
-mrp: mrp ? Number(mrp) : 0,
-purchase_price: purchase_price ? Number(purchase_price) : 0,
-sale_price: sale_price ? Number(sale_price) : 0,
+
+  mrp: Number(mrp || 0),
+  purchase_price: Number(purchase_price || 0),
+  sale_price: Number(sale_price || 0),
+
   status,
-  image: req.file ? req.file.path : null,
+
+  image: req.file?.path || null,
 
   created_by: req.user._id,
   created_by_name: req.user.name,
   created_by_role: req.user.role,
 });
-
-    await product.save();
     res.json(product);
   } catch (err) {
   console.error("ADD PRODUCT ERROR:", err);

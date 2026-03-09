@@ -442,7 +442,7 @@ subcategory1: "",
 });
         setSubcategories([]);
         setShowProductForm(false);
-        dispatch(fetchProducts());
+       
         resetEditors();
       } catch (err) {
         console.error("Error adding product:", err.response?.data || err.message);

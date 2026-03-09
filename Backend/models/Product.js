@@ -141,5 +141,8 @@ subcategory_name: { type: String, trim: true },
 },
 { timestamps: true }
 );
+productSchema.index({ sku: 1 }, { unique: true });
+productSchema.index({ category_name: 1 });
+productSchema.index({ subcategory_name: 1 });
 
 module.exports = mongoose.model("Product", productSchema);
