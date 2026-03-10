@@ -120,6 +120,7 @@ const [subCategoryOptions, setSubCategoryOptions] = useState([]);
         "Lord Murugan",
         "Lord Ayyappa",
         "Lord Shiva",
+        "Lord Ramar",
         "Goddess Lakshmi",
         "Goddess Saraswati",
         "Lord Krishna",
