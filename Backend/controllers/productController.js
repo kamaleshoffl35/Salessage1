@@ -333,52 +333,52 @@ exports.getPublicProductById = async (req, res) => {
   }
 };
 
-exports.getPublicSubcategories = async (req, res) => {
-  try {
-    const products = await Product.find({
-      category_name: "Paintings",
-    }).select(" subcategory_name");
-    const subcategories = [
-      ...new Set(
-        products
-          .map((p) => p.subcategory_name)
-          .filter((s) => typeof s === "string" && s.trim() !== "")
-      ),
-    ];
-    res.json(subcategories);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
 // exports.getPublicSubcategories = async (req, res) => {
 //   try {
 //     const products = await Product.find({
 //       category_name: "Paintings",
-//     }).select("subcategory subcategory_name");
-
-//     const grouped = {};
-
-//     products.forEach((product) => {
-//       const sub = product.subcategory;
-//       const subName = product.subcategory_name;
-
-//       if (!sub || !subName) return;
-
-//       if (!grouped[sub]) {
-//         grouped[sub] = new Set();
-//       }
-
-//       grouped[sub].add(subName);
-//     });
-
-//     const result = Object.keys(grouped).map((key) => ({
-//       subcategory: key,
-//       subcategory_names: [...grouped[key]],
-//     }));
-
-//     res.json(result);
+//     }).select(" subcategory_name");
+//     const subcategories = [
+//       ...new Set(
+//         products
+//           .map((p) => p.subcategory_name)
+//           .filter((s) => typeof s === "string" && s.trim() !== "")
+//       ),
+//     ];
+//     res.json(subcategories);
 //   } catch (err) {
 //     res.status(500).json({ message: err.message });
 //   }
 // };
+
+exports.getPublicSubcategories = async (req, res) => {
+  try {
+    const products = await Product.find({
+      category_name: "Paintings",
+    }).select("subcategory subcategory_name");
+
+    const grouped = {};
+
+    products.forEach((product) => {
+      const sub = product.subcategory;
+      const subName = product.subcategory_name;
+
+      if (!sub || !subName) return;
+
+      if (!grouped[sub]) {
+        grouped[sub] = new Set();
+      }
+
+      grouped[sub].add(subName);
+    });
+
+    const result = Object.keys(grouped).map((key) => ({
+      subcategory: key,
+      subcategory_names: [...grouped[key]],
+    }));
+
+    res.json(result);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
