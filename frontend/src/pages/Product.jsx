@@ -463,7 +463,9 @@ subcategory1: [],
   const name = (p.name || "").toLowerCase();
   const sku = (p.sku || "").toLowerCase();
   const categoryName = (p.category_name || "").toLowerCase();
-  const subcategoryName = (p.subcategory_name || "").toLowerCase();
+ const subcategoryName = Array.isArray(p.subcategory_name)
+  ? p.subcategory_name.join(" ").toLowerCase()
+  : (p.subcategory_name || "").toLowerCase();
 
   const nameSkuSearch = searchNameSku.toLowerCase().trim();
   const categorySearch = searchCategory.toLowerCase().trim();

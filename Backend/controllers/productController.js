@@ -398,6 +398,49 @@ exports.getPublicProductById = async (req, res) => {
 //   }
 // };
 
+// exports.getPublicSubcategories = async (req, res) => {
+//   try {
+//     const products = await Product.find({
+//       category_name: "Paintings",
+//     }).select("subcategory subcategory_name");
+
+//     const grouped = {};
+
+//     products.forEach((product) => {
+//       const sub = product.subcategory;
+//       let subNames = product.subcategory_name;
+
+//       if (!sub || !subNames) return;
+
+//       // Convert string JSON to array
+//       try {
+//         if (typeof subNames === "string") {
+//           subNames = JSON.parse(subNames);
+//         }
+//       } catch (e) {
+//         subNames = [subNames];
+//       }
+
+//       if (!grouped[sub]) {
+//         grouped[sub] = new Set();
+//       }
+
+//       subNames.forEach((name) => {
+//         grouped[sub].add(name);
+//       });
+//     });
+
+//     const result = Object.keys(grouped).map((key) => ({
+//       subcategory: key,
+//       subcategory_names: [...grouped[key]],
+//     }));
+
+//     res.json(result);
+//   } catch (err) {
+//     res.status(500).json({ message: err.message });
+//   }
+// };
+
 exports.getPublicSubcategories = async (req, res) => {
   try {
     const products = await Product.find({
@@ -408,26 +451,24 @@ exports.getPublicSubcategories = async (req, res) => {
 
     products.forEach((product) => {
       const sub = product.subcategory;
-      let subNames = product.subcategory_name;
+      let names = product.subcategory_name;
 
-      if (!sub || !subNames) return;
+      if (!sub || !names) return;
 
-      // Convert string JSON to array
-      try {
-        if (typeof subNames === "string") {
-          subNames = JSON.parse(subNames);
+      // convert JSON string to array
+      if (typeof names === "string") {
+        try {
+          names = JSON.parse(names);
+        } catch {
+          names = names.split(",").map((n) => n.trim());
         }
-      } catch (e) {
-        subNames = [subNames];
       }
 
       if (!grouped[sub]) {
         grouped[sub] = new Set();
       }
 
-      subNames.forEach((name) => {
-        grouped[sub].add(name);
-      });
+      names.forEach((n) => grouped[sub].add(n));
     });
 
     const result = Object.keys(grouped).map((key) => ({
@@ -436,6 +477,7 @@ exports.getPublicSubcategories = async (req, res) => {
     }));
 
     res.json(result);
+
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
