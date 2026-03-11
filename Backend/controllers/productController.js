@@ -103,7 +103,7 @@ const product = await Product.create({
 
   category_name,
   subcategory: subcategory || null,
-  subcategory_name: subcategory_name || null,
+ subcategory_name: parsedSubcategoryNames,
 
   brand_name,
   variant: isPainting ? null : variant,
