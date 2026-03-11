@@ -77,6 +77,19 @@ const existingSku = await Product.findOne({ sku });
 if (existingSku) {
   return res.status(400).json({ error: "SKU already exists" });
 }
+let parsedSubcategoryNames = [];
+
+if (subcategory_name) {
+  if (Array.isArray(subcategory_name)) {
+    parsedSubcategoryNames = subcategory_name.flatMap((n) =>
+      n.split(",").map((v) => v.trim())
+    );
+  } else {
+    parsedSubcategoryNames = subcategory_name
+      .split(",")
+      .map((v) => v.trim());
+  }
+}
 const product = await Product.create({
   sku,
   name,
