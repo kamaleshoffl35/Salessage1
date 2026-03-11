@@ -13,10 +13,11 @@
   import { bulkAddProducts } from "../redux/productSlice";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
-import { EditorState, convertToRaw } from "draft-js";
+import { EditorState, convertToRaw , ContentState} from "draft-js";
 
 import draftToHtml from "draftjs-to-html";
 import htmlToDraft from "html-to-draftjs";
+
   const Product = () => {
     const dispatch = useDispatch();
     const { items: products, status } = useSelector((state) => state.products);
@@ -38,7 +39,7 @@ import htmlToDraft from "html-to-draftjs";
   sku: "",
    category_id: "",
   subcategory: "",     // new
-  subcategory1: "",    
+  subcategory1: [],    
   brand_name: "",
   unit_id: "Kg",
   warehouse: "",
@@ -123,8 +124,11 @@ const [subCategoryOptions, setSubCategoryOptions] = useState([]);
         "Lord Ramar",
         "Goddess Lakshmi",
         "Goddess Saraswati",
+        "Goddess Annapoorani",
+        "Goddess Kamachi",
         "Lord Krishna",
         "Dashavatar (Ten Avatars of Vishnu)",
+        "Royal / Raja Paintings",
         "Custom Tanjore Paintings",
       ],
       "Handcrafted Gifts": [
@@ -181,7 +185,7 @@ const handleCategoryChange = (e) => {
     ...prev,
     category_id: selectedId,
     subcategory: "",
-    subcategory1: ""
+      subcategory1: [] 
   }));
 
   if (selectedCategory) {
@@ -200,7 +204,7 @@ const handleSubcategoryChange = (e) => {
   setForm((prev) => ({
     ...prev,
     subcategory: level,
-    subcategory1: ""
+    subcategory1: []  
   }));
 
   if (selectedCategory) {
@@ -305,7 +309,7 @@ const cleanForm = {
   category_name:
   staticCategories.find((c) => c.id === form.category_id)?.name || "",
   subcategory: form.subcategory,
-  subcategory_name: form.subcategory1,
+ subcategory_name: form.subcategory1,
   brand_name: form.brand_name,
   variant: form.variant || null,
   dimension: form.dimension,
@@ -366,7 +370,7 @@ await dispatch(
  category_name:
   staticCategories.find((c) => c.id === form.category_id)?.name || "",
   subcategory: form.subcategory,
-  subcategory_name: form.subcategory1,
+subcategory_name: form.subcategory1,
   brand_name: form.brand_name,
 variant: form.variant || null,
   dimension: form.dimension,
@@ -426,7 +430,7 @@ if (form.image instanceof File) {
   sku: "",
   category_id: "",
   subcategory: "",
-subcategory1: "",
+subcategory1: [],
   brand_name: "",
   unit_id: "Kg",
   warehouse: "",
@@ -499,7 +503,7 @@ subcategory1: "",
     sku: "",
     category_id: "",
     subcategory: "",
-    subcategory1: "",
+    subcategory1: [],
     brand_name: "",
     unit_id: "Kg",
     warehouse: "",
@@ -574,7 +578,10 @@ const tableColumns = [
       {
         key: "subcategory",
         header: "Subcategory",
-        render: (p) => p.subcategory_name || "-",
+        render: (p) =>
+  Array.isArray(p.subcategory_name)
+    ? p.subcategory_name.join(", ")
+    : p.subcategory_name || "-"
       },
       { key: "brand_name", header: "Brand", render: (p) => p.brand_name || "-" },
       {
@@ -637,6 +644,16 @@ const tableColumns = [
   }
 }
     ];
+    const htmlToEditorState = (html) => {
+  if (!html) return EditorState.createEmpty();
+
+  const contentBlock = htmlToDraft(html);
+  const contentState = ContentState.createFromBlockArray(
+    contentBlock.contentBlocks
+  );
+
+  return EditorState.createWithContent(contentState);
+};
 const handleEdit = (product) => {
   setEditingProduct(product._id);
 
@@ -656,10 +673,13 @@ const handleEdit = (product) => {
       staticCategories.find((c) => c.name === product.category_name)?.id || "",
 
     subcategory: product.subcategory || "",
-    subcategory1: product.subcategory_name || "",
+    subcategory1: Array.isArray(product.subcategory_name)
+  ? product.subcategory_name
+  : JSON.parse(product.subcategory_name || "[]"),
 
     brand_name: product.brand_name || "",
     unit_id: product.unit_id || "Kg",
+
     warehouse:
       typeof product.warehouse === "object"
         ? product.warehouse?._id
@@ -667,11 +687,13 @@ const handleEdit = (product) => {
 
     hsn_code: product.hsn_code || "",
     tax_rate_id: product.tax_rate_id || "18%",
+
     mrp: product.mrp || "",
     purchase_price: product.purchase_price || "",
     sale_price: product.sale_price || "",
 
     dimension: product.dimension || "",
+
     dimensions:
       product.dimensions && product.dimensions.length > 0
         ? product.dimensions
@@ -679,6 +701,13 @@ const handleEdit = (product) => {
 
     status: product.status ?? true,
   });
+
+  // ⭐ Convert HTML to Draft editor state
+  setFeaturesEditor(htmlToEditorState(product.features));
+  setSpiritualEditor(htmlToEditorState(product.spiritual_significance));
+  setPlacementEditor(htmlToEditorState(product.ideal_placement));
+  setCareEditor(htmlToEditorState(product.care_instructions));
+  setTagsEditor(htmlToEditorState(product.tags));
 
   setShowProductForm(true);
 };
@@ -881,24 +910,51 @@ const handleEdit = (product) => {
 )}
 {subCategoryOptions.length > 0 && (
   <div className="col-md-6">
-    <label>Subcategory 1</label>
-    <select
-      className="form-select"
-      value={form.subcategory1}
-      onChange={(e) =>
-        setForm((prev) => ({
-          ...prev,
-          subcategory1: e.target.value
-        }))
-      }
+    <label className="form-label">Subcategory 1</label>
+
+    <div
+      className="border p-2"
+      style={{
+        maxHeight: "150px",
+        overflowY: "auto",
+        background: "#f8f9fa",
+      }}
     >
-      <option value="">Select Subcategory 1</option>
       {subCategoryOptions.map((sub, index) => (
-        <option key={index} value={sub}>
-          {sub}
-        </option>
+        <div key={index} className="form-check">
+
+          <input
+            type="checkbox"
+            className="form-check-input"
+            id={`sub-${index}`}
+            checked={form.subcategory1.includes(sub)}
+            onChange={(e) => {
+              if (e.target.checked) {
+                setForm((prev) => ({
+                  ...prev,
+                  subcategory1: [...prev.subcategory1, sub],
+                }));
+              } else {
+                setForm((prev) => ({
+                  ...prev,
+                  subcategory1: prev.subcategory1.filter(
+                    (item) => item !== sub
+                  ),
+                }));
+              }
+            }}
+          />
+
+          <label
+            className="form-check-label"
+            htmlFor={`sub-${index}`}
+          >
+            {sub}
+          </label>
+
+        </div>
       ))}
-    </select>
+    </div>
   </div>
 )}
 <div className="mb-3">

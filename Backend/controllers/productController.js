@@ -289,29 +289,60 @@ subcategory_name: p.subcategory_name || null,
 
 
 // ================= PUBLIC APIs (CHAKRAPANI WEBSITE) =================
+// exports.getPublicProducts = async (req, res) => {
+//   try {
+//     const { subcategory, subcategory_name } = req.query;
+
+// const filter = {
+//   category_name: "Paintings",
+// };
+
+// if (subcategory) {
+//   filter.subcategory = subcategory;
+// }
+
+// if (subcategory_name) {
+//   filter.subcategory_name = {
+//     $regex: new RegExp(subcategory_name, "i"),
+//   };
+// }
+//     const products = await Product.find(filter)
+//    .select(
+//   "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+// )
+//       .lean();
+//     res.json(products);
+//   } catch (error) {
+//     res.status(500).json({ message: "Server Error" });
+//   }
+// };
+
 exports.getPublicProducts = async (req, res) => {
   try {
     const { subcategory, subcategory_name } = req.query;
 
-const filter = {
-  category_name: "Paintings",
-};
+    const filter = {
+      category_name: "Paintings",
+    };
 
-if (subcategory) {
-  filter.subcategory = subcategory;
-}
+    if (subcategory) {
+      filter.subcategory = subcategory;
+    }
 
-if (subcategory_name) {
-  filter.subcategory_name = {
-    $regex: new RegExp(subcategory_name, "i"),
-  };
-}
+    if (subcategory_name) {
+      filter.subcategory_name = {
+        $regex: new RegExp(subcategory_name, "i"),
+      };
+    }
+
     const products = await Product.find(filter)
-   .select(
-  "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
-)
+      .select(
+        "name description short_description features spiritual_significance ideal_placement care_instructions tags image category_name subcategory subcategory_name brand_name variant dimension dimensions unit_id warehouse_name hsn_code tax_rate_id mrp purchase_price sale_price"
+      )
       .lean();
+
     res.json(products);
+
   } catch (error) {
     res.status(500).json({ message: "Server Error" });
   }
@@ -333,19 +364,35 @@ exports.getPublicProductById = async (req, res) => {
   }
 };
 
+
+
 // exports.getPublicSubcategories = async (req, res) => {
 //   try {
 //     const products = await Product.find({
 //       category_name: "Paintings",
-//     }).select(" subcategory_name");
-//     const subcategories = [
-//       ...new Set(
-//         products
-//           .map((p) => p.subcategory_name)
-//           .filter((s) => typeof s === "string" && s.trim() !== "")
-//       ),
-//     ];
-//     res.json(subcategories);
+//     }).select("subcategory subcategory_name");
+
+//     const grouped = {};
+
+//     products.forEach((product) => {
+//       const sub = product.subcategory;
+//       const subName = product.subcategory_name;
+
+//       if (!sub || !subName) return;
+
+//       if (!grouped[sub]) {
+//         grouped[sub] = new Set();
+//       }
+
+//       grouped[sub].add(subName);
+//     });
+
+//     const result = Object.keys(grouped).map((key) => ({
+//       subcategory: key,
+//       subcategory_names: [...grouped[key]],
+//     }));
+
+//     res.json(result);
 //   } catch (err) {
 //     res.status(500).json({ message: err.message });
 //   }
@@ -361,15 +408,26 @@ exports.getPublicSubcategories = async (req, res) => {
 
     products.forEach((product) => {
       const sub = product.subcategory;
-      const subName = product.subcategory_name;
+      let subNames = product.subcategory_name;
 
-      if (!sub || !subName) return;
+      if (!sub || !subNames) return;
+
+      // Convert string JSON to array
+      try {
+        if (typeof subNames === "string") {
+          subNames = JSON.parse(subNames);
+        }
+      } catch (e) {
+        subNames = [subNames];
+      }
 
       if (!grouped[sub]) {
         grouped[sub] = new Set();
       }
 
-      grouped[sub].add(subName);
+      subNames.forEach((name) => {
+        grouped[sub].add(name);
+      });
     });
 
     const result = Object.keys(grouped).map((key) => ({
