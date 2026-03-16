@@ -1,9 +1,7 @@
 const Cart = require("../models/cartModel");
 const Product = require("../models/Product");
 
-/**
- * GET USER CART
- */
+
 exports.getCart = async (req, res) => {
   try {
     const tenantId = req.headers["x-tenant-id"];
@@ -25,14 +23,11 @@ exports.getCart = async (req, res) => {
 
     res.json(cart);
   } catch (error) {
-    console.error("❌ Error fetching cart:", error);
+    console.error("Error fetching cart:", error);
     res.status(500).json({ message: "Failed to fetch cart" });
   }
 };
 
-/**
- * ADD TO CART
- */
 exports.addToCart = async (req, res) => {
   try {
     const tenantId = req.headers["x-tenant-id"];
@@ -99,14 +94,12 @@ exports.addToCart = async (req, res) => {
       cart,
     });
   } catch (error) {
-    console.error("❌ Error adding to cart:", error);
+    console.error("Error adding to cart:", error);
     res.status(500).json({ message: "Failed to add item" });
   }
 };
 
-/**
- * INCREASE QTY
- */
+
 exports.increaseQty = async (req, res) => {
   try {
     const tenantId = req.headers["x-tenant-id"];
@@ -125,14 +118,11 @@ exports.increaseQty = async (req, res) => {
 
     res.json({ message: "Quantity increased", cart });
   } catch (error) {
-    console.error("❌ Error increasing qty:", error);
+    console.error(" Error increasing qty:", error);
     res.status(500).json({ message: "Failed to increase quantity" });
   }
 };
 
-/**
- * DECREASE QTY
- */
 exports.decreaseQty = async (req, res) => {
   try {
     const tenantId = req.headers["x-tenant-id"];
@@ -158,14 +148,12 @@ exports.decreaseQty = async (req, res) => {
 
     res.json({ message: "Quantity decreased", cart });
   } catch (error) {
-    console.error("❌ Error decreasing qty:", error);
+    console.error("Error decreasing qty:", error);
     res.status(500).json({ message: "Failed to decrease quantity" });
   }
 };
 
-/**
- * REMOVE ITEM
- */
+
 exports.removeFromCart = async (req, res) => {
   try {
     const tenantId = req.headers["x-tenant-id"];
@@ -184,7 +172,7 @@ exports.removeFromCart = async (req, res) => {
 
     res.json({ message: "Item removed", cart });
   } catch (error) {
-    console.error("❌ Error removing item:", error);
+    console.error(" Error removing item:", error);
     res.status(500).json({ message: "Failed to remove item" });
   }
 };
@@ -206,7 +194,7 @@ exports.clearCart = async (req, res) => {
 
     res.json({ message: "Cart cleared", cart });
   } catch (error) {
-    console.error("❌ Error clearing cart:", error);
+    console.error(" Error clearing cart:", error);
     res.status(500).json({ message: "Failed to clear cart" });
   }
 };
