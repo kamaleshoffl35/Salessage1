@@ -12,10 +12,11 @@ exports.getMyOrders = async (req, res) => {
 
     const website = "chakkarapani";
 
-    const orders = await Order.find({
-      website,
-      "customer_details.email": user.email,
-    }).sort({ createdAt: -1 });
+   const orders = await Order.find({
+  website,
+  "customer_details.email": user.email,
+  payment_status: { $ne: "CANCELLED" }
+}).sort({ createdAt: -1 });
 
     const formattedOrders = orders.map((order) => ({
       _id: order._id,

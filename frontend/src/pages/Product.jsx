@@ -122,13 +122,43 @@ const [subCategoryOptions, setSubCategoryOptions] = useState([]);
         "Lord Ayyappa",
         "Lord Shiva",
         "Lord Ramar",
+        "Lord Krishna",
+        "Lord Hanuman",
+        "Lord Oppiliappan",
+        "Lord Kubera",
+        "Lord Balaji / Venkateswara",
+        "Lord Padmanadhar",
+        "Lord Sathyanarayana",
+        "Lord Dakshinamurthi",
+        "Lord Garudan",
+         "Vishwaroopam",
+
+  "Bhagavad Gita",
         "Goddess Lakshmi",
+        "Goddess Parvathi",
+        "Goddess Rukmani",
+        "Goddess Durga",
+        "Goddess Valli",
+        "Goddess Deivanai",
+        "Goddess Santhoshimatha",
+        "Goddess Gayathri",
+        "Goddess Lakhmi",
+        "Goddess Ashta Lakshmi",
+        "Goddess Vishnu Lakshmi",
+        "Goddess Kubera Lakshmi",
+        "Goddess Yanai Lakshmi",
         "Goddess Saraswati",
         "Goddess Annapoorani",
         "Goddess Kamachi",
-        "Lord Krishna",
+        "Goddess Padmavathi",
+        "Goddess Rajeshwari",
+        "Goddess Radha",
+        "Goddess Nava Durgai",
+        "Goddess Bhuvanesvari",
+        "Lalitha Tripura Sundari",
         "Dashavatar (Ten Avatars of Vishnu)",
         "Royal / Raja Paintings",
+        "Kamadhenu",
         "Custom Tanjore Paintings",
       ],
       "Handcrafted Gifts": [
@@ -212,13 +242,17 @@ const handleSubcategoryChange = (e) => {
   }
 };
 const handleDimensionChange = (index, field, value) => {
-  const updated = [...form.dimensions];
-  updated[index][field] = value;
-
-  setForm((prev) => ({
-    ...prev,
-    dimensions: updated
-  }));
+  setForm((prev) => {
+    const updated = [...prev.dimensions];
+    updated[index] = {
+      ...updated[index],
+      [field]: value
+    };
+    return {
+      ...prev,
+      dimensions: updated
+    };
+  });
 };
 
 const addDimensionRow = () => {
@@ -697,14 +731,20 @@ const handleEdit = (product) => {
     dimension: product.dimension || "",
 
     dimensions:
-      product.dimensions && product.dimensions.length > 0
-        ? product.dimensions
-        : [{ size: "", mrp: "", purchase_price: "", sale_price: "" }],
-
-    status: product.status ?? true,
+  product.dimensions
+    ? (typeof product.dimensions === "string"
+        ? JSON.parse(product.dimensions)
+        : product.dimensions
+      ).map((d) => ({
+        size: d.size || "",
+        mrp: String(d.mrp || ""),
+        purchase_price: String(d.purchase_price || ""),
+        sale_price: String(d.sale_price || ""),
+      }))
+    : [{ size: "", mrp: "", purchase_price: "", sale_price: "" }],
   });
 
-  // ⭐ Convert HTML to Draft editor state
+
   setFeaturesEditor(htmlToEditorState(product.features));
   setSpiritualEditor(htmlToEditorState(product.spiritual_significance));
   setPlacementEditor(htmlToEditorState(product.ideal_placement));
