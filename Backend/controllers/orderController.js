@@ -340,7 +340,7 @@ exports.cancelOrder = async (req, res) => {
       return res.status(404).json({ message: "Order not found" });
     }
 
-    if (order.payment_status === "CANCELLED") {
+    if (order.order_status === "cancelled") {
       return res.status(400).json({ message: "Order already cancelled" });
     }
 
@@ -351,33 +351,36 @@ exports.cancelOrder = async (req, res) => {
 
     const SalesReturn = require("../models/SalesReturn");
 
-    const items = (order.products || []).map((p) => ({
-      product_id: p.product_id,
-      product_name: p.productDetails?.title || "Product",
-      quantity: p.qty,
-      return_amount: p.price * p.qty,
+    const orderProducts = order.products || order.items || [];
+
+    const items = orderProducts.map((p) => ({
+      product_id: p.product_id || p.productId,
+      product_name: p.product_name || p.productDetails?.title || "Product",
+      quantity: p.qty || p.quantity || 1,
+      return_amount: (p.price || 0) * (p.qty || p.quantity || 1),
     }));
 
     await SalesReturn.create({
       invoice_no: order._id,
       invoice_number: order.internal_order_id,
       invoice_date_time: order.createdAt,
-      customer_name: order.customer_details?.fullName,
-      customer_phone: order.customer_details?.phone,
+      customer_name: order.customer_details?.fullName || "Customer",
+      customer_phone: order.customer_details?.phone || "",
       items,
       reason: "Order Cancelled by Customer",
     });
 
     res.json({
       message: "Order cancelled successfully",
-      orderId: order._id
+      orderId: order._id,
     });
 
   } catch (err) {
     console.error("Cancel Order Error:", err);
+
     res.status(500).json({
       message: "Cancel failed",
-      error: err.message
+      error: err.message,
     });
   }
 };
