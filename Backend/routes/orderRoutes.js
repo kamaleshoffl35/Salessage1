@@ -11,5 +11,5 @@ const {
 router.post("/create-order", protect, createOrder);
 router.post("/verify-payment", protect, verifyPayment);
 router.post("/create-cod-order", protect, createCodOrder);
-router.patch("/orders/:id/cancel", authMiddleware, cancelOrder);
+router.patch("/orders/:id/cancel", protect, cancelOrder);
 module.exports = router;
