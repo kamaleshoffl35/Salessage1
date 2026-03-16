@@ -48,7 +48,7 @@ const orderSchema = new mongoose.Schema(
       "delivered",
       "cancelled"
     ],
-    default: "pending"
+    default: "confirmed"
   },
 
   razorpay_order_id: String,
