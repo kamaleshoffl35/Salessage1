@@ -75,18 +75,32 @@ exports.verifyPayment = async (req, res) => {
     const orderCount = await Order.countDocuments({ website });
     const internalId = `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
 
-    await Order.create({
-      internal_order_id: internalId,
-      website,
-      payment_mode: "ONLINE",
-      payment_status: "SUCCESS",
-      razorpay_order_id,
-      razorpay_payment_id,
-      amount,
-      customer_details,
-      products,
-    });
+    // await Order.create({
+    //   internal_order_id: internalId,
+    //   website,
+    //   payment_mode: "ONLINE",
+    //   payment_status: "SUCCESS",
+    //   razorpay_order_id,
+    //   razorpay_payment_id,
+    //   amount,
+    //   customer_details,
+    //   products,
+    // });
+await Order.create({
+  internal_order_id: internalId,
+  website,
 
+  payment_mode: "ONLINE",
+  payment_status: "SUCCESS",
+  order_status: "confirmed",
+
+  razorpay_order_id,
+  razorpay_payment_id,
+
+  amount,
+  customer_details,
+  products,
+});
     return res.json({ order_id: internalId });
 
   } catch (err) {
@@ -112,16 +126,27 @@ exports.createCodOrder = async (req, res) => {
     const orderCount = await Order.countDocuments({ website });
     const internalId = `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
 
-    await Order.create({
-      internal_order_id: internalId,
-      website,
-      payment_mode: "COD",
-      payment_status: "PENDING",
-      amount,
-      customer_details,
-      products,
-    });
+    // await Order.create({
+    //   internal_order_id: internalId,
+    //   website,
+    //   payment_mode: "COD",
+    //   payment_status: "PENDING",
+    //   amount,
+    //   customer_details,
+    //   products,
+    // });
+await Order.create({
+  internal_order_id: internalId,
+  website,
 
+  payment_mode: "COD",
+  payment_status: "PENDING",
+  order_status: "confirmed",
+
+  amount,
+  customer_details,
+  products,
+});
     return res.json({ order_id: internalId });
 
   } catch (err) {
