@@ -281,6 +281,55 @@ exports.createCodOrder = async (req, res) => {
 //   }
 // };
 
+// exports.cancelOrder = async (req, res) => {
+//   try {
+//     const orderId = req.params.id;
+
+//     const order = await Order.findById(orderId);
+
+//     if (!order) {
+//       return res.status(404).json({ message: "Order not found" });
+//     }
+
+//     if (order.payment_status === "CANCELLED") {
+//       return res.status(400).json({ message: "Order already cancelled" });
+//     }
+
+//     order.payment_status = "CANCELLED";
+//     order.order_status = "cancelled";
+
+//     await order.save();
+
+//     const SalesReturn = require("../models/SalesReturn");
+
+//     const items = order.products.map((p) => ({
+//       product_id: p.product_id,
+//       product_name: p.productDetails?.title,
+//       quantity: p.qty,
+//       return_amount: p.price * p.qty,
+//     }));
+
+//     await SalesReturn.create({
+//       invoice_no: order._id,
+//       invoice_number: order.internal_order_id,
+//       invoice_date_time: order.createdAt,
+//       customer_name: order.customer_details.fullName,
+//       customer_phone: order.customer_details.phone,
+//       items,
+//       reason: "Order Cancelled by Customer",
+//     });
+
+//     res.json({
+//       message: "Order cancelled successfully",
+//       orderId: order._id
+//     });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Cancel failed" });
+//   }
+// };
+
 exports.cancelOrder = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -302,9 +351,9 @@ exports.cancelOrder = async (req, res) => {
 
     const SalesReturn = require("../models/SalesReturn");
 
-    const items = order.products.map((p) => ({
+    const items = (order.products || []).map((p) => ({
       product_id: p.product_id,
-      product_name: p.productDetails?.title,
+      product_name: p.productDetails?.title || "Product",
       quantity: p.qty,
       return_amount: p.price * p.qty,
     }));
@@ -313,8 +362,8 @@ exports.cancelOrder = async (req, res) => {
       invoice_no: order._id,
       invoice_number: order.internal_order_id,
       invoice_date_time: order.createdAt,
-      customer_name: order.customer_details.fullName,
-      customer_phone: order.customer_details.phone,
+      customer_name: order.customer_details?.fullName,
+      customer_phone: order.customer_details?.phone,
       items,
       reason: "Order Cancelled by Customer",
     });
@@ -325,7 +374,10 @@ exports.cancelOrder = async (req, res) => {
     });
 
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Cancel failed" });
+    console.error("Cancel Order Error:", err);
+    res.status(500).json({
+      message: "Cancel failed",
+      error: err.message
+    });
   }
 };
