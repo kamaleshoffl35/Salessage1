@@ -373,6 +373,7 @@ exports.cancelOrder = async (req, res) => {
     res.json({
       message: "Order cancelled successfully",
       orderId: order._id,
+      order
     });
 
   } catch (err) {
