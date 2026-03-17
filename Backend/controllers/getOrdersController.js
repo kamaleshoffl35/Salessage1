@@ -15,34 +15,38 @@ exports.getMyOrders = async (req, res) => {
   payment_status: { $ne: "CANCELLED" }
 }).sort({ createdAt: -1 });
 
-    const formattedOrders = orders.map((order) => ({
-      _id: order._id,
-      orderNumber: order.internal_order_id,
-      createdAt: order.createdAt,
-      orderStatus: order.order_status || "pending",
+  const formattedOrders = orders.map((order) => ({
+  _id: order._id,
+  orderNumber: order.internal_order_id,
+  createdAt: order.createdAt,
 
-      paymentMethod: order.payment_mode.toLowerCase(),
-      paymentStatus:
-        order.payment_status === "SUCCESS"
-          ? "completed"
-          : "pending",
+  // ✅ FIXED
+  orderStatus: order.order_status || "pending",
 
-      shippingAddress: order.customer_details,
+  paymentMethod: order.payment_mode.toLowerCase(),
 
-      subtotal: Math.round(order.amount / 1.18),
-      tax: Math.round(order.amount - order.amount / 1.18),
-      totalAmount: order.amount,
+  // ✅ FIXED
+  paymentStatus:
+    order.payment_status === "SUCCESS"
+      ? "success"
+      : "pending",
 
-      items: order.products.map((p) => ({
-        productDetails: {
-          title: p.productDetails?.title,
-          image: p.productDetails?.image,
-        },
-        selectedSize: p.selectedSize,
-        qty: p.qty,
-        price: p.price,
-      })),
-    }));
+  shippingAddress: order.customer_details,
+
+  subtotal: Math.round(order.amount / 1.18),
+  tax: Math.round(order.amount - order.amount / 1.18),
+  totalAmount: order.amount,
+
+  items: order.products.map((p) => ({
+    productDetails: {
+      title: p.productDetails?.title,
+      image: p.productDetails?.image,
+    },
+    selectedSize: p.selectedSize,
+    qty: p.qty,
+    price: p.price,
+  })),
+}));
 
     res.json(formattedOrders);
 
