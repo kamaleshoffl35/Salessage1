@@ -8,6 +8,9 @@ function Navbar() {
       <Link className="navbar-brand" to="/">Inventory</Link>
       <div className="collapse navbar-collapse">
         <ul className="navbar-nav me-auto gap-2">
+          <li className="nav-item">
+  <Link className="nav-link" to="/orders">Orders</Link>
+</li>
           <li className="nav-item"><Link className="nav-link" to="/products">Products</Link></li>
           {/* <li className="nav-item"><Link className="nav-link" to="/categories">Categories</Link></li> */}
           {/* <li className="nav-item"><Link className="nav-link" to="/units">Units</Link></li> */}

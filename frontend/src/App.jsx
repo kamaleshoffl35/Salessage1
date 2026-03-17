@@ -25,6 +25,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
+import OrdersPage from "./pages/OrdersPage";
 import API from "./api/axiosInstance";
 import { Outlet } from "react-router-dom";
 window.global = window;
@@ -76,6 +77,7 @@ function App() {
             <Route path="sub_receipts" element={<Supplier_Payment />} />
             <Route path="stockledger" element={<StockLedger />} />
             <Route path="expenses" element={<Expenses />} />
+                <Route path="orders" element={<OrdersPage />} />
             <Route path="profile" element={<Profile />} />
             <Route path="reports" element={<Reports />}>
               <Route index element={<SalesReport />} />

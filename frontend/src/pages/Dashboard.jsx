@@ -55,6 +55,7 @@ useEffect(() => {
     { name: "Warehouses", path: "/warehouses", icon: <MdOutlineWarehouse />, roles: ["super_admin", "admin", "user"] },
     { name: "Purchases", path: "/purchases", icon: <BiPurchaseTag />, roles: ["super_admin", "admin", "user"] },
     { name: "Sales", path: "/sales", icon: <TbFileInvoice />, roles: ["super_admin", "admin", "user"] },
+      { name: "Orders", path: "/orders", icon: <TbFileInvoice />, roles: ["super_admin", "admin"] },
     { name: "Sales Return", path: "/sales-returns", icon: <TbFileInvoice />, roles: ["super_admin", "admin", "user"] },
     { name: "Customer Receipts", path: "/cus_receipts", icon: <MdAttachMoney />, roles: ["super_admin", "admin"] },
     { name: "Supplier Receipts", path: "/sub_receipts", icon: <GiTakeMyMoney />, roles: ["super_admin", "admin"] },

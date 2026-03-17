@@ -102,6 +102,7 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/google-categories", require("./routes/googleCategory"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api", require("./routes/getOrdersRoutes"))
+app.use("/api/admin", require("./routes/adminOrderRoutes"));
 app.get("/test-public", (req, res) => {
   res.json({ message: "SERVER UPDATED" });
 });
