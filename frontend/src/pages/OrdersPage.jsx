@@ -23,7 +23,8 @@ const OrdersPage = () => {
   const [searchOrder, setSearchOrder] = useState("");
   const [searchCustomer, setSearchCustomer] = useState("");
   const [searchPayment, setSearchPayment] = useState("");
-
+  const [searchOrderStatus, setSearchOrderStatus] = useState("");
+const [editingOrder, setEditingOrder] = useState(null);
   const [selectedOrder, setSelectedOrder] = useState(null);
 
   const [showHistoryModal, setShowHistoryModal] = useState(false);
@@ -33,7 +34,9 @@ const OrdersPage = () => {
 
   const role = user?.role || "user";
 
-  const tableActions = useTableActions(role);
+const tableActions = useTableActions(role).filter(
+  (action) => action.type !== "edit"
+);
 
   /* =============================
         LOAD DATA
@@ -96,8 +99,11 @@ const OrdersPage = () => {
     const paymentMatch =
       searchPayment.trim() === "" ||
       o.paymentStatus?.toLowerCase().includes(searchPayment.toLowerCase());
+       const orderStatusMatch =
+    searchOrderStatus.trim() === "" ||
+    o.orderStatus?.toLowerCase().includes(searchOrderStatus.toLowerCase());
 
-    return orderMatch && customerMatch && paymentMatch;
+    return orderMatch && customerMatch && paymentMatch && orderStatusMatch
 
   });
 
@@ -208,9 +214,9 @@ const OrdersPage = () => {
 
   const handleTableAction = (actionType, order) => {
 
-    if (actionType === "edit") {
-      navigate(`/admin/orders/edit/${order._id}`);
-    }
+  if (actionType === "edit") {
+  setEditingOrder(order);
+}
 
     if (actionType === "delete") {
 
@@ -250,13 +256,17 @@ const OrdersPage = () => {
         searchTerm1={searchOrder}
         searchTerm2={searchCustomer}
         searchTerm3={searchPayment}
+          searchTerm4={searchOrderStatus} // new
         onSearchChange1={setSearchOrder}
         onSearchChange2={setSearchCustomer}
         onSearchChange3={setSearchPayment}
+        onSearchChange4={setSearchOrderStatus} // new
         searchPlaceholder1="Search by Order ID"
         searchPlaceholder2="Search by Customer"
         searchPlaceholder3="Search by Payment Status"
+        searchPlaceholder4="Search by Order Status" // new
         showThirdSearch={true}
+         showFourthSearch={true}
         actions={tableActions}
         onActionClick={handleTableAction}
         emptyMessage="No orders found."
@@ -264,6 +274,7 @@ const OrdersPage = () => {
           setSearchOrder("");
           setSearchCustomer("");
           setSearchPayment("");
+           setSearchOrderStatus("");
         }}
       />
 
@@ -304,6 +315,95 @@ const OrdersPage = () => {
           </div>
         </div>
       )}
+
+      {editingOrder && (
+  <div
+    className="modal show d-block"
+    style={{ backgroundColor: "rgba(0,0,0,0.5)" }}
+  >
+    <div className="modal-dialog modal-dialog-centered">
+      <div className="modal-content">
+
+        <div className="modal-header">
+          <h5 className="modal-title">Edit Order</h5>
+          <button
+            className="btn-close"
+            onClick={() => setEditingOrder(null)}
+          />
+        </div>
+
+        <div className="modal-body">
+
+          <div className="mb-3">
+            <label>Order Status</label>
+
+            <select
+              className="form-select"
+              value={editingOrder.orderStatus}
+              onChange={(e) =>
+                setEditingOrder({
+                  ...editingOrder,
+                  orderStatus: e.target.value,
+                })
+              }
+            >
+              <option value="pending">Pending</option>
+              <option value="confirmed">Confirmed</option>
+              <option value="processing">Processing</option>
+              <option value="shipped">Shipped</option>
+              <option value="delivered">Delivered</option>
+              <option value="cancelled">Cancelled</option>
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label>Payment Status</label>
+
+            <select
+              className="form-select"
+              value={editingOrder.paymentStatus}
+              onChange={(e) =>
+                setEditingOrder({
+                  ...editingOrder,
+                  paymentStatus: e.target.value,
+                })
+              }
+            >
+              <option value="PENDING">Pending</option>
+              <option value="SUCCESS">Success</option>
+              <option value="FAILED">Failed</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              dispatch(
+                updateOrderStatus({
+                  id: editingOrder._id,
+                  status: editingOrder.orderStatus,
+                })
+              );
+
+              dispatch(
+                updatePaymentStatus({
+                  id: editingOrder._id,
+                  status: editingOrder.paymentStatus,
+                })
+              );
+
+              setEditingOrder(null);
+            }}
+          >
+            Update Order
+          </button>
+
+        </div>
+      </div>
+    </div>
+  </div>
+)}
 
       <HistoryModal
         open={showHistoryModal}

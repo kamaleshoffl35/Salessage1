@@ -72,13 +72,17 @@ const ReusableTable = ({
   searchTerm1 = "",
   searchTerm2 = "",
   searchTerm3 = "",
+    searchTerm4 ="",  
   onSearchChange1 = () => {},
   onSearchChange2 = () => {},
   onSearchChange3 = () => {},
+  onSearchChange4 = () => {},
   searchPlaceholder1 = "Search by Name or Sku",
   searchPlaceholder2 = "Search by Category",
   searchPlaceholder3 = "",
+    searchPlaceholder4 = "",
   showThirdSearch = false,
+  showFourthSearch = false,
   actions = [],
   onActionClick = () => {},
   onResetSearch = () => {},
@@ -141,68 +145,80 @@ const ReusableTable = ({
   );
   return (
     <div>
-      {searchable && (
-        <div className="mb-3 d-flex gap-3">
-          <div className="input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder={searchPlaceholder1}
-              value={searchTerm1}
-              onChange={(e) => onSearchChange1(e.target.value)}
-            />
-            <span className="input-group-text">
-              <i className="fas fa-search"></i>
-            </span>
-          </div>
-          <div className="input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder={searchPlaceholder2}
-              value={searchTerm2}
-              onChange={(e) => onSearchChange2(e.target.value)}
-            />
-            <span className="input-group-text">
-              <i className="fas fa-search"></i>
-            </span>
-          </div>
-           <div className="input-group">
-            <input
-              type="text"
-              className="form-control"
-              placeholder={searchPlaceholder3}
-              value={searchTerm3}
-              onChange={(e) => onSearchChange3(e.target.value)}
-            />
-            <span className="input-group-text">
-              <i className="fas fa-search"></i>
-            </span>
-          </div>
-          {showThirdSearch && (
-            <div className="input-group">
-              <input
-                type="text"
-                className="form-control"
-                placeholder={searchPlaceholder3}
-                value={searchTerm3}
-                onChange={(e) => onSearchChange3(e.target.value)}
-              />
-              <span className="input-group-text">
-                <i className="fas fa-search"></i>
-              </span>
-            </div>
-          )}
-          <div className="input-group">
-            <button
-              className="bg-danger text-white border-0 rounded pt-1 w-25"
-              onClick={onResetSearch}
-            >
-              Reset
-            </button>
-          </div>
-        </div>
-      )}
+   {searchable && (
+  <div className="mb-3 d-flex flex-wrap gap-2 align-items-center">
+
+    {/* Search 1 */}
+    <div className="input-group" style={{ minWidth: "200px", flex: 1 }}>
+      <input
+        type="text"
+        className="form-control"
+        placeholder={searchPlaceholder1}
+        value={searchTerm1}
+        onChange={(e) => onSearchChange1(e.target.value)}
+      />
+      <span className="input-group-text">
+        <i className="fas fa-search"></i>
+      </span>
+    </div>
+
+    {/* Search 2 */}
+    <div className="input-group" style={{ minWidth: "200px", flex: 1 }}>
+      <input
+        type="text"
+        className="form-control"
+        placeholder={searchPlaceholder2}
+        value={searchTerm2}
+        onChange={(e) => onSearchChange2(e.target.value)}
+      />
+      <span className="input-group-text">
+        <i className="fas fa-search"></i>
+      </span>
+    </div>
+
+    {/* Search 3 */}
+    {showThirdSearch && (
+      <div className="input-group" style={{ minWidth: "200px", flex: 1 }}>
+        <input
+          type="text"
+          className="form-control"
+          placeholder={searchPlaceholder3}
+          value={searchTerm3}
+          onChange={(e) => onSearchChange3(e.target.value)}
+        />
+        <span className="input-group-text">
+          <i className="fas fa-search"></i>
+        </span>
+      </div>
+    )}
+
+    {/* Search 4 */}
+    {showFourthSearch && (
+      <div className="input-group" style={{ minWidth: "200px", flex: 1 }}>
+        <input
+          type="text"
+          className="form-control"
+          placeholder={searchPlaceholder4}
+          value={searchTerm4}
+          onChange={(e) => onSearchChange4(e.target.value)}
+        />
+        <span className="input-group-text">
+          <i className="fas fa-search"></i>
+        </span>
+      </div>
+    )}
+
+    {/* Reset Button */}
+    <div className="d-flex align-items-center" style={{ minWidth: "120px" }}>
+      <button
+        className="btn btn-danger w-100"
+        onClick={onResetSearch}
+      >
+        Reset
+      </button>
+    </div>
+  </div>
+)}
 
       {loading ? (
         <div className="text-center p-4">

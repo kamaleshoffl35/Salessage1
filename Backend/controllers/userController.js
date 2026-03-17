@@ -88,8 +88,8 @@ exports.register = async (req, res) => {
     // 🔥 SET COOKIE HERE
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: none,
       maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/", 
     });
@@ -136,8 +136,8 @@ exports.login = async (req, res) => {
     // SET COOKIE ONLY
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
-      sameSite: "lax",
+      secure: true,
+      sameSite: none,
     maxAge: 7 * 24 * 60 * 60 * 1000,
       path: "/", 
     });
