@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/auth");
-const { getAllOrders, updateOrderStatus, updatePaymentStatus,editOrder,deleteOrder } = require("../controllers/adminOrderController");
+const { getAllOrders, updateOrderStatus, updatePaymentStatus,editOrder,deleteOrder,getOrderById } = require("../controllers/adminOrderController");
 
 router.get("/orders", protect, getAllOrders);
 router.get("/orders/:id", protect, getOrderById);
