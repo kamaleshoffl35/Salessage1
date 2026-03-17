@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
 const { protect } = require("../middleware/auth");
-const { getAllOrders, updateOrderStatus, updatePaymentStatus,editOrder,deleteOrder,getOrderById } = require("../controllers/adminOrderController");
+const { getAllOrders, updateOrderStatus, updatePaymentStatus,editOrder,deleteOrder, } = require("../controllers/adminOrderController");
 
 router.get("/orders", protect, getAllOrders);
-router.get("/orders/:id", protect, getOrderById);
+
 
 router.put("/orders/:id/status", protect, updateOrderStatus);
 router.put("/orders/:id/payment-status", protect, updatePaymentStatus);
