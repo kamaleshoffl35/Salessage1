@@ -1,17 +1,24 @@
 import { useEffect, useState } from "react";
-import API from "../api/axiosInstance";
+import { useDispatch, useSelector } from "react-redux";
 import ReusableTable from "../components/ReusableTable";
 import { getMe } from "../services/userService";
 import useTableActions from "../components/useTableActions";
 import { useNavigate } from "react-router-dom";
 import HistoryModal from "../components/HistoryModal";
 
+import {
+  fetchOrders,
+  updateOrderStatus,
+  updatePaymentStatus,
+  deleteOrder,
+} from "../redux/orderSlice";
+
 const OrdersPage = () => {
 
+  const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const [orders, setOrders] = useState([]);
-  const [status, setStatus] = useState("idle");
+  const { items: orders, status } = useSelector((state) => state.orders);
 
   const [searchOrder, setSearchOrder] = useState("");
   const [searchCustomer, setSearchCustomer] = useState("");
@@ -29,28 +36,8 @@ const OrdersPage = () => {
   const tableActions = useTableActions(role);
 
   /* =============================
-        FETCH ORDERS
+        LOAD DATA
   ============================= */
-
-  const fetchOrders = async () => {
-    try {
-
-      setStatus("loading");
-
-      const res = await API.get("/admin/orders");
-
-      setOrders(res.data);
-
-      setStatus("success");
-
-    } catch (err) {
-
-      console.error("Fetch orders error", err);
-
-      setStatus("failed");
-
-    }
-  };
 
   useEffect(() => {
 
@@ -58,81 +45,9 @@ const OrdersPage = () => {
       .then((u) => setUser(u))
       .catch(() => navigate("/login"));
 
-    fetchOrders();
+    dispatch(fetchOrders());
 
-  }, [navigate]);
-
-  /* =============================
-        UPDATE ORDER STATUS
-  ============================= */
-
-  const updateOrderStatus = async (id, status) => {
-
-    try {
-
-      await API.put(`/admin/orders/${id}/status`, { status });
-
-      fetchOrders();
-
-    } catch (err) {
-
-      console.error("Order status update failed", err);
-
-    }
-  };
-
-  /* =============================
-        UPDATE PAYMENT STATUS
-  ============================= */
-
-  const updatePaymentStatus = async (id, status) => {
-
-    try {
-
-      await API.put(`/admin/orders/${id}/payment-status`, { status });
-
-      fetchOrders();
-
-    } catch (err) {
-
-      console.error("Payment update failed", err);
-
-    }
-  };
-
-  /* =============================
-        DELETE ORDER
-  ============================= */
-
-  const deleteOrder = async (id) => {
-
-    const confirmDelete = window.confirm("Are you sure you want to delete this order?");
-
-    if (!confirmDelete) return;
-
-    try {
-
-      await API.delete(`/admin/orders/${id}`);
-
-      fetchOrders();
-
-    } catch (err) {
-
-      console.error("Delete order failed", err);
-
-    }
-
-  };
-
-  /* =============================
-        EDIT ORDER
-  ============================= */
-
-  const editOrder = (order) => {
-
-    navigate(`/admin/orders/edit/${order._id}`);
-
-  };
+  }, [dispatch, navigate]);
 
   /* =============================
         STATUS BADGES
@@ -150,7 +65,6 @@ const OrdersPage = () => {
     };
 
     return <span className={map[status] || "badge bg-secondary"}>{status}</span>;
-
   };
 
   const paymentBadge = (status) => {
@@ -163,7 +77,6 @@ const OrdersPage = () => {
     };
 
     return <span className={map[status] || "badge bg-secondary"}>{status}</span>;
-
   };
 
   /* =============================
@@ -226,7 +139,12 @@ const OrdersPage = () => {
           className="form-select"
           value={order.orderStatus}
           onChange={(e) =>
-            updateOrderStatus(order._id, e.target.value)
+            dispatch(
+              updateOrderStatus({
+                id: order._id,
+                status: e.target.value,
+              })
+            )
           }
         >
           <option value="pending">Pending</option>
@@ -253,7 +171,12 @@ const OrdersPage = () => {
           className="form-select"
           value={order.paymentStatus}
           onChange={(e) =>
-            updatePaymentStatus(order._id, e.target.value)
+            dispatch(
+              updatePaymentStatus({
+                id: order._id,
+                status: e.target.value,
+              })
+            )
           }
         >
           <option value="PENDING">Pending</option>
@@ -275,7 +198,7 @@ const OrdersPage = () => {
           View
         </button>
       ),
-    }
+    },
 
   ];
 
@@ -286,11 +209,18 @@ const OrdersPage = () => {
   const handleTableAction = (actionType, order) => {
 
     if (actionType === "edit") {
-      editOrder(order);
+      navigate(`/admin/orders/edit/${order._id}`);
     }
 
     if (actionType === "delete") {
-      deleteOrder(order._id);
+
+      const confirmDelete = window.confirm(
+        "Are you sure you want to delete this order?"
+      );
+
+      if (confirmDelete) {
+        dispatch(deleteOrder(order._id));
+      }
     }
 
     if (actionType === "history") {
@@ -301,9 +231,7 @@ const OrdersPage = () => {
       });
 
       setShowHistoryModal(true);
-
     }
-
   };
 
   return (
@@ -339,8 +267,6 @@ const OrdersPage = () => {
         }}
       />
 
-      {/* ORDER DETAILS MODAL */}
-
       {selectedOrder && (
         <div
           className="modal show d-block"
@@ -366,13 +292,9 @@ const OrdersPage = () => {
               <div className="modal-body">
 
                 <p><b>Order ID:</b> {selectedOrder.orderNumber}</p>
-
                 <p><b>Customer:</b> {selectedOrder.user?.name}</p>
-
                 <p><b>Total:</b> ₹{selectedOrder.totalAmount}</p>
-
                 <p><b>Order Status:</b> {selectedOrder.orderStatus}</p>
-
                 <p><b>Payment Status:</b> {selectedOrder.paymentStatus}</p>
 
               </div>
@@ -390,9 +312,7 @@ const OrdersPage = () => {
       />
 
     </div>
-
   );
-
 };
 
 export default OrdersPage;

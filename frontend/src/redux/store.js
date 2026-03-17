@@ -16,7 +16,7 @@ import salesReturnReducer from "./salesReturnSlice";
 
 import salereportReducer from "./salereportSlice";
 import purchasereportReducer from "./purchasereportSlice";
-
+import ordersReducer from "./orderSlice";
 import salereturnreportReducer from "./salereturnreportSlice";
 import gstreportReducer from "./gstreportSlice";
 import profitlossReducer from "./profitlossSlice";
@@ -42,5 +42,6 @@ export const store = configureStore({
     gstreports: gstreportReducer,
     expenses: expenseReducer,
     profitloss: profitlossReducer,
+       orders: ordersReducer,
   },
 });
