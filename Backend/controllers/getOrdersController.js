@@ -19,10 +19,7 @@ exports.getMyOrders = async (req, res) => {
       _id: order._id,
       orderNumber: order.internal_order_id,
       createdAt: order.createdAt,
-      orderStatus:
-        order.payment_status === "SUCCESS"
-          ? "confirmed"
-          : "pending",
+      orderStatus: order.order_status || "pending",
 
       paymentMethod: order.payment_mode.toLowerCase(),
       paymentStatus:
