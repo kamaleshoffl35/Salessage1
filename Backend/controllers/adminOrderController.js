@@ -99,3 +99,41 @@ exports.updatePaymentStatus = async (req, res) => {
     res.status(500).json({ message: "Payment update failed" });
   }
 };
+
+exports.editOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const updatedOrder = await Order.findByIdAndUpdate(
+      orderId,
+      req.body,
+      { new: true }
+    );
+
+    res.json({
+      message: "Order updated successfully",
+      order: updatedOrder,
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Edit failed" });
+  }
+};
+
+/* =========================
+   DELETE ORDER
+========================= */
+exports.deleteOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    await Order.findByIdAndDelete(orderId);
+
+    res.json({
+      message: "Order deleted successfully",
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Delete failed" });
+  }
+};
