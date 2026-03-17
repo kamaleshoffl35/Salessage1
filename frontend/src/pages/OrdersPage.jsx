@@ -5,30 +5,32 @@ import API from "../api/axiosInstance";
 const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
 
-  const fetchOrders = async () => {
-    try {
-      const res = await axios.get("https://your-backend-url/api/admin/orders", {
-        withCredentials: true,
-      });
-      setOrders(res.data);
-    } catch (err) {
-      console.error("Fetch orders error", err);
-    }
-  };
+ const fetchOrders = async () => {
+  try {
+    const res = await API.get("/admin/orders")
+    setOrders(res.data);
+  } catch (err) {
+    console.error("Fetch orders error", err);
+  }
+};
 
-  const updateStatus = async (id, status) => {
-    try {
-      await axios.put(
-        `https://your-backend-url/api/admin/orders/${id}/status`,
-        { status },
-        { withCredentials: true }
-      );
+const updateStatus = async (id, status) => {
+  try {
+    await API.put(`/admin/orders/${id}/status`, { status });
+    fetchOrders();
+  } catch (err) {
+    console.error("Update failed", err);
+  }
+};
 
-      fetchOrders(); // refresh
-    } catch (err) {
-      console.error("Update failed", err);
-    }
-  };
+const updatePaymentStatus = async (id, status) => {
+  try {
+    await API.put(`/admin/orders/${id}/payment-status`, { status });
+    fetchOrders();
+  } catch (err) {
+    console.error("Payment update failed", err);
+  }
+};
 
   useEffect(() => {
     fetchOrders();
@@ -44,8 +46,11 @@ const OrdersPage = () => {
             <th>Order ID</th>
             <th>User</th>
             <th>Total</th>
-            <th>Status</th>
-            <th>Update</th>
+            <th>Order Status</th>
+           
+            <th>Update Order</th>
+             <th>Payment Status</th>
+<th>Update Payment</th>
           </tr>
         </thead>
 
@@ -73,6 +78,21 @@ const OrdersPage = () => {
                   <option value="cancelled">Cancelled</option>
                 </select>
               </td>
+              <td>{order.paymentStatus}</td>
+
+<td>
+  <select
+    value={order.paymentStatus}
+    onChange={(e) =>
+      updatePaymentStatus(order._id, e.target.value)
+    }
+  >
+    <option value="PENDING">Pending</option>
+    <option value="SUCCESS">Success</option>
+    <option value="FAILED">Failed</option>
+    <option value="CANCELLED">Cancelled</option>
+  </select>
+</td>
             </tr>
           ))}
         </tbody>

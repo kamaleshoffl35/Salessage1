@@ -19,7 +19,9 @@ exports.getAllOrders = async (req, res) => {
       totalAmount: order.amount,
 
       // ✅ IMPORTANT
+      
       orderStatus: order.order_status,
+      paymentStatus: order.payment_status, 
     }));
 
     res.json(formatted);
@@ -60,5 +62,40 @@ exports.updateOrderStatus = async (req, res) => {
 
   } catch (err) {
     res.status(500).json({ message: "Update failed" });
+  }
+};
+
+/* =========================
+   UPDATE PAYMENT STATUS
+========================= */
+exports.updatePaymentStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const orderId = req.params.id;
+
+    const allowedStatuses = [
+      "SUCCESS",
+      "PENDING",
+      "FAILED",
+      "CANCELLED",
+    ];
+
+    if (!allowedStatuses.includes(status)) {
+      return res.status(400).json({ message: "Invalid payment status" });
+    }
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { payment_status: status },
+      { new: true }
+    );
+
+    res.json({
+      message: "Payment status updated",
+      order,
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: "Payment update failed" });
   }
 };
