@@ -246,6 +246,131 @@
 // }
 
 
+// const Order = require("../models/Order");
+
+// /* =========================
+//    GET ALL ORDERS (ADMIN)
+// ========================= */
+// exports.getAllOrders = async (req, res) => {
+//   try {
+//     const orders = await Order.find().sort({ createdAt: -1 });
+
+//     const formatted = orders.map((order) => ({
+//       _id: order._id,
+//       orderNumber: order.internal_order_id,
+//       createdAt: order.createdAt,
+//       user: {
+//         name: order.customer_details?.fullName,
+//         email: order.customer_details?.email,
+//         address: order.customer_details?.address, // address included
+//       },
+//       totalAmount: order.amount,
+//       orderStatus: order.order_status,
+//       paymentStatus: order.payment_status,
+//     }));
+
+//     res.json(formatted);
+//   } catch (err) {
+//     res.status(500).json({ message: "Failed to fetch orders" });
+//   }
+// };
+
+// /* =========================
+//    UPDATE ORDER STATUS
+// ========================= */
+// exports.updateOrderStatus = async (req, res) => {
+//   try {
+//     const { status } = req.body;
+//     const orderId = req.params.id;
+
+//     const allowedStatuses = [
+//       "pending",
+//       "confirmed",
+//       "processing",
+//       "shipped",
+//       "delivered",
+//       "cancelled",
+//     ];
+
+//     if (!allowedStatuses.includes(status)) {
+//       return res.status(400).json({ message: "Invalid status" });
+//     }
+
+//     const order = await Order.findByIdAndUpdate(
+//       orderId,
+//       { order_status: status },
+//       { new: true }
+//     );
+
+//     // ✅ DO NOT remove or modify customer_details
+//     res.json({ message: "Status updated", order });
+//   } catch (err) {
+//     res.status(500).json({ message: "Update failed" });
+//   }
+// };
+
+// /* =========================
+//    UPDATE PAYMENT STATUS
+// ========================= */
+// exports.updatePaymentStatus = async (req, res) => {
+//   try {
+//     const { status } = req.body;
+//     const orderId = req.params.id;
+
+//     const allowedStatuses = ["SUCCESS", "PENDING", "FAILED", "CANCELLED"];
+
+//     if (!allowedStatuses.includes(status)) {
+//       return res.status(400).json({ message: "Invalid payment status" });
+//     }
+
+//     const order = await Order.findByIdAndUpdate(
+//       orderId,
+//       { payment_status: status },
+//       { new: true }
+//     );
+
+//     res.json({ message: "Payment status updated", order });
+//   } catch (err) {
+//     res.status(500).json({ message: "Payment update failed" });
+//   }
+// };
+
+// /* =========================
+//    EDIT ORDER
+// ========================= */
+// exports.editOrder = async (req, res) => {
+//   try {
+//     const orderId = req.params.id;
+
+//     const updatedOrder = await Order.findByIdAndUpdate(
+//       orderId,
+//       req.body, // only update provided fields
+//       { new: true }
+//     );
+
+//     res.json({ message: "Order updated successfully", order: updatedOrder });
+//   } catch (err) {
+//     res.status(500).json({ message: "Edit failed" });
+//   }
+// };
+
+// /* =========================
+//    DELETE ORDER
+// ========================= */
+// exports.deleteOrder = async (req, res) => {
+//   try {
+//     const orderId = req.params.id;
+//     await Order.findByIdAndDelete(orderId);
+
+//     res.json({ message: "Order deleted successfully" });
+//   } catch (err) {
+//     res.status(500).json({ message: "Delete failed" });
+//   }
+// };
+
+
+// Backend/controllers/orderController.js
+
 const Order = require("../models/Order");
 
 /* =========================
@@ -262,7 +387,7 @@ exports.getAllOrders = async (req, res) => {
       user: {
         name: order.customer_details?.fullName,
         email: order.customer_details?.email,
-        address: order.customer_details?.address, // address included
+        address: order.customer_details?.address, // ✅ address included
       },
       totalAmount: order.amount,
       orderStatus: order.order_status,
@@ -271,6 +396,7 @@ exports.getAllOrders = async (req, res) => {
 
     res.json(formatted);
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Failed to fetch orders" });
   }
 };
@@ -298,13 +424,13 @@ exports.updateOrderStatus = async (req, res) => {
 
     const order = await Order.findByIdAndUpdate(
       orderId,
-      { order_status: status },
+      { order_status: status }, // ✅ only update status
       { new: true }
     );
 
-    // ✅ DO NOT remove or modify customer_details
     res.json({ message: "Status updated", order });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Update failed" });
   }
 };
@@ -325,12 +451,13 @@ exports.updatePaymentStatus = async (req, res) => {
 
     const order = await Order.findByIdAndUpdate(
       orderId,
-      { payment_status: status },
+      { payment_status: status }, // ✅ only update payment
       { new: true }
     );
 
     res.json({ message: "Payment status updated", order });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Payment update failed" });
   }
 };
@@ -350,6 +477,7 @@ exports.editOrder = async (req, res) => {
 
     res.json({ message: "Order updated successfully", order: updatedOrder });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Edit failed" });
   }
 };
@@ -364,6 +492,67 @@ exports.deleteOrder = async (req, res) => {
 
     res.json({ message: "Order deleted successfully" });
   } catch (err) {
+    console.error(err);
     res.status(500).json({ message: "Delete failed" });
+  }
+};
+
+/* =========================
+   CREATE ORDER (PLACEHOLDER)
+========================= */
+exports.createOrder = async (req, res) => {
+  try {
+    // TODO: Implement actual order creation logic
+    res.status(200).json({ message: "createOrder endpoint not implemented yet" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Create order failed" });
+  }
+};
+
+/* =========================
+   CREATE COD ORDER (PLACEHOLDER)
+========================= */
+exports.createCodOrder = async (req, res) => {
+  try {
+    // TODO: Implement actual COD order creation logic
+    res.status(200).json({ message: "createCodOrder endpoint not implemented yet" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "COD order creation failed" });
+  }
+};
+
+/* =========================
+   VERIFY PAYMENT (PLACEHOLDER)
+========================= */
+exports.verifyPayment = async (req, res) => {
+  try {
+    // TODO: Implement payment verification logic
+    res.status(200).json({ message: "verifyPayment endpoint not implemented yet" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Payment verification failed" });
+  }
+};
+
+/* =========================
+   CANCEL ORDER
+   (Do NOT remove address)
+========================= */
+exports.cancelOrder = async (req, res) => {
+  try {
+    const orderId = req.params.id;
+
+    const order = await Order.findByIdAndUpdate(
+      orderId,
+      { order_status: "cancelled" }, // ✅ only update status
+      { new: true }
+    );
+
+    res.json({ message: "Order cancelled", order });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Cancel failed" });
   }
 };
