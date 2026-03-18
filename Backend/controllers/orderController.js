@@ -683,3 +683,41 @@ exports.deleteOrder = async (req, res) => {
     res.status(500).json({ message: "Delete failed" });
   }
 };
+
+/* =========================
+   GET CANCELLED ORDERS
+========================= */
+exports.getCancelledOrders = async (req, res) => {
+  try {
+    const tenant = req.user?.tenant;
+
+    if (!tenant) {
+      return res.status(403).json({ message: "Invalid tenant" });
+    }
+
+    const cancelledOrders = await Order.find({
+      website: tenant,
+      order_status: "cancelled"
+    }).sort({ createdAt: -1 });
+
+    const formatted = cancelledOrders.map(order => ({
+      _id: order._id,
+      orderNumber: order.internal_order_id,
+      createdAt: order.createdAt,
+      customer: {
+        name: order.customer_details?.fullName,
+        email: order.customer_details?.email,
+        phone: order.customer_details?.phone
+      },
+      totalAmount: order.amount,
+      paymentStatus: order.payment_status,
+      orderStatus: order.order_status
+    }));
+
+    res.json(formatted);
+
+  } catch (error) {
+    console.error("Cancelled Orders Error:", error);
+    res.status(500).json({ message: "Failed to fetch cancelled orders" });
+  }
+};
