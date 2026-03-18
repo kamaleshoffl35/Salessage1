@@ -327,14 +327,30 @@ exports.getCancelledOrders = async (req, res) => {
       _id: order._id,
       orderNumber: order.internal_order_id,
       createdAt: order.createdAt,
+
       customer: {
         name: order.customer_details?.fullName,
         email: order.customer_details?.email,
         phone: order.customer_details?.phone
       },
+
       totalAmount: order.amount,
       paymentStatus: order.payment_status,
-      orderStatus: order.order_status
+      orderStatus: order.order_status,
+
+      products: (order.products || []).map(p => ({
+        product_item_id: p._id,              // product row id in order
+        product_id: p.product?._id,          // actual product id
+
+        title: p.productDetails?.title,
+        image: p.productDetails?.image,
+        category: p.productDetails?.category,
+
+        dimension: p.selectedSize?.dimension,
+
+        qty: p.qty,
+        price: p.price
+      }))
     }));
 
     res.json(formatted);
