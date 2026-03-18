@@ -148,7 +148,7 @@ exports.getMyOrders = async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-  const tenant = user.tenant || req.headers["x-tenant-id"];
+ const tenant = req.headers["x-tenant-id"];
 
 if (!tenant) {
   return res.status(400).json({ message: "Tenant missing" });
