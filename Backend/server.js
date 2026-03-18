@@ -63,15 +63,17 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ["GET", "POST", "PUT","PATCH", "DELETE", "OPTIONS"],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
-    "x-tenant-id"   // 🔥 THIS LINE FIXES YOUR ERROR
-  ]
+    "x-tenant-id"
+  ],
+  exposedHeaders: ["x-tenant-id"]
 };
 
 app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
 
 app.use(express.json());
 // mongoose.connect("mongodb://127.0.0.1:27017/inventory")
