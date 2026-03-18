@@ -429,6 +429,7 @@ exports.verifyPayment = async (req, res) => {
     const order = await Order.create({
       internal_order_id: internalId,
       website,
+      user: req.user._id,
       payment_mode: "ONLINE",
       payment_status: "SUCCESS",
       order_status: "confirmed",
@@ -462,6 +463,7 @@ exports.createCodOrder = async (req, res) => {
     const order = await Order.create({
       internal_order_id: internalId,
       website,
+      user: req.user._id, 
       payment_mode: "COD",
       payment_status: "PENDING",
       order_status: "confirmed",
