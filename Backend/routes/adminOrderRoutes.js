@@ -5,7 +5,6 @@ const { getAllOrders, updateOrderStatus, updatePaymentStatus,editOrder,deleteOrd
 
 router.get("/orders", protect, getAllOrders);
 
-
 router.put("/orders/:id/status", protect, updateOrderStatus);
 router.put("/orders/:id/payment-status", protect, updatePaymentStatus);
 

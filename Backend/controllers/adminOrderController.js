@@ -1,8 +1,4 @@
 const Order = require("../models/Order");
-
-/* =========================
-   GET ALL ORDERS (ADMIN)
-========================= */
 exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find()
@@ -17,9 +13,6 @@ exports.getAllOrders = async (req, res) => {
         email: order.customer_details?.email,
       },
       totalAmount: order.amount,
-
-      // ✅ IMPORTANT
-      
       orderStatus: order.order_status,
       paymentStatus: order.payment_status, 
     }));
@@ -31,9 +24,6 @@ exports.getAllOrders = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE ORDER STATUS
-========================= */
 exports.updateOrderStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -54,7 +44,7 @@ exports.updateOrderStatus = async (req, res) => {
 
     const order = await Order.findByIdAndUpdate(
       orderId,
-      { order_status: status }, // ✅ IMPORTANT FIX
+      { order_status: status }, 
       { new: true }
     );
 
@@ -65,9 +55,6 @@ exports.updateOrderStatus = async (req, res) => {
   }
 };
 
-/* =========================
-   UPDATE PAYMENT STATUS
-========================= */
 exports.updatePaymentStatus = async (req, res) => {
   try {
     const { status } = req.body;
@@ -120,9 +107,6 @@ exports.editOrder = async (req, res) => {
   }
 };
 
-/* =========================
-   DELETE ORDER
-========================= */
 exports.deleteOrder = async (req, res) => {
   try {
     const orderId = req.params.id;

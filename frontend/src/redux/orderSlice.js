@@ -1,10 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import API from "../api/axiosInstance";
 
-/* ================================
-        FETCH ORDERS
-================================ */
-
 export const fetchOrders = createAsyncThunk(
   "orders/fetchOrders",
   async (_, { rejectWithValue }) => {
@@ -17,9 +13,6 @@ export const fetchOrders = createAsyncThunk(
   }
 );
 
-/* ================================
-        UPDATE ORDER STATUS
-================================ */
 
 export const updateOrderStatus = createAsyncThunk(
   "orders/updateOrderStatus",
@@ -33,10 +26,6 @@ export const updateOrderStatus = createAsyncThunk(
   }
 );
 
-/* ================================
-        UPDATE PAYMENT STATUS
-================================ */
-
 export const updatePaymentStatus = createAsyncThunk(
   "orders/updatePaymentStatus",
   async ({ id, status }, { rejectWithValue }) => {
@@ -48,10 +37,6 @@ export const updatePaymentStatus = createAsyncThunk(
     }
   }
 );
-
-/* ================================
-        DELETE ORDER
-================================ */
 
 export const deleteOrder = createAsyncThunk(
   "orders/deleteOrder",
@@ -65,9 +50,6 @@ export const deleteOrder = createAsyncThunk(
   }
 );
 
-/* ================================
-        SLICE
-================================ */
 
 const orderSlice = createSlice({
   name: "orders",
@@ -81,9 +63,6 @@ const orderSlice = createSlice({
 
   extraReducers: (builder) => {
     builder
-
-      /* FETCH */
-
       .addCase(fetchOrders.pending, (state) => {
         state.status = "loading";
       })
@@ -98,8 +77,6 @@ const orderSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* UPDATE ORDER STATUS */
-
       .addCase(updateOrderStatus.fulfilled, (state, action) => {
         const order = state.items.find((o) => o._id === action.payload.id);
         if (order) {
@@ -107,16 +84,12 @@ const orderSlice = createSlice({
         }
       })
 
-      /* UPDATE PAYMENT STATUS */
-
       .addCase(updatePaymentStatus.fulfilled, (state, action) => {
         const order = state.items.find((o) => o._id === action.payload.id);
         if (order) {
           order.paymentStatus = action.payload.status;
         }
       })
-
-      /* DELETE */
 
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.items = state.items.filter((o) => o._id !== action.payload);

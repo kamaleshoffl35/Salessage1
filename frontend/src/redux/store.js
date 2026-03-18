@@ -20,7 +20,7 @@ import ordersReducer from "./orderSlice";
 import salereturnreportReducer from "./salereturnreportSlice";
 import gstreportReducer from "./gstreportSlice";
 import profitlossReducer from "./profitlossSlice";
-
+import cancelledOrdersReducer from "./cancelledOrderSlice";
 export const store = configureStore({
   reducer: {
     products: productReducer,
@@ -43,5 +43,6 @@ export const store = configureStore({
     expenses: expenseReducer,
     profitloss: profitlossReducer,
        orders: ordersReducer,
+        cancelledOrders: cancelledOrdersReducer,
   },
 });

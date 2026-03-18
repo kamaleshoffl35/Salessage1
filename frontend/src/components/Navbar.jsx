@@ -23,7 +23,7 @@ function Navbar() {
           <li className="nav-item"><Link className="nav-link" to="/sales-returns"></Link></li>
           <li className="nav-item"><Link className="nav-link" to="/cus_receipts">Customer Receipt</Link></li>
           <li className="nav-item"><Link className="nav-link" to="/sub_receipts">Supplier Receipt</Link></li>
-           
+          <li className="nav-item"><Link className="nav-link" to="/cancelled-orders">Cancelled Orders</Link></li> 
            <li className="nav-item"><Link className="nav-link" to="/stockledger">StockLedger</Link></li>
            <li className="nav-item"><Link className="nav-link" to="/expenses">Expense</Link></li>
            <li className="nav-item"><Link className="nav-link" to="/reports">Reports</Link></li>

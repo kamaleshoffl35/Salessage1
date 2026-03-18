@@ -8,6 +8,8 @@ import { BiPurchaseTag } from "react-icons/bi";
 import { TbFileInvoice, TbReportSearch } from "react-icons/tb";
 import { GiTakeMyMoney, GiMoneyStack } from "react-icons/gi";
 import { FaArrowLeft } from "react-icons/fa";
+import { ImCancelCircle } from "react-icons/im";
+import { FaCartShopping } from "react-icons/fa6";
 import UserProfile from "../components/UserProfile";
 import DashboardSummary from "./DashboardSummary";
 import API from "../api/axiosInstance";
@@ -55,7 +57,8 @@ useEffect(() => {
     { name: "Warehouses", path: "/warehouses", icon: <MdOutlineWarehouse />, roles: ["super_admin", "admin", "user"] },
     { name: "Purchases", path: "/purchases", icon: <BiPurchaseTag />, roles: ["super_admin", "admin", "user"] },
     { name: "Sales", path: "/sales", icon: <TbFileInvoice />, roles: ["super_admin", "admin", "user"] },
-      { name: "Orders", path: "/orders", icon: <TbFileInvoice />, roles: ["super_admin", "admin"] },
+      { name: "Orders", path: "/orders", icon: <FaCartShopping />, roles: ["super_admin", "admin"] },
+      { name: "Cancelled Orders", path: "/cancelled-orders", icon: <ImCancelCircle />, roles: ["super_admin", "admin"] },
     { name: "Sales Return", path: "/sales-returns", icon: <TbFileInvoice />, roles: ["super_admin", "admin", "user"] },
     { name: "Customer Receipts", path: "/cus_receipts", icon: <MdAttachMoney />, roles: ["super_admin", "admin"] },
     { name: "Supplier Receipts", path: "/sub_receipts", icon: <GiTakeMyMoney />, roles: ["super_admin", "admin"] },
