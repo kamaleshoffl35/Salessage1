@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-
+import ExportButtons from "../components/ExportButtons";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 
@@ -126,6 +126,29 @@ const CancelledOrdersPage = () => {
     filter: true,
     resizable: true,
   };
+  const exportColumns = [
+  { header: "Order ID", key: "orderNumber" },
+
+  {
+    header: "Customer",
+    render: (row) =>
+      `${row.customer?.name || "-"} (${row.customer?.phone || "-"})`,
+  },
+
+  {
+    header: "Total Amount",
+    render: (row) => `₹${row.totalAmount}`,
+  },
+
+  { header: "Order Status", key: "orderStatus" },
+
+  { header: "Payment Status", key: "paymentStatus" },
+
+  {
+    header: "Products",
+    render: (row) => row.products?.length || 0,
+  },
+];
 
   return (
 
@@ -134,6 +157,11 @@ const CancelledOrdersPage = () => {
       <h2 className="mb-4 d-flex align-items-center fs-3">
         <b>Cancelled Orders</b>
       </h2>
+      <ExportButtons
+  data={filteredOrders}
+  columns={exportColumns}
+  title="Cancelled Orders"
+/>
 
      <div className="row mb-3 g-3">
         <div className="col-md-3">

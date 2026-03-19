@@ -5,6 +5,8 @@ import { getMe } from "../services/userService";
 import useTableActions from "../components/useTableActions";
 import { useNavigate } from "react-router-dom";
 import HistoryModal from "../components/HistoryModal";
+import { GrFormView } from "react-icons/gr";
+import ExportButtons from "../components/ExportButtons";
 import {
   fetchOrders,
   updateOrderStatus,
@@ -116,8 +118,8 @@ const OrdersPage = () => {
       key: "view",
       header: "View",
       render: (o) => (
-        <button className="btn btn-primary btn-sm" onClick={() => setSelectedOrder(o)}>
-          View
+        <button className="btn btn-sm" onClick={() => setSelectedOrder(o)}>
+          <span className="text-danger"><GrFormView/></span>
         </button>
       ),
     },
@@ -136,10 +138,38 @@ const OrdersPage = () => {
     }
   };
 
+  const exportColumns = [
+  { header: "Order ID", key: "orderNumber" },
+
+  {
+    header: "Customer",
+    render: (o) => o.user?.name || "-"
+  },
+
+  {
+    header: "Total Amount",
+    render: (o) => `₹${o.totalAmount}`
+  },
+
+  {
+    header: "Order Status",
+    key: "orderStatus"
+  },
+
+  {
+    header: "Payment Status",
+    key: "paymentStatus"
+  }
+];
+
   return (
     <div className="container mt-4">
       <h2 className="mb-4"><b>Orders</b></h2>
-
+<ExportButtons
+  data={filteredOrders}
+  columns={exportColumns}
+  title="Orders Report"
+/>
       <ReusableTable
         data={filteredOrders}
         columns={tableColumns}
@@ -175,14 +205,59 @@ const OrdersPage = () => {
                 <h5 className="modal-title">Order Details</h5>
                 <button className="btn-close" onClick={() => setSelectedOrder(null)} />
               </div>
-              <div className="modal-body">
-                <p><b>Order ID:</b> {selectedOrder.orderNumber}</p>
-                <p><b>Customer:</b> {selectedOrder.user?.name}</p>
-                <p><b>Address:</b> {selectedOrder.user?.address || "-"}</p> {/* preserved */}
-                <p><b>Total:</b> ₹{selectedOrder.totalAmount}</p>
-                <p><b>Order Status:</b> {selectedOrder.orderStatus}</p>
-                <p><b>Payment Status:</b> {selectedOrder.paymentStatus}</p>
-              </div>
+            <div className="modal-body">
+
+<p><b>Order ID:</b> {selectedOrder.orderNumber}</p>
+
+<p><b>Customer:</b> {selectedOrder.user?.name}</p>
+<p><b>Email:</b> {selectedOrder.user?.email}</p>
+<p><b>Phone:</b> {selectedOrder.user?.phone}</p>
+
+<p>
+<b>Address:</b>
+<br/>
+{selectedOrder.user?.addressLine1},
+<br/>
+{selectedOrder.user?.city}, {selectedOrder.user?.state}
+<br/>
+{selectedOrder.user?.postalCode}, {selectedOrder.user?.country}
+</p>
+
+<p><b>Payment Mode:</b> {selectedOrder.paymentMode}</p>
+
+<p><b>Total:</b> ₹{selectedOrder.totalAmount}</p>
+
+<p><b>Order Status:</b> {selectedOrder.orderStatus}</p>
+
+<p><b>Payment Status:</b> {selectedOrder.paymentStatus}</p>
+
+<hr/>
+
+<h6><b>Products</b></h6>
+
+{selectedOrder.products?.map((p, index) => (
+<div key={index} className="border p-2 mb-2">
+
+<p><b>Title:</b> {p.productDetails?.title}</p>
+
+<p><b>Category:</b> {p.productDetails?.category}</p>
+
+<p><b>Size:</b> {p.selectedSize?.dimension}</p>
+
+<p><b>Price:</b> ₹{p.price}</p>
+
+<p><b>Quantity:</b> {p.qty}</p>
+
+<img
+src={p.productDetails?.image}
+alt=""
+width="80"
+/>
+
+</div>
+))}
+
+</div>
             </div>
           </div>
         </div>
