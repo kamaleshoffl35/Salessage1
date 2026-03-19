@@ -89,7 +89,7 @@ const orderSlice = createSlice({
         if (order) {
           order.paymentStatus = action.payload.status;
         }
-      })
+      })     
 
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.items = state.items.filter((o) => o._id !== action.payload);
