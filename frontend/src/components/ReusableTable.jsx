@@ -231,7 +231,7 @@ const ReusableTable = ({
           className="ag-theme-alpine custom-ag-table"
           style={{
             width: "100%",
-            maxWidth: "1200px",
+            // maxWidth: "1200px",
             borderRadius: "10px",
             overflow: "hidden",
             border: "1px solid #ddd",
@@ -240,7 +240,7 @@ const ReusableTable = ({
           <AgGridReact
             rowData={data}
             columnDefs={gridColumns}
-            defaultColDef={{ resizable: true, sortable: true, filter: true }}
+            defaultColDef={{ resizable: true, sortable: true, filter: true ,flex:1}}
             domLayout="autoHeight"
             headerHeight={50}
             rowHeight={40}

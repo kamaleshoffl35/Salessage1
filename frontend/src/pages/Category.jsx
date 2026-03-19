@@ -17,7 +17,7 @@ const Category = () => {
 
   const { items } = useSelector((state) => state.categories);
 
-  const role = "admin"; // normally from auth
+  const role = "admin";
   const actions = useTableActions(role);
 
   const [showForm, setShowForm] = useState(false);
@@ -113,24 +113,20 @@ const Category = () => {
     {
       key: "subcategory1",
       header: "Subcategory 1",
+      flex: 5,
       render: (c) => c.subcategory1?.join(", "),
     },
   ];
 
   return (
     <div className="container mt-4">
-
-      {/* HEADER */}
       <h2 className="mb-4 d-flex align-items-center fs-3">
         <b>Categories</b>
       </h2>
-
-      {/* ADD BUTTON */}
       <div className="mb-3">
         <AddButton text="Add Category" onClick={() => setShowForm(true)} />
       </div>
 
-      {/* TABLE */}
       <ReusableTable
         data={filteredData}
         columns={columns}
@@ -156,7 +152,6 @@ const Category = () => {
         onResetSearch={handleReset}
       />
 
-      {/* MODAL FORM */}
       {showForm && (
         <div className="modal show d-block">
           <div className="modal-dialog modal-lg modal-dialog-centered">
