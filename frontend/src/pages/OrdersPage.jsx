@@ -18,7 +18,8 @@ const OrdersPage = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { items: orders, status } = useSelector((state) => state.orders);
-
+const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
   const [searchOrder, setSearchOrder] = useState("");
   const [searchCustomer, setSearchCustomer] = useState("");
   const [searchPayment, setSearchPayment] = useState("");
@@ -62,13 +63,42 @@ const OrdersPage = () => {
     return <span className={map[status] || "badge bg-secondary"}>{status}</span>;
   };
 
-  const filteredOrders = orders.filter((o) => {
-    const orderMatch = searchOrder.trim() === "" || o.orderNumber?.toLowerCase().includes(searchOrder.toLowerCase());
-    const customerMatch = searchCustomer.trim() === "" || o.user?.name?.toLowerCase().includes(searchCustomer.toLowerCase());
-    const paymentMatch = searchPayment.trim() === "" || o.paymentStatus?.toLowerCase().includes(searchPayment.toLowerCase());
-    const orderStatusMatch = searchOrderStatus.trim() === "" || o.orderStatus?.toLowerCase().includes(searchOrderStatus.toLowerCase());
-    return orderMatch && customerMatch && paymentMatch && orderStatusMatch;
-  });
+ const filteredOrders = orders.filter((o) => {
+  const orderMatch =
+    searchOrder.trim() === "" ||
+    o.orderNumber?.toLowerCase().includes(searchOrder.toLowerCase());
+
+  const customerMatch =
+    searchCustomer.trim() === "" ||
+    o.user?.name?.toLowerCase().includes(searchCustomer.toLowerCase());
+
+  const paymentMatch =
+    searchPayment.trim() === "" ||
+    o.paymentStatus?.toLowerCase().includes(searchPayment.toLowerCase());
+
+  const orderStatusMatch =
+    searchOrderStatus.trim() === "" ||
+    o.orderStatus?.toLowerCase().includes(searchOrderStatus.toLowerCase());
+
+  // DATE FILTER
+  let dateMatch = true;
+
+  if (fromDate || toDate) {
+    const orderDate = new Date(o.createdAt);
+
+    if (fromDate) {
+      dateMatch = dateMatch && orderDate >= new Date(fromDate);
+    }
+
+    if (toDate) {
+      const endDate = new Date(toDate);
+      endDate.setHours(23, 59, 59, 999);
+      dateMatch = dateMatch && orderDate <= endDate;
+    }
+  }
+
+  return orderMatch && customerMatch && paymentMatch && orderStatusMatch && dateMatch;
+});
 
   const tableColumns = [
     { key: "orderNumber", header: "Order ID", render: (o) => o.orderNumber },
@@ -165,6 +195,41 @@ const OrdersPage = () => {
   return (
     <div className="container mt-4">
       <h2 className="mb-4"><b>Orders</b></h2>
+      <div className="row mb-3">
+
+  <div className="col-md-3">
+    <label><b>From Date</b></label>
+    <input
+      type="date"
+      className="form-control"
+      value={fromDate}
+      onChange={(e) => setFromDate(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-3">
+    <label><b>To Date</b></label>
+    <input
+      type="date"
+      className="form-control"
+      value={toDate}
+      onChange={(e) => setToDate(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2 d-flex align-items-end">
+    <button
+      className="btn btn-secondary"
+      onClick={() => {
+        setFromDate("");
+        setToDate("");
+      }}
+    >
+      Reset Date
+    </button>
+  </div>
+
+</div>
 <ExportButtons
   data={filteredOrders}
   columns={exportColumns}

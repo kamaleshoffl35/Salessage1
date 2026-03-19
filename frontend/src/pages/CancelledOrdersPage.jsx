@@ -25,31 +25,50 @@ const CancelledOrdersPage = () => {
   const [searchCustomer, setSearchCustomer] = useState("");
   const [searchPayment, setSearchPayment] = useState("");
   const [searchStatus, setSearchStatus] = useState("");
-
+const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
   useEffect(() => {
     dispatch(fetchCancelledOrders());
   }, [dispatch]);
-  const filteredOrders = orders.filter((o) => {
+ const filteredOrders = orders.filter((o) => {
 
-    const orderMatch =
-      searchOrder.trim() === "" ||
-      o.orderNumber?.toLowerCase().includes(searchOrder.toLowerCase());
+  const orderMatch =
+    searchOrder.trim() === "" ||
+    o.orderNumber?.toLowerCase().includes(searchOrder.toLowerCase());
 
-    const customerMatch =
-  searchCustomer.trim() === "" ||
-  o.customer?.name?.toLowerCase().includes(searchCustomer.toLowerCase()) ||
-  o.customer?.phone?.toLowerCase().includes(searchCustomer.toLowerCase());
-    const paymentMatch =
-      searchPayment.trim() === "" ||
-      o.paymentStatus?.toLowerCase().includes(searchPayment.toLowerCase());
+  const customerMatch =
+    searchCustomer.trim() === "" ||
+    o.customer?.name?.toLowerCase().includes(searchCustomer.toLowerCase()) ||
+    o.customer?.phone?.toLowerCase().includes(searchCustomer.toLowerCase());
 
-    const statusMatch =
-      searchStatus.trim() === "" ||
-      o.orderStatus?.toLowerCase().includes(searchStatus.toLowerCase());
+  const paymentMatch =
+    searchPayment.trim() === "" ||
+    o.paymentStatus?.toLowerCase().includes(searchPayment.toLowerCase());
 
-    return orderMatch && customerMatch && paymentMatch && statusMatch;
+  const statusMatch =
+    searchStatus.trim() === "" ||
+    o.orderStatus?.toLowerCase().includes(searchStatus.toLowerCase());
 
-  });
+  // DATE FILTER
+  let dateMatch = true;
+
+  if (fromDate || toDate) {
+    const orderDate = new Date(o.createdAt);
+
+    if (fromDate) {
+      dateMatch = dateMatch && orderDate >= new Date(fromDate);
+    }
+
+    if (toDate) {
+      const endDate = new Date(toDate);
+      endDate.setHours(23, 59, 59, 999);
+      dateMatch = dateMatch && orderDate <= endDate;
+    }
+  }
+
+  return orderMatch && customerMatch && paymentMatch && statusMatch && dateMatch;
+
+});
   const columnDefs = [
 
     {
@@ -157,6 +176,7 @@ const CancelledOrdersPage = () => {
       <h2 className="mb-4 d-flex align-items-center fs-3">
         <b>Cancelled Orders</b>
       </h2>
+    
       <ExportButtons
   data={filteredOrders}
   columns={exportColumns}
@@ -203,7 +223,30 @@ const CancelledOrdersPage = () => {
             onChange={(e) => setSearchStatus(e.target.value)}
           />
         </div>
+  <div className="row mb-3 g-3">
 
+  <div className="col-md-3">
+    <label><b>From Date</b></label>
+    <input
+      type="date"
+      className="form-control"
+      value={fromDate}
+      onChange={(e) => setFromDate(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-3">
+    <label><b>To Date</b></label>
+    <input
+      type="date"
+      className="form-control"
+      value={toDate}
+      onChange={(e) => setToDate(e.target.value)}
+    />
+  </div>
+
+
+</div>
         <div className="col-md-1">
           <button
             className="btn btn-danger w-100"
@@ -212,6 +255,8 @@ const CancelledOrdersPage = () => {
               setSearchCustomer("");
               setSearchPayment("");
               setSearchStatus("");
+                setFromDate("");
+        setToDate("");
             }}
           >
             Reset
