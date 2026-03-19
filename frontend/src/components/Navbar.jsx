@@ -12,6 +12,9 @@ function Navbar() {
   <Link className="nav-link" to="/orders">Orders</Link>
 </li>
           <li className="nav-item"><Link className="nav-link" to="/products">Products</Link></li>
+          <li className="nav-item">
+  <Link className="nav-link" to="/categories">Categories</Link>
+</li>
           {/* <li className="nav-item"><Link className="nav-link" to="/categories">Categories</Link></li> */}
           {/* <li className="nav-item"><Link className="nav-link" to="/units">Units</Link></li> */}
           <li className="nav-item"><Link className="nav-link" to="/taxes">Taxes</Link></li>

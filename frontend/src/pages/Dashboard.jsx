@@ -9,6 +9,7 @@ import { TbFileInvoice, TbReportSearch } from "react-icons/tb";
 import { GiTakeMyMoney, GiMoneyStack } from "react-icons/gi";
 import { FaArrowLeft } from "react-icons/fa";
 import { ImCancelCircle } from "react-icons/im";
+import { MdOutlineCategory } from "react-icons/md";
 import { FaCartShopping } from "react-icons/fa6";
 import UserProfile from "../components/UserProfile";
 import DashboardSummary from "./DashboardSummary";
@@ -50,6 +51,7 @@ useEffect(() => {
   const modules = [
     { name: "Dashboard", path: "/", icon: <AiOutlineDashboard />, roles: ["super_admin", "admin", "user"] },
     { name: "Products", path: "/products", icon: <MdProductionQuantityLimits />, roles: ["super_admin", "admin", "user"] },
+    { name: "Categories", path: "/categories", icon: <MdOutlineCategory />, roles: ["super_admin", "admin", "user"] },
     // { name: "Categories", path: "/categories", icon: <MdOutlineCategory />, roles: ["super_admin", "admin", "user"] },
     { name: "Tax Rates", path: "/taxes", icon: <MdOutlineAttachMoney />, roles: ["super_admin", "admin", "user"] },
     { name: "Customers", path: "/customers", icon: <IoIosContact />, roles: ["super_admin", "admin", "user"] },

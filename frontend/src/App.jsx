@@ -27,6 +27,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import OrdersPage from "./pages/OrdersPage";
 import CancelledOrdersPage from "./pages/CancelledOrdersPage";
+import Category from "./pages/Category";
 import API from "./api/axiosInstance";
 import { Outlet } from "react-router-dom";
 window.global = window;
@@ -66,6 +67,7 @@ function App() {
         <Route element={<ProtectedRoute roles={["super_admin", "admin", "user"]} />}>
           <Route path="/" element={<Dashboard />}>
             <Route path="products" element={<Product />} />
+            <Route path="categories" element={<Category />} />
             {/* <Route path="categories" element={<Category />} /> */}
             <Route path="taxes" element={<Tax />} />
             <Route path="customers" element={<Customer />} />

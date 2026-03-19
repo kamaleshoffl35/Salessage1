@@ -21,9 +21,11 @@ import salereturnreportReducer from "./salereturnreportSlice";
 import gstreportReducer from "./gstreportSlice";
 import profitlossReducer from "./profitlossSlice";
 import cancelledOrdersReducer from "./cancelledOrderSlice";
+import categoryReducer from "./categorySlice"
 export const store = configureStore({
   reducer: {
     products: productReducer,
+    categories: categoryReducer, 
     // categories: categoryReducer,
     // units:unitReducer,
     taxes: taxReducer,
