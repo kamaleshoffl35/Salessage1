@@ -6,7 +6,9 @@ exports.getAllOrders = async (req, res) => {
     const formatted = orders.map((order) => ({
       _id: order._id,
       orderNumber: order.internal_order_id,
+
       createdAt: order.createdAt,
+      orderDate: new Date(order.createdAt).toLocaleString("en-IN"), // formatted date
 
       user: {
         name: order.customer_details?.fullName,

@@ -205,58 +205,66 @@ const OrdersPage = () => {
                 <h5 className="modal-title">Order Details</h5>
                 <button className="btn-close" onClick={() => setSelectedOrder(null)} />
               </div>
-            <div className="modal-body">
+      <div className="modal-body">
+  <div className="row">
 
-<p><b>Order ID:</b> {selectedOrder.orderNumber}</p>
+    {/* LEFT SIDE - ORDER DETAILS */}
+    <div className="col-md-6 border-end">
 
-<p><b>Customer:</b> {selectedOrder.user?.name}</p>
-<p><b>Email:</b> {selectedOrder.user?.email}</p>
-<p><b>Phone:</b> {selectedOrder.user?.phone}</p>
+      <p><b>Order ID:</b> {selectedOrder.orderNumber}</p>
+<p><b>Order Date:</b> {selectedOrder.orderDate}</p>
+      <p><b>Customer:</b> {selectedOrder.user?.name}</p>
+      <p><b>Email:</b> {selectedOrder.user?.email}</p>
+      <p><b>Phone:</b> {selectedOrder.user?.phone}</p>
 
-<p>
-<b>Address:</b>
-<br/>
-{selectedOrder.user?.addressLine1},
-<br/>
-{selectedOrder.user?.city}, {selectedOrder.user?.state}
-<br/>
-{selectedOrder.user?.postalCode}, {selectedOrder.user?.country}
-</p>
+      <p>
+        <b>Address:</b><br/>
+        {selectedOrder.user?.addressLine1}<br/>
+        {selectedOrder.user?.city}, {selectedOrder.user?.state}<br/>
+        {selectedOrder.user?.postalCode}, {selectedOrder.user?.country}
+      </p>
 
-<p><b>Payment Mode:</b> {selectedOrder.paymentMode}</p>
+      <p><b>Payment Mode:</b> {selectedOrder.paymentMode}</p>
 
-<p><b>Total:</b> ₹{selectedOrder.totalAmount}</p>
+      <p><b>Total:</b> ₹{selectedOrder.totalAmount}</p>
 
-<p><b>Order Status:</b> {selectedOrder.orderStatus}</p>
+      <p><b>Order Status:</b> {selectedOrder.orderStatus}</p>
 
-<p><b>Payment Status:</b> {selectedOrder.paymentStatus}</p>
+      <p><b>Payment Status:</b> {selectedOrder.paymentStatus}</p>
 
-<hr/>
+    </div>
 
-<h6><b>Products</b></h6>
 
-{selectedOrder.products?.map((p, index) => (
-<div key={index} className="border p-2 mb-2">
+    {/* RIGHT SIDE - PRODUCT DETAILS */}
+    <div className="col-md-6">
 
-<p><b>Title:</b> {p.productDetails?.title}</p>
+      <h6 className="mb-3"><b>Products</b></h6>
 
-<p><b>Category:</b> {p.productDetails?.category}</p>
+      {selectedOrder.products?.map((p, index) => (
+        <div key={index} className="border rounded p-2 mb-3 d-flex">
 
-<p><b>Size:</b> {p.selectedSize?.dimension}</p>
+          <img
+            src={p.productDetails?.image}
+            alt=""
+            width="70"
+            height="70"
+            style={{ objectFit: "cover", marginRight: "10px" }}
+          />
 
-<p><b>Price:</b> ₹{p.price}</p>
+          <div>
+            <p className="mb-1"><b>{p.productDetails?.title}</b></p>
+            <p className="mb-1">Category: {p.productDetails?.category}</p>
+            <p className="mb-1">Size: {p.selectedSize?.dimension}</p>
+            <p className="mb-1">Qty: {p.qty}</p>
+            <p className="mb-0">Price: ₹{p.price}</p>
+          </div>
 
-<p><b>Quantity:</b> {p.qty}</p>
+        </div>
+      ))}
 
-<img
-src={p.productDetails?.image}
-alt=""
-width="80"
-/>
+    </div>
 
-</div>
-))}
-
+  </div>
 </div>
             </div>
           </div>
