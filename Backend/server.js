@@ -21,6 +21,7 @@ const expenseRoutes = require("./routes/expenseRoutes");
 const reportRoutes = require("./routes/reportRoutes");
 const userRoutes = require("./routes/userRoutes");
 const cartRoutes = require("./routes/cartRoutes");
+const reviewRoutes = require("./routes/reviewRoutes");
 const app = express();
 const cookieParser = require("cookie-parser");
 const importGoogleTaxonomyIfEmpty = require("./utils/importGoogleTaxonomy");
@@ -105,6 +106,7 @@ app.use("/api/google-categories", require("./routes/googleCategory"));
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/orders", require("./routes/getOrdersRoutes"));
 app.use("/api/admin", require("./routes/adminOrderRoutes"));
+app.use("/api/reviews", reviewRoutes);
 app.get("/test-public", (req, res) => {
   res.json({ message: "SERVER UPDATED" });
 });
