@@ -79,8 +79,6 @@ const [toDate, setToDate] = useState("");
   const orderStatusMatch =
     searchOrderStatus.trim() === "" ||
     o.orderStatus?.toLowerCase().includes(searchOrderStatus.toLowerCase());
-
-  // DATE FILTER
   let dateMatch = true;
 
   if (fromDate || toDate) {
@@ -273,7 +271,6 @@ const [toDate, setToDate] = useState("");
       <div className="modal-body">
   <div className="row">
 
-    {/* LEFT SIDE - ORDER DETAILS */}
     <div className="col-md-6 border-end">
 
       <p><b>Order ID:</b> {selectedOrder.orderNumber}</p>
@@ -298,9 +295,6 @@ const [toDate, setToDate] = useState("");
       <p><b>Payment Status:</b> {selectedOrder.paymentStatus}</p>
 
     </div>
-
-
-    {/* RIGHT SIDE - PRODUCT DETAILS */}
     <div className="col-md-6">
 
       <h6 className="mb-3"><b>Products</b></h6>
