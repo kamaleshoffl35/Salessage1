@@ -22,6 +22,7 @@ import gstreportReducer from "./gstreportSlice";
 import profitlossReducer from "./profitlossSlice";
 import cancelledOrdersReducer from "./cancelledOrderSlice";
 import categoryReducer from "./categorySlice"
+import confirmedorderReducer from "./confirmedOrderSlice"
 export const store = configureStore({
   reducer: {
     products: productReducer,
@@ -46,5 +47,6 @@ export const store = configureStore({
     profitloss: profitlossReducer,
        orders: ordersReducer,
         cancelledOrders: cancelledOrdersReducer,
+        confirmedOrders:confirmedorderReducer,
   },
 });

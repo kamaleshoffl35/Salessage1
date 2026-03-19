@@ -18,6 +18,7 @@ import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import HistoryModal from "../components/HistoryModal";
 import useTableActions from "../components/useTableActions";
 import AddButton from "../components/AddButton";
+import { fetchConfirmedOrders } from "../redux/confirmedOrderSlice";
 ModuleRegistry.registerModules([AllCommunityModule]);
 const SalePOS = () => {
   const dispatch = useDispatch();
@@ -27,6 +28,9 @@ const SalePOS = () => {
   const { items: taxes } = useSelector((state) => state.taxes);
   const { items: stockss } = useSelector((state) => state.stockss);
   const { items: warehouses } = useSelector((state) => state.warehouses);
+  const { items: confirmedOrders } = useSelector(
+  (state) => state.confirmedOrders
+);
   const [form, setForm] = useState({
     invoice_no: "",
     invoice_date_time: new Date().toISOString().slice(0, 10),
@@ -63,11 +67,13 @@ const SalePOS = () => {
     dispatch(fetchsales());
     dispatch(fetchstocks());
     dispatch(fetchwarehouses());
+    dispatch(fetchConfirmedOrders());
     setForm((prev) => ({
       ...prev,
       invoice_no: "INV" + Math.floor(1000 + Math.random() * 9000),
     }));
   }, [dispatch]);
+  const combinedSales = [...sales, ...confirmedOrders];
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "customer_id") {
@@ -240,7 +246,7 @@ const SalePOS = () => {
       alert(`Error saving sale: ${err.response?.data?.message || err.message}`);
     }
   };
-  const filteredsales = sales.filter((s) => {
+ const filteredsales = combinedSales.filter((s) => {
     const Name =typeof s.customer_id === "object" ? s.customer_id?.name?.toLowerCase() || "" : String(s.customer_id || "").toLowerCase();
     const invno = String(s.invoice_no || "").toLowerCase();
     const date = String(s.invoice_date_time || "").toLowerCase();
@@ -298,38 +304,33 @@ const SalePOS = () => {
     });
   };
   const getCustomerName = (sale) => {
-    if (typeof sale.customer_id === "object" && sale.customer_id !== null) {
-      return sale.customer_id?.name || "Unknown Customer";
-    }
-    return (
-      customers.find((c) => c._id === sale.customer_id)?.name ||
-      "Unknown Customer"
-    );
-  };
+
+  if (sale.customer_name) return sale.customer_name;
+
+  if (typeof sale.customer_id === "object" && sale.customer_id !== null) {
+    return sale.customer_id?.name || "Unknown Customer";
+  }
+
+  return (
+    customers.find((c) => c._id === sale.customer_id)?.name ||
+    "Unknown Customer"
+  );
+};
   const getCustomerPhone = (sale) => {
     return sale.customer_phone || sale.customer_id?.phone || "N/A";
   };
-  const getProductNames = (sale) => {
-    if (!Array.isArray(sale.items) || sale.items.length === 0) {
-      return "No Items";
-    }
-    return sale.items
-      .map((item, idx) => {
-        let productName = "Unknown Product";
-        if (item?.product_id) {
-          if (typeof item.product_id === "object" && item.product_id !== null) {
-            productName = item.product_id?.name || "Unknown Product";
-          } else {
-            const matchedProduct = products.find(
-              (prod) => prod._id === item.product_id,
-            );
-            productName = matchedProduct?.name || "Unknown Product";
-          }
-        }
-        return `${productName} (${item?.qty || 0})`;
-      })
-      .join(", ");
-  };
+ const getProductNames = (sale) => {
+
+  if (!Array.isArray(sale.items) || sale.items.length === 0) {
+    return "No Items";
+  }
+
+  return sale.items
+    .map((item) => {
+      return `${item.product_name || item.productDetails?.title || "Product"} (${item.qty})`;
+    })
+    .join(", ");
+};
   const getAvailableStock = (productId, warehouseId) => {
     if (!productId || !warehouseId) 
       return 0;
