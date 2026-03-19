@@ -91,6 +91,8 @@ const orderSlice = createSlice({
         }
       })     
 
+
+      
       .addCase(deleteOrder.fulfilled, (state, action) => {
         state.items = state.items.filter((o) => o._id !== action.payload);
       });
