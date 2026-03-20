@@ -104,7 +104,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
-app.use("/api/google-categories", require("./routes/googleCategory"));
+
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/orders", require("./routes/getOrdersRoutes"));
 app.use("/api/admin", require("./routes/adminOrderRoutes"));
