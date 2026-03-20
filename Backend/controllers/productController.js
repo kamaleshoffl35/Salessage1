@@ -40,6 +40,8 @@ exports.addProduct = async (req, res) => {
   dimension,
    dimensions,
   unit_id,
+    base_unit,
+  variants,
   warehouse,
   hsn_code,
   tax_rate_id,
@@ -63,6 +65,16 @@ if (warehouse) {
   }
 }
     const isPainting = category_name === "Paintings";
+
+    let parsedVariants = [];
+
+if (variants) {
+  try {
+    parsedVariants = JSON.parse(variants);
+  } catch {
+    parsedVariants = [];
+  }
+}
 let parsedDimensions = [];
 
 if (dimensions) {
@@ -114,6 +126,8 @@ const product = await Product.create({
   warehouse_name: warehouseName,
 
   unit_id,
+  base_unit,
+variants: parsedVariants,
   hsn_code,
   tax_rate_id,
 
@@ -173,6 +187,16 @@ exports.updateProduct = async (req, res) => {
         : allowedFields.dimensions;
   } catch {
     allowedFields.dimensions = [];
+  }
+}
+if (allowedFields.variants) {
+  try {
+    allowedFields.variants =
+      typeof allowedFields.variants === "string"
+        ? JSON.parse(allowedFields.variants)
+        : allowedFields.variants;
+  } catch {
+    allowedFields.variants = [];
   }
 }
 if (allowedFields.subcategory === "") {
@@ -273,6 +297,8 @@ subcategory_name: p.subcategory_name || null,
   warehouse: warehouseDoc._id,
   warehouse_name: warehouseDoc.store_name,
   unit_id: p.unit_id,
+  base_unit: p.base_unit || null,
+variants: p.variants || [],
   hsn_code: p.hsn_code,
   tax_rate_id: p.tax_rate_id,
   mrp: p.mrp,

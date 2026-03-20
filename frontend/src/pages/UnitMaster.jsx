@@ -124,18 +124,31 @@ const UnitMaster = () => {
     },
   ];
 
-  const handleTableAction = (actionType, unit) => {
-    if (actionType === "edit") handleEdit(unit);
-    if (actionType === "delete") handleDelete(unit._id);
-  };
+ const handleTableAction = (actionType, unit) => {
+  if (actionType === "edit") handleEdit(unit);
 
+  if (actionType === "delete") handleDelete(unit._id);
+
+  if (actionType === "history") {
+    setHistoryInfo({
+      createdBy: unit.created_by?.name || "Admin",
+      createdAt: unit.createdAt,
+      updatedBy: unit.updated_by?.name || "-",
+      updatedAt: unit.updatedAt,
+    });
+
+    setShowHistoryModal(true);
+  }
+};
   return (
     <div className="container mt-4">
       <h2 className="mb-4 fs-3">
         <b>Unit Master</b>
       </h2>
 
-      <AddButton text="Add Unit" onClick={() => setShowUnitForm(true)} />
+ <div className="mb-3">
+  <AddButton text="Add Unit" onClick={() => setShowUnitForm(true)} />
+</div>
 
       {showUnitForm && (
         <div

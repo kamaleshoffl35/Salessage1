@@ -29,6 +29,9 @@ const Product = () => {
   const { items: products, status } = useSelector((state) => state.products);
   const { items: warehouses } = useSelector((state) => state.warehouses);
   const { items: categories } = useSelector((state) => state.categories);
+  const { items: units } = useSelector((state) => state.units);
+
+
   const [role, setRole] = useState("user");
   const [showProductForm, setShowProductForm] = useState(false);
   const [importedProducts, setImportedProducts] = useState([]);
@@ -48,7 +51,9 @@ const Product = () => {
     subcategory: "",
     subcategory1: [],
     brand_name: "",
-    unit_id: "Kg",
+    unit_id: "",
+    base_unit:"",
+variants:[{value:"",unit:""}],
     warehouse: "",
     hsn_code: "",
     tax_rate_id: "18%",
@@ -94,6 +99,7 @@ const Product = () => {
     dispatch(fetchProducts());
     dispatch(fetchwarehouses());
     dispatch(fetchCategories());
+    dispatch(fetchUnits());
   }, [dispatch]);
   useEffect(() => {
     const checkProduct = async () => {
@@ -264,6 +270,16 @@ const Product = () => {
           subcategory: form.subcategory,
           subcategory_name: form.subcategory1,
           brand_name: form.brand_name,
+          base_unit: form.base_unit,
+
+  variants: JSON.stringify(
+    form.variants
+      .filter(v => v.value && v.unit)
+      .map(v => ({
+        value: Number(v.value),
+        unit: v.unit
+      }))
+  ),
           variant: form.variant || null,
           dimension: form.dimension,
           dimensions: JSON.stringify(
@@ -324,6 +340,16 @@ const Product = () => {
           subcategory: form.subcategory,
           subcategory_name: form.subcategory1,
           brand_name: form.brand_name,
+          base_unit: form.base_unit,
+
+variants: JSON.stringify(
+  form.variants
+    .filter(v => v.value && v.unit)
+    .map(v => ({
+      value: Number(v.value),
+      unit: v.unit
+    }))
+),
           variant: form.variant || null,
           dimension: form.dimension,
           dimensions: JSON.stringify(
@@ -380,7 +406,11 @@ const Product = () => {
         subcategory: "",
         subcategory1: [],
         brand_name: "",
-        unit_id: "Kg",
+     unit_id: "",
+  base_unit: "",
+
+  variants: [{ value: "", unit: "" }],
+
         warehouse: "",
         hsn_code: "",
         tax_rate_id: "18%",
@@ -452,7 +482,11 @@ const Product = () => {
       subcategory: "",
       subcategory1: [],
       brand_name: "",
-      unit_id: "Kg",
+      unit_id: "",
+  base_unit: "",
+
+  variants: [{ value: "", unit: "" }],
+
       warehouse: "",
       hsn_code: "",
       tax_rate_id: "18%",
@@ -537,7 +571,17 @@ const Product = () => {
           ? p.warehouse?.store_name
           : p.warehouse || "",
     },
-
+{
+key:"variants",
+header:"Variants",
+render:(p)=>(
+p.variants?.map((v,i)=>(
+<div key={i}>
+{v.value} {v.unit}
+</div>
+))
+)
+},
     { key: "tax_rate_id", header: "Tax", width: 80 },
     {
       key: "unit_id",
@@ -625,7 +669,11 @@ const Product = () => {
 
       brand_name: product.brand_name || "",
       unit_id: product.unit_id || "Kg",
+base_unit: product.base_unit || "",
 
+variants: product.variants?.length
+  ? product.variants
+  : [{ value: "", unit: "" }],
       warehouse:
         typeof product.warehouse === "object"
           ? product.warehouse?._id
@@ -1067,7 +1115,96 @@ const Product = () => {
                       placeholder="Enter Brand Name"
                     />
                   </div>
+<div className="col-md-6">
+<label className="form-label">Base Unit</label>
 
+<select
+className="form-select"
+name="base_unit"
+value={form.base_unit}
+onChange={handleChange}
+>
+
+<option value="">Select Unit</option>
+
+{units.map((u)=>(
+<option key={u._id} value={u.unit_symbol}>
+{u.unit_name} ({u.unit_symbol})
+</option>
+))}
+
+</select>
+</div>
+<label className="form-label">Variants</label>
+
+{form.variants.map((v,index)=>(
+<div className="row mb-2" key={index}>
+
+<div className="col-md-4">
+<input
+type="number"
+className="form-control"
+placeholder="Value"
+value={v.value}
+onChange={(e)=>{
+const updated=[...form.variants];
+updated[index].value=e.target.value;
+setForm({...form,variants:updated});
+}}
+/>
+</div>
+
+<div className="col-md-4">
+<select
+className="form-select"
+value={v.unit}
+onChange={(e)=>{
+const updated=[...form.variants];
+updated[index].unit=e.target.value;
+setForm({...form,variants:updated});
+}}
+>
+
+<option value="">Unit</option>
+
+{units.map((u)=>(
+<option key={u._id} value={u.unit_symbol}>
+{u.unit_symbol}
+</option>
+))}
+
+</select>
+
+</div>
+
+<div className="col-md-2">
+<button
+className="btn btn-danger"
+type="button"
+onClick={()=>{
+const updated=form.variants.filter((_,i)=>i!==index);
+setForm({...form,variants:updated});
+}}
+>
+X
+</button>
+</div>
+
+</div>
+))}
+
+<button
+type="button"
+className="btn btn-primary btn-sm"
+onClick={()=>{
+setForm({
+...form,
+variants:[...form.variants,{value:"",unit:""}]
+})
+}}
+>
++ Add Variant
+</button>
                   {/* Show Dimension ONLY for Paintings */}
 
                   <div className="col-md-6">
