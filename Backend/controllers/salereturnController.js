@@ -99,3 +99,71 @@ exports.getSalesReturnById = async (req, res) => {
     res.status(500).json({ message: "Server Error", error: err.message });
   }
 };
+
+exports.updateSalesReturn = async (req, res) => {
+  try {
+    const { items, reason } = req.body;
+
+    const salesReturn = await SalesReturn.findById(req.params.id);
+
+    if (!salesReturn) {
+      return res.status(404).json({ message: "Sales Return not found" });
+    }
+
+    if (items) {
+      const updatedItems = [];
+
+      for (const item of items) {
+        const product = await Product.findById(item.product_id);
+
+        if (!product) {
+          return res.status(404).json({ message: "Product not found" });
+        }
+
+        updatedItems.push({
+          product_id: item.product_id,
+          product_name: product.name,
+          quantity: item.quantity,
+          return_amount: item.return_amount,
+        });
+      }
+
+      salesReturn.items = updatedItems;
+    }
+
+    if (reason) {
+      salesReturn.reason = reason;
+    }
+
+    await salesReturn.save();
+
+    res.status(200).json({
+      message: "Sales Return updated successfully",
+      salesReturn,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};
+
+exports.deleteSalesReturn = async (req, res) => {
+  try {
+    const salesReturn = await SalesReturn.findById(req.params.id);
+
+    if (!salesReturn) {
+      return res.status(404).json({ message: "Sales Return not found" });
+    }
+
+    await SalesReturn.findByIdAndDelete(req.params.id);
+
+    res.status(200).json({
+      message: "Sales Return deleted successfully",
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: err.message });
+  }
+};

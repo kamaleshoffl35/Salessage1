@@ -8,7 +8,7 @@ import ReusableTable from "../components/ReusableTable";
 import API from "../api/axiosInstance";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-
+import { MdEdit, MdDeleteForever } from "react-icons/md";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 
@@ -210,6 +210,21 @@ const combinedReturns = [
       })
       .join(", ");
   };
+
+  const handleDeleteReturn = async (id) => {
+  if (!window.confirm("Are you sure you want to delete this return?")) return;
+
+  try {
+    await API.delete(`/sales-returns/${id}`);
+
+    setSalesReturns((prev) => prev.filter((r) => r._id !== id));
+
+    alert("Sales return deleted successfully");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to delete sales return");
+  }
+};
   const salesTableColumns = [
     {
       key: "invoice_no",
@@ -264,6 +279,29 @@ const combinedReturns = [
     },
   ];
   const returnColumns = [
+    {
+  headerName: "Actions",
+  flex: 1,
+  cellRenderer: (p) => (
+    <div className="d-flex gap-2">
+
+      <button
+        className="btn btn-sm"
+        onClick={() => console.log("Edit", p.data)}
+      >
+        <MdEdit />
+      </button>
+
+      <button
+        className="btn btn-sm"
+        onClick={() => handleDeleteReturn(p.data._id)}
+      >
+        <MdDeleteForever className="text-danger" />
+      </button>
+
+    </div>
+  ),
+},
   {
     headerName: "Invoice No",
     field: "invoice_number",
@@ -303,6 +341,11 @@ const combinedReturns = [
 },
 ];
 
+const defaultColDef = {
+  sortable: true,
+  filter: true,
+  resizable: true,
+};
   return (
     <div className="container mt-4">
       <h2 className="mb-4 d-flex align-items-center fs-3">
@@ -478,23 +521,34 @@ const combinedReturns = [
               </div>
             </div>
           </form>
-          <div className="mt-5">
-  <h4>Sales Return History</h4>
-
-  <div
-    className="ag-theme-alpine"
-    style={{ height: 400, width: "100%" }}
-  >
-    <AgGridReact
-      rowData={combinedReturns}
-      columnDefs={returnColumns}
-      pagination={true}
-      paginationPageSize={10}
-    />
-  </div>
-</div>
+  
         </>
       )}
+              <div className="mt-5">
+    <h2 className="mb-4 d-flex align-items-center fs-3">
+        <b>Sales Return History</b>
+      </h2>
+
+ <div
+  className="ag-theme-alpine"
+  style={{
+    height: 500,
+    width: "100%",
+    borderRadius: "10px",
+    overflow: "hidden",
+  }}
+>
+    <AgGridReact
+  rowData={combinedReturns}
+  columnDefs={returnColumns}
+  defaultColDef={defaultColDef}
+  pagination={true}
+  paginationPageSize={10}
+  animateRows={true}
+  rowHeight={50}
+/>
+  </div>
+</div>
     </div>
   );
 };
