@@ -11,9 +11,7 @@ import { fetchwarehouses } from "../redux/warehouseSlice";
 import { fetchCategories } from "../redux/categorySlice";
 import { variants } from "../data/variants";
 import HistoryModal from "../components/HistoryModal";
-import ReusableTable, {
-  createCustomRoleActions,
-} from "../components/ReusableTable";
+import ReusableTable from "../components/ReusableTable";
 import { useNavigate } from "react-router-dom";
 import useTableActions from "../components/useTableActions";
 import AddButton from "../components/AddButton";
@@ -211,7 +209,7 @@ const Product = () => {
       return;
     }
 
-    if (form.category_id === "paintings") {
+    if (form.category_id?.toLowerCase() === "paintings") {
       const validDimensions = form.dimensions.filter((d) => d.size && d.mrp);
 
       if (validDimensions.length === 0) {
@@ -227,7 +225,7 @@ const Product = () => {
       }
     }
 
-    if (form.category_id === "paintings" && form.dimensions.length > 0) {
+    if (form.category_id?.toLowerCase() === "paintings" && form.dimensions.length > 0) {
       const firstDimension = form.dimensions.find(
         (d) => d.size && d.mrp && d.purchase_price && d.sale_price,
       );
@@ -241,7 +239,7 @@ const Product = () => {
     try {
       if (editingProduct) {
         const formData = new FormData();
-        if (form.category_id === "paintings" && form.dimensions.length > 0) {
+        if (form.category_id?.toLowerCase() === "paintings" && form.dimensions.length > 0) {
           setForm((prev) => ({
             ...prev,
             mrp: prev.dimensions[0].mrp,
@@ -618,9 +616,7 @@ const Product = () => {
       tags: product.tags || "",
       image: product.image || null,
 
-      category_id:
-        staticCategories.find((c) => c.name === product.category_name)?.id ||
-        "",
+     category_id: product.category_name || "",
 
       subcategory: product.subcategory || "",
       subcategory1: Array.isArray(product.subcategory_name)
@@ -1090,7 +1086,7 @@ const Product = () => {
                       ))}
                     </select>
                   </div>
-                  {form.category_id === "paintings" ? (
+                  {form.category_id?.toLowerCase() === "paintings" ? (
                     <div className="col-md-12">
                       <div className="col-md-12">
                         <label className="form-label">

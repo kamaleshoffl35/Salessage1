@@ -174,7 +174,7 @@ const Category = () => {
 
                     <div className="col-md-6 mb-3">
                       <label className="form-label">
-                        Category Name *
+                        Category Name <span className="text-danger">*</span>
                       </label>
 
                       <input
@@ -215,22 +215,6 @@ const Category = () => {
                           })
                         }
                       />
-                    </div>
-
-                    <div className="col-md-6 mb-3 d-flex align-items-end">
-                      <div className="form-check">
-                        <input
-                          type="checkbox"
-                          className="form-check-input"
-                          name="status"
-                          checked={form.status}
-                          onChange={handleChange}
-                        />
-
-                        <label className="form-check-label">
-                          Active Status
-                        </label>
-                      </div>
                     </div>
 
                   </div>

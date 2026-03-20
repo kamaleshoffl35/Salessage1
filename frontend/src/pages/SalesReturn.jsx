@@ -11,7 +11,7 @@ import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
 import { MdEdit, MdDeleteForever } from "react-icons/md";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
-
+import { RiResetLeftLine } from "react-icons/ri";
 ModuleRegistry.registerModules([AllCommunityModule]);
 const SalesReturn = () => {
   const dispatch = useDispatch();
@@ -26,6 +26,11 @@ const SalesReturn = () => {
   const [stockSummary, setStockSummary] = useState([]);
   const [cancelledOrders, setCancelledOrders] = useState([]);
 const [salesReturns, setSalesReturns] = useState([]);
+const [searchOrderId, setSearchOrderId] = useState("");
+const [searchCustomer, setSearchCustomer] = useState("");
+const [searchReason, setSearchReason] = useState("");
+const [fromDate, setFromDate] = useState("");
+const [toDate, setToDate] = useState("");
   const [form, setForm] = useState({
     invoice_no: "",
     invoice_date_time: new Date().toISOString().slice(0, 10),
@@ -224,7 +229,40 @@ const combinedReturns = [
     console.error(err);
     alert("Failed to delete sales return");
   }
+
 };
+const filteredReturns = combinedReturns.filter((r) => {
+
+  const orderMatch =
+    searchOrderId === "" ||
+    r.invoice_number?.toLowerCase().includes(searchOrderId.toLowerCase());
+
+  const customerMatch =
+    searchCustomer === "" ||
+    r.customer_name?.toLowerCase().includes(searchCustomer.toLowerCase());
+
+  const reasonMatch =
+    searchReason === "" ||
+    r.reason?.toLowerCase().includes(searchReason.toLowerCase());
+
+  let dateMatch = true;
+
+  if (fromDate || toDate) {
+    const orderDate = new Date(r.invoice_date_time);
+
+    if (fromDate) {
+      dateMatch = dateMatch && orderDate >= new Date(fromDate);
+    }
+
+    if (toDate) {
+      const endDate = new Date(toDate);
+      endDate.setHours(23, 59, 59, 999);
+      dateMatch = dateMatch && orderDate <= endDate;
+    }
+  }
+
+  return orderMatch && customerMatch && reasonMatch && dateMatch;
+});
   const salesTableColumns = [
     {
       key: "invoice_no",
@@ -285,12 +323,12 @@ const combinedReturns = [
   cellRenderer: (p) => (
     <div className="d-flex gap-2">
 
-      <button
+      {/* <button
         className="btn btn-sm"
         onClick={() => console.log("Edit", p.data)}
       >
         <MdEdit />
-      </button>
+      </button> */}
 
       <button
         className="btn btn-sm"
@@ -538,8 +576,72 @@ const defaultColDef = {
     overflow: "hidden",
   }}
 >
+  <div className="row mb-3">
+  <div className="col-md-2">
+    <input
+      type="text"
+      placeholder="Search Invoice"
+      className="form-control"
+      value={searchOrderId}
+      onChange={(e) => setSearchOrderId(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <input
+      type="text"
+      placeholder="Search Customer"
+      className="form-control"
+      value={searchCustomer}
+      onChange={(e) => setSearchCustomer(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <input
+      type="text"
+      placeholder="Search Reason"
+      className="form-control"
+      value={searchReason}
+      onChange={(e) => setSearchReason(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <input
+      type="date"
+      className="form-control"
+      value={fromDate}
+      onChange={(e) => setFromDate(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <input
+      type="date"
+      className="form-control"
+      value={toDate}
+      onChange={(e) => setToDate(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <button
+      className="btn btn-danger "
+      onClick={() => {
+        setSearchOrderId("");
+        setSearchCustomer("");
+        setSearchReason("");
+        setFromDate("");
+        setToDate("");
+      }}
+    >
+      <RiResetLeftLine/>
+    </button>
+  </div>
+</div>
     <AgGridReact
-  rowData={combinedReturns}
+  rowData={filteredReturns}
   columnDefs={returnColumns}
   defaultColDef={defaultColDef}
   pagination={true}

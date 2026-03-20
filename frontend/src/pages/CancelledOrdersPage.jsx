@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import ExportButtons from "../components/ExportButtons";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import { RiResetLeftLine } from "react-icons/ri";
 
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
@@ -177,56 +178,74 @@ const [toDate, setToDate] = useState("");
         <b>Cancelled Orders</b>
       </h2>
     
-      <ExportButtons
-  data={filteredOrders}
-  columns={exportColumns}
-  title="Cancelled Orders"
-/>
+     <div className="d-flex justify-content-between align-items-center mb-3">
 
-     <div className="row mb-3 g-3">
-        <div className="col-md-3">
-          <input
-            type="text"
-            className="form-control bg-light"
-            placeholder="Search Order ID"
-            value={searchOrder}
-            onChange={(e) => setSearchOrder(e.target.value)}
-          />
-        </div>
+  <ExportButtons
+    data={filteredOrders}
+    columns={exportColumns}
+    title="Cancelled Orders"
+  />
 
-        <div className="col-md-3">
-          <input
-            type="text"
-            className="form-control bg-light"
-            placeholder="Search Customer"
-            value={searchCustomer}
-            onChange={(e) => setSearchCustomer(e.target.value)}
-          />
-        </div>
+  <button
+    className="btn btn-outline-danger d-flex align-items-center gap-1"
+    onClick={() => {
+      setSearchOrder("");
+      setSearchCustomer("");
+      setSearchPayment("");
+      setSearchStatus("");
+      setFromDate("");
+      setToDate("");
+    }}
+  >
+    <RiResetLeftLine /> 
+  </button>
 
-        <div className="col-md-3">
-          <input
-            type="text"
-            className="form-control bg-light"
-            placeholder="Search Payment Status"
-            value={searchPayment}
-            onChange={(e) => setSearchPayment(e.target.value)}
-          />
-        </div>
+</div>
 
-        <div className="col-md-2">
-          <input
-            type="text"
-            className="form-control bg-light"
-            placeholder="Search Order Status"
-            value={searchStatus}
-            onChange={(e) => setSearchStatus(e.target.value)}
-          />
-        </div>
-  <div className="row mb-3 g-3">
+     <div className="row mb-3 g-3 align-items-end">
 
-  <div className="col-md-3">
-    <label><b>From Date</b></label>
+  <div className="col-md-2">
+    <input
+      type="text"
+      className="form-control bg-light"
+      placeholder="Search Order ID"
+      value={searchOrder}
+      onChange={(e) => setSearchOrder(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <input
+      type="text"
+      className="form-control bg-light"
+      placeholder="Search Customer"
+      value={searchCustomer}
+      onChange={(e) => setSearchCustomer(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <input
+      type="text"
+      className="form-control bg-light"
+      placeholder="Payment Status"
+      value={searchPayment}
+      onChange={(e) => setSearchPayment(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <input
+      type="text"
+      className="form-control bg-light"
+      placeholder="Order Status"
+      value={searchStatus}
+      onChange={(e) => setSearchStatus(e.target.value)}
+    />
+  </div>
+
+  <div className="col-md-2">
+    <label><b>From</b></label>
     <input
       type="date"
       className="form-control"
@@ -235,8 +254,8 @@ const [toDate, setToDate] = useState("");
     />
   </div>
 
-  <div className="col-md-3">
-    <label><b>To Date</b></label>
+  <div className="col-md-2">
+    <label><b>To</b></label>
     <input
       type="date"
       className="form-control"
@@ -247,23 +266,6 @@ const [toDate, setToDate] = useState("");
 
 
 </div>
-        <div className="col-md-1">
-          <button
-            className="btn btn-danger w-100"
-            onClick={() => {
-              setSearchOrder("");
-              setSearchCustomer("");
-              setSearchPayment("");
-              setSearchStatus("");
-                setFromDate("");
-        setToDate("");
-            }}
-          >
-            Reset
-          </button>
-        </div>
-
-      </div>
 
       {status === "loading" && (
         <p>Loading cancelled orders...</p>
@@ -310,7 +312,7 @@ const [toDate, setToDate] = useState("");
                 </h5>
 
                 <button
-                  className="btn-close"
+                  className="btn-close btn-close-white"
                   onClick={() => setSelectedOrder(null)}
                 />
 
