@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import Product from "./pages/Product";
 // import Category from "./pages/Category";
+
 import Tax from "./pages/Tax";
 import Customer from "./pages/Customer";
 import Supplier from "./pages/Supplier";
@@ -30,6 +31,7 @@ import CancelledOrdersPage from "./pages/CancelledOrdersPage";
 import Category from "./pages/Category";
 import API from "./api/axiosInstance";
 import { Outlet } from "react-router-dom";
+import UnitMaster from "./pages/UnitMaster";
 window.global = window;
 const ProtectedRoute = ({ roles }) => {
   const [user, setUser] = useState(null);
@@ -68,6 +70,7 @@ function App() {
           <Route path="/" element={<Dashboard />}>
             <Route path="products" element={<Product />} />
             <Route path="categories" element={<Category />} />
+            <Route path="units" element={<UnitMaster/> } />
             {/* <Route path="categories" element={<Category />} /> */}
             <Route path="taxes" element={<Tax />} />
             <Route path="customers" element={<Customer />} />

@@ -6,6 +6,8 @@ const path = require("path");
 
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const unitRoutes = require("./routes/unitRoutes");
+
 const taxRoutes = require("./routes/taxRoutes");
 const customerRoutes = require("./routes/customerRoutes");
 const supplierRoutes = require("./routes/supplierRoutes");
@@ -86,6 +88,7 @@ mongoose.connect(process.env.MONGO_URI)
 app.use("/api/products", productRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/categories", categoryRoutes);
+app.use("/api/units", unitRoutes);
 app.use("/api/taxes", taxRoutes);
 app.use("/api/customers", customerRoutes);
 app.use("/api/suppliers", supplierRoutes);
