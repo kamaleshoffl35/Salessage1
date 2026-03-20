@@ -370,3 +370,34 @@ exports.getConfirmedOrders = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch confirmed orders" });
   }
 };
+
+exports.getCancelledOrdersForReturn = async (req, res) => {
+  try {
+    const orders = await Order.find({
+      order_status: "cancelled",
+    }).sort({ createdAt: -1 });
+
+    const formatted = orders.map((order) => ({
+      type: "cancelled_order",
+
+      invoice_number: order.internal_order_id,
+      invoice_date_time: order.createdAt,
+
+      customer_name: order.customer_details?.fullName,
+      customer_phone: order.customer_details?.phone,
+
+      reason: "Order Cancelled",
+
+      items: (order.products || []).map((p) => ({
+        product_name: p.productDetails?.title,
+        quantity: p.qty,
+        return_amount: p.qty * p.price,
+      })),
+    }));
+
+    res.json(formatted);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Failed to fetch cancelled orders" });
+  }
+};

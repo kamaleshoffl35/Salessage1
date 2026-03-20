@@ -6,6 +6,13 @@ import { fetchsales } from "../redux/saleSlice";
 import { createSalesReturn } from "../redux/salesReturnSlice";
 import ReusableTable from "../components/ReusableTable";
 import API from "../api/axiosInstance";
+import { AgGridReact } from "ag-grid-react";
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+
+import "ag-grid-community/styles/ag-grid.css";
+import "ag-grid-community/styles/ag-theme-alpine.css";
+
+ModuleRegistry.registerModules([AllCommunityModule]);
 const SalesReturn = () => {
   const dispatch = useDispatch();
   const { items: cus_payments, status } = useSelector(
@@ -17,6 +24,8 @@ const SalesReturn = () => {
   const [selectedCustomer, setSelectedCustomer] = useState("");
   const [customerSales, setCustomerSales] = useState([]);
   const [stockSummary, setStockSummary] = useState([]);
+  const [cancelledOrders, setCancelledOrders] = useState([]);
+const [salesReturns, setSalesReturns] = useState([]);
   const [form, setForm] = useState({
     invoice_no: "",
     invoice_date_time: new Date().toISOString().slice(0, 10),
@@ -56,6 +65,33 @@ const SalesReturn = () => {
     };
     fetchStockSummary();
   }, []);
+
+  useEffect(() => {
+  const fetchReturns = async () => {
+    try {
+      const res = await API.get("/sales-returns");
+      setSalesReturns(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const fetchCancelledOrders = async () => {
+    try {
+      const res = await API.get("/orders/cancelled-orders-returns");
+      setCancelledOrders(res.data || []);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchReturns();
+  fetchCancelledOrders();
+}, []);
+const combinedReturns = [
+  ...salesReturns.map((r) => ({ ...r, source: "Sales Return" })),
+  ...cancelledOrders.map((o) => ({ ...o, source: "Cancelled Order" })),
+];
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -227,6 +263,45 @@ const SalesReturn = () => {
       render: (sale) => `₹${sale.due_amount?.toFixed(2) || "0.00"}`,
     },
   ];
+  const returnColumns = [
+  {
+    headerName: "Invoice No",
+    field: "invoice_number",
+    flex: 1,
+  },
+  {
+    headerName: "Date",
+    field: "invoice_date_time",
+    flex: 1,
+    valueFormatter: (p) =>
+      new Date(p.value).toLocaleDateString(),
+  },
+  {
+    headerName: "Customer",
+    field: "customer_name",
+    flex: 1,
+  },
+  {
+    headerName: "Phone",
+    field: "customer_phone",
+    flex: 1,
+  },
+  {
+    headerName: "Items",
+    flex: 1,
+    valueGetter: (p) => p.data.items?.length || 0,
+  },
+  {
+    headerName: "Reason",
+    field: "reason",
+    flex: 1,
+  },
+  {
+  headerName: "Source",
+  field: "source",
+  flex: 1,
+},
+];
 
   return (
     <div className="container mt-4">
@@ -403,6 +478,21 @@ const SalesReturn = () => {
               </div>
             </div>
           </form>
+          <div className="mt-5">
+  <h4>Sales Return History</h4>
+
+  <div
+    className="ag-theme-alpine"
+    style={{ height: 400, width: "100%" }}
+  >
+    <AgGridReact
+      rowData={combinedReturns}
+      columnDefs={returnColumns}
+      pagination={true}
+      paginationPageSize={10}
+    />
+  </div>
+</div>
         </>
       )}
     </div>
