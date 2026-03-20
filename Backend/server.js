@@ -26,7 +26,7 @@ const cartRoutes = require("./routes/cartRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const app = express();
 const cookieParser = require("cookie-parser");
-const importGoogleTaxonomyIfEmpty = require("./utils/importGoogleTaxonomy");
+
 app.use(cookieParser());
 // const allowedOrigins = [
 //   "https://salessage.vyoobam.com",
