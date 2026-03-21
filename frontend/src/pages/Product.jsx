@@ -20,7 +20,7 @@ import { bulkAddProducts } from "../redux/productSlice";
 import { Editor } from "react-draft-wysiwyg";
 import "react-draft-wysiwyg/dist/react-draft-wysiwyg.css";
 import { EditorState, convertToRaw, ContentState } from "draft-js";
-
+import {fetchUnits} from "../redux/unitSlice"
 import draftToHtml from "draftjs-to-html";
 import htmlToDraft from "html-to-draftjs";
 
@@ -265,8 +265,7 @@ variants:[{value:"",unit:""}],
           care_instructions: form.care_instructions,
           tags: form.tags,
 
-          category_name: categories.find((c) => c._id === form.category_id)
-            ?.category_name,
+        category_name: form.category_id,
           subcategory: form.subcategory,
           subcategory_name: form.subcategory1,
           brand_name: form.brand_name,
@@ -335,8 +334,7 @@ variants:[{value:"",unit:""}],
           care_instructions: form.care_instructions,
           tags: form.tags,
 
-          category_name: categories.find((c) => c._id === form.category_id)
-            ?.category_name,
+        category_name: form.category_id,
           subcategory: form.subcategory,
           subcategory_name: form.subcategory1,
           brand_name: form.brand_name,
