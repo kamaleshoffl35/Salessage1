@@ -114,7 +114,7 @@ const { settings } = useSelector((state) => state.paymentsettings);
     },
   ];
 
-  const paymentList = settings ? [settings] : [];
+ const paymentList = settings || [];
 
   return (
     <div className="container mt-4">
