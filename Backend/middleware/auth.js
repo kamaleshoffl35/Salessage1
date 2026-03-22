@@ -67,6 +67,8 @@ const protect = async (req, res, next) => {
 
     console.log("Tenant:", req.tenant);
 
+    console.log("Headers:", req.headers);
+console.log("Tenant Header:", req.headers["x-tenant-id"]);
     next();
 
   } catch (err) {
