@@ -13,7 +13,7 @@ import supplierPaymentReducer from "./supplierpaymentSlice";
 import stockledgerReducer from "./stockledgerSlice";
 import expenseReducer from "./expenseSlice";
 import salesReturnReducer from "./salesReturnSlice";
-
+import paymentSettingsReducer from "./paymentSettingsSlice"
 import salereportReducer from "./salereportSlice";
 import purchasereportReducer from "./purchasereportSlice";
 import ordersReducer from "./orderSlice";
@@ -48,5 +48,6 @@ export const store = configureStore({
        orders: ordersReducer,
         cancelledOrders: cancelledOrdersReducer,
         confirmedOrders:confirmedorderReducer,
+        paymentsettings:paymentSettingsReducer,
   },
 });

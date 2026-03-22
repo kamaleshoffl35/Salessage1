@@ -11,8 +11,7 @@ import {
 
 const PaymentSettings = () => {
   const dispatch = useDispatch();
-
-  const { settings } = useSelector((state) => state.paymentSettings);
+const { settings } = useSelector((state) => state.paymentsettings);
 
   const [form, setForm] = useState({
     qr_code: "",
