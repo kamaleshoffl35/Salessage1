@@ -24,6 +24,7 @@ const reportRoutes = require("./routes/reportRoutes");
 const userRoutes = require("./routes/userRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
+const paymentsettingsRoutes = require("./routes/paymentsettingsRoutes")
 const app = express();
 const cookieParser = require("cookie-parser");
 
@@ -105,7 +106,7 @@ app.use("/api/expenses", expenseRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/cart", cartRoutes);
-
+app.use("/api/payment-settings",paymentsettingsRoutes)
 app.use("/api/orders", require("./routes/orderRoutes"));
 app.use("/api/orders", require("./routes/getOrdersRoutes"));
 app.use("/api/admin", require("./routes/adminOrderRoutes"));

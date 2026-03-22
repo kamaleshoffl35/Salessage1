@@ -57,6 +57,7 @@ function Navbar() {
                 Sales
               </Link>
             </li>
+            
             <li className="nav-item">
               <Link className="nav-link" to="/sales-returns"></Link>
             </li>
@@ -83,6 +84,11 @@ function Navbar() {
             <li className="nav-item">
               <Link className="nav-link" to="/expenses">
                 Expense
+              </Link>
+            </li>
+           <li className="nav-item">
+              <Link className="nav-link" to="/payment-settings">
+                Payment Settings
               </Link>
             </li>
             <li className="nav-item">

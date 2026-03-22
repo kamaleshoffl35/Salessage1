@@ -32,6 +32,7 @@ import Category from "./pages/Category";
 import API from "./api/axiosInstance";
 import { Outlet } from "react-router-dom";
 import UnitMaster from "./pages/UnitMaster";
+import PaymentSettings from "./pages/PaymentSettings";
 window.global = window;
 const ProtectedRoute = ({ roles }) => {
   const [user, setUser] = useState(null);
@@ -84,6 +85,7 @@ function App() {
             <Route path="stockledger" element={<StockLedger />} />
             <Route path="expenses" element={<Expenses />} />
                 <Route path="orders" element={<OrdersPage />} />
+                <Route path="/payment-settings" element={<PaymentSettings/>} />
                 <Route path="/cancelled-orders" element={<CancelledOrdersPage />} />
             <Route path="profile" element={<Profile />} />
             <Route path="reports" element={<Reports />}>

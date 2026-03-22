@@ -30,7 +30,22 @@ const paymentStorage = new CloudinaryStorage({
 
 const uploadPayment = multer({ storage: paymentStorage });
 
+/* ================================
+   QR Code Upload (NEW)
+================================ */
+
+const qrStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "payment_qr_codes",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+  },
+});
+
+const uploadQR = multer({ storage: qrStorage });
+
 module.exports = {
   uploadProduct,
   uploadPayment,
+  uploadQR
 };

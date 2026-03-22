@@ -67,6 +67,7 @@ useEffect(() => {
     { name: "Supplier Receipts", path: "/sub_receipts", icon: <GiTakeMyMoney />, roles: ["super_admin", "admin"] },
     { name: "Stock Ledger", path: "/stockledger", icon: <MdOutlineInventory2 />, roles: ["super_admin", "admin", "user"] },
     { name: "Expense", path: "/expenses", icon: <GiMoneyStack />, roles: ["super_admin", "admin", "user"] },
+    { name: "Payment Settings", path: "/payment-settings", icon: <GiMoneyStack />, roles: ["super_admin", "admin", "user"] },
     { name: "Reports", path: "/reports", icon: <TbReportSearch />, roles: ["super_admin", "admin", "user"] },
   ];
  const userRole = user?.role;
