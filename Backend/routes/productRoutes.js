@@ -14,7 +14,7 @@ const {
 } = require("../controllers/productController");
 
 const { protect, authorize } = require("../middleware/auth");
-const upload = require("../middleware/upload");
+const {uploadProduct} = require("../middleware/upload");
 
 /* =========================
    PUBLIC ROUTES
@@ -31,6 +31,6 @@ router.get("/",protect,authorize("super_admin", "admin", "user"),getProducts);
 router.get("/:id",protect,authorize("super_admin", "admin", "user"),getProductById);
 router.post("/",protect,authorize("super_admin", "admin"),upload.single("image"),addProduct);
 router.post("/bulk",protect,authorize("super_admin", "admin"),bulkInsertProducts);
-router.put("/:id",protect,authorize("super_admin", "admin"),upload.single("image"),updateProduct);
+router.put("/:id",protect,authorize("super_admin", "admin"),uploadProduct.single("image"),updateProduct);
 router.delete("/:id",protect,authorize("super_admin", "admin"),deleteProduct);
 module.exports = router;
