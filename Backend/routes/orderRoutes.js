@@ -7,7 +7,7 @@ const {
   createCodOrder,
   cancelOrder,getCancelledOrders,getConfirmedOrders,getCancelledOrdersForReturn,createManualPaymentOrder,
 } = require("../controllers/orderController");
-const { upload } = require("../middleware/upload");
+const { uploadPayment } = require("../middleware/upload");
 router.post("/create-order", protect, createOrder);
 router.post("/verify-payment", protect, verifyPayment);
 router.post("/create-cod-order", protect, createCodOrder);
@@ -18,7 +18,7 @@ router.get("/cancelled-orders-returns", getCancelledOrdersForReturn);
 router.post(
   "/manual-payment",
   protect,
-  upload.single("payment_proof"),
+  uploadPayment.single("payment_proof"),
   createManualPaymentOrder
 );
 module.exports = router;
