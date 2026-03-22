@@ -48,7 +48,7 @@ exports.getPaymentSettings = async (req, res) => {
 
     const tenant = req.tenant;
 
-    const settings = await PaymentSettings.find({ tenant });
+    const settings = await PaymentSettings.find();
 
     res.json(settings);
 
