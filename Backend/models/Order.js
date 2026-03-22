@@ -6,7 +6,7 @@ const orderSchema = new mongoose.Schema(
     website: { type: String, required: true },
     payment_mode: {
       type: String,
-      enum: ["ONLINE", "COD"],
+      enum: ["ONLINE", "COD","BANK"],
       required: true,
     },
     payment_proof: String,
