@@ -29,7 +29,7 @@ router.get("/public/:id", getPublicProductById);
 router.get("/check-exists",protect,authorize("super_admin", "admin", "user"),checkProductExists);
 router.get("/",protect,authorize("super_admin", "admin", "user"),getProducts);
 router.get("/:id",protect,authorize("super_admin", "admin", "user"),getProductById);
-router.post("/",protect,authorize("super_admin", "admin"),upload.single("image"),addProduct);
+router.post("/",protect,authorize("super_admin", "admin"),uploadProduct.single("image"),addProduct);
 router.post("/bulk",protect,authorize("super_admin", "admin"),bulkInsertProducts);
 router.put("/:id",protect,authorize("super_admin", "admin"),uploadProduct.single("image"),updateProduct);
 router.delete("/:id",protect,authorize("super_admin", "admin"),deleteProduct);
