@@ -2,7 +2,11 @@ const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
 
-const storage = new CloudinaryStorage({
+/* ================================
+   Product Image Upload
+================================ */
+
+const productStorage = new CloudinaryStorage({
   cloudinary,
   params: {
     folder: "products",
@@ -10,6 +14,23 @@ const storage = new CloudinaryStorage({
   },
 });
 
-const upload = multer({ storage });
+const uploadProduct = multer({ storage: productStorage });
 
-module.exports = upload;
+/* ================================
+   Payment Screenshot Upload
+================================ */
+
+const paymentStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "payment_proofs",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+  },
+});
+
+const uploadPayment = multer({ storage: paymentStorage });
+
+module.exports = {
+  uploadProduct,
+  uploadPayment,
+};

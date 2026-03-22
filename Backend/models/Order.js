@@ -9,9 +9,10 @@ const orderSchema = new mongoose.Schema(
       enum: ["ONLINE", "COD"],
       required: true,
     },
+    payment_proof: String,
     payment_status: {
       type: String,
-      enum: ["SUCCESS", "PENDING", "FAILED", "CANCELLED"], 
+      enum: ["SUCCESS", "PENDING", "FAILED", "CANCELLED","PENDING_VERIFICATION"], 
       default: "PENDING",
     },
     order_status: {

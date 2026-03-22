@@ -53,6 +53,7 @@ app.use(cookieParser());
 const allowedOrigins = [
   "https://salessage.vyoobam.com",
   "https://chakkarapani.com",
+  "https://chakrapani.com",
   "http://localhost:5173",
   "http://localhost:3000"
 ];

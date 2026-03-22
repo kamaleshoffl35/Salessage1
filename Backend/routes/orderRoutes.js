@@ -5,9 +5,9 @@ const {
   createOrder,
   verifyPayment,
   createCodOrder,
-  cancelOrder,getCancelledOrders,getConfirmedOrders,getCancelledOrdersForReturn,
+  cancelOrder,getCancelledOrders,getConfirmedOrders,getCancelledOrdersForReturn,createManualPaymentOrder,
 } = require("../controllers/orderController");
-
+const { upload } = require("../middleware/upload");
 router.post("/create-order", protect, createOrder);
 router.post("/verify-payment", protect, verifyPayment);
 router.post("/create-cod-order", protect, createCodOrder);
@@ -15,4 +15,10 @@ router.patch("/:id/cancel", protect, cancelOrder);
 router.get("/cancelled-orders", protect, getCancelledOrders);
 router.get("/confirmed-orders", getConfirmedOrders);
 router.get("/cancelled-orders-returns", getCancelledOrdersForReturn);
+router.post(
+  "/manual-payment",
+  protect,
+  upload.single("payment_proof"),
+  createManualPaymentOrder
+);
 module.exports = router;

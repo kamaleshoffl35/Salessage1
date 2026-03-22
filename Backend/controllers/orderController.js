@@ -401,3 +401,28 @@ exports.getCancelledOrdersForReturn = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch cancelled orders" });
   }
 };
+
+exports.createManualPaymentOrder = async (req, res) => {
+
+  const { amount, customer_details, products } = req.body;
+  const website = req.user?.tenant;
+
+  const orderCount = await Order.countDocuments({ website });
+
+  const internalId =
+    `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
+
+  const order = await Order.create({
+    internal_order_id: internalId,
+    website,
+    payment_mode: "BANK",
+    payment_status: "PENDING_VERIFICATION",
+    order_status: "pending",
+    amount,
+    customer_details: JSON.parse(customer_details),
+    products: JSON.parse(products),
+    payment_proof: req.file?.filename
+  });
+
+  res.json({ order_id: internalId });
+};
