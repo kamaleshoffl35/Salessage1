@@ -5,7 +5,7 @@ const razorpay = require("../config/razorpay");
 exports.createOrder = async (req, res) => {
   try {
     const { amount, currency, customer_details, products } = req.body;
-    const website = req.user?.tenant;
+   const website = req.tenant;
 
     if (!website) return res.status(403).json({ error: "Invalid tenant" });
 
@@ -39,7 +39,7 @@ exports.verifyPayment = async (req, res) => {
       customer_details,
       products,
     } = req.body;
-    const website = req.user?.tenant;
+    const website = req.tenant;
 
     if (!website) return res.status(403).json({ error: "Invalid tenant" });
 
@@ -79,7 +79,7 @@ exports.verifyPayment = async (req, res) => {
 exports.createCodOrder = async (req, res) => {
   try {
     const { amount, customer_details, products } = req.body;
-    const website = req.user?.tenant;
+   const website = req.tenant;
 
     if (!website) return res.status(403).json({ error: "Invalid tenant" });
 
@@ -431,8 +431,7 @@ exports.createManualPaymentOrder = async (req, res) => {
   try {
 
     const { amount, customer_details, products } = req.body;
-    const website = req.user?.tenant;
-
+   const website = req.tenant;
     if (!website) {
       return res.status(400).json({ message: "Tenant missing" });
     }
