@@ -22,7 +22,7 @@ router.post(
   createManualPaymentOrder
 );
 router.post(
-  "/orders/extract-payment",
+  "/extract-payment",
   uploadPayment.single("payment_proof"),
   extractPaymentDetails
 );
