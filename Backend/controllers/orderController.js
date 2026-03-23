@@ -477,7 +477,7 @@ exports.createManualPaymentOrder = async (req, res) => {
 
     if (existingTxn) {
       return res.status(400).json({
-        message: "Transaction already used"
+        message: `Transaction ID ${transactionId} already exists. Please upload a different payment screenshot.`
       });
     }
 
