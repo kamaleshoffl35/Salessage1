@@ -155,19 +155,22 @@ exports.getAllOrders = async (req, res) => {
   try {
     const orders = await Order.find().sort({ createdAt: -1 });
 
-    const formatted = orders.map((order) => ({
-      _id: order._id,
-      orderNumber: order.internal_order_id,
-      createdAt: order.createdAt,
-      user: {
-        name: order.customer_details?.fullName,
-        email: order.customer_details?.email,
-        address: order.customer_details?.address,
-      },
-      totalAmount: order.amount,
-      orderStatus: order.order_status,
-      paymentStatus: order.payment_status,
-    }));
+  const formatted = orders.map((order) => ({
+  _id: order._id,
+  orderNumber: order.internal_order_id,
+  createdAt: order.createdAt,
+  user: {
+    name: order.customer_details?.fullName,
+    email: order.customer_details?.email,
+    address: order.customer_details?.address,
+  },
+  totalAmount: order.amount,
+  orderStatus: order.order_status,
+  paymentStatus: order.payment_status,
+  paymentProof: order.payment_proof
+    ? `${process.env.BASE_URL}/uploads/${order.payment_proof}`
+    : null
+}));
 
     res.json(formatted);
   } catch (err) {

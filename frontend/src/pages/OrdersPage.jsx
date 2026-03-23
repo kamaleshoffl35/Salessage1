@@ -114,6 +114,22 @@ const OrdersPage = () => {
     { key: "customer", header: "Customer", render: (o) => o.user?.name || "-" },
     { key: "totalAmount", header: "Total", render: (o) => `₹${o.totalAmount}` },
     {
+  key: "paymentProof",
+  header: "Payment Screenshot",
+  render: (o) =>
+    o.paymentProof ? (
+      <img
+        src={o.paymentProof}
+        alt="payment"
+        width="50"
+        style={{ cursor: "pointer" }}
+        onClick={() => window.open(o.paymentProof, "_blank")}
+      />
+    ) : (
+      "-"
+    ),
+},
+    {
       key: "orderStatus",
       header: "Order Status",
       render: (o) => orderBadge(o.orderStatus),
