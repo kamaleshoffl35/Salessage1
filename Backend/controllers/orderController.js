@@ -650,3 +650,36 @@ const adminUpi = paymentSettings.upi_id.toLowerCase();// ⚠️ replace with DB 
     res.status(500).json({ message: "Manual payment order failed" });
   }
 };
+
+// ✅ NEW OCR ONLY API
+exports.extractPaymentDetails = async (req, res) => {
+  try {
+    const paymentProof = req.file?.path;
+
+    if (!paymentProof) {
+      return res.status(400).json({ message: "Screenshot required" });
+    }
+
+    const result = await Tesseract.recognize(paymentProof, "eng");
+    const text = result.data.text.toLowerCase();
+
+    console.log("OCR TEXT:", text);
+
+    const txnMatch = text.match(/(txn|transaction|ref)[^\d]*(\d{8,})/i);
+    const upiMatches = text.match(/[a-zA-Z0-9.\-_]+@[a-zA-Z]+/g);
+
+    const transactionId = txnMatch ? txnMatch[2] : null;
+    const fromUpi = upiMatches ? upiMatches[0] : null;
+    const toUpi = upiMatches ? upiMatches[1] : null;
+
+    return res.json({
+      transactionId,
+      fromUpi,
+      toUpi
+    });
+
+  } catch (error) {
+    console.error("OCR Extract Error:", error);
+    res.status(500).json({ message: "OCR failed" });
+  }
+};

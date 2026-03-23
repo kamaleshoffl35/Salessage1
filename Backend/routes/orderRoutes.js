@@ -5,7 +5,7 @@ const {
   createOrder,
   verifyPayment,
   createCodOrder,
-  cancelOrder,getCancelledOrders,getConfirmedOrders,getCancelledOrdersForReturn,createManualPaymentOrder,
+  cancelOrder,getCancelledOrders,getConfirmedOrders,getCancelledOrdersForReturn,createManualPaymentOrder,extractPaymentDetails
 } = require("../controllers/orderController");
 const { uploadPayment } = require("../middleware/upload");
 router.post("/create-order", protect, createOrder);
@@ -20,5 +20,10 @@ router.post(
   protect,
   uploadPayment.single("payment_proof"),
   createManualPaymentOrder
+);
+router.post(
+  "/orders/extract-payment",
+  upload.single("payment_proof"),
+  extractPaymentDetails
 );
 module.exports = router;
