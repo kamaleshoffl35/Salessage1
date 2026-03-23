@@ -462,37 +462,83 @@ exports.getCancelledOrdersForReturn = async (req, res) => {
 //   }
 // };
 
+// exports.createManualPaymentOrder = async (req, res) => {
+//   try {
+
+//     const paymentProof = req.file ? req.file.path : null;
+
+//     const order = new Order({
+//       internal_order_id: req.body.internal_order_id,
+//       website: req.body.website,
+
+//       payment_mode: "BANK",
+//       payment_proof: paymentProof, // ⭐ SAVE FILE NAME
+
+//       payment_status: "PENDING_VERIFICATION",
+//       order_status: "pending",
+
+//       amount: req.body.amount,
+//       currency: "INR",
+
+//       customer_details: req.body.customer_details,
+//       products: req.body.products,
+//     });
+
+//     await order.save();
+
+//     res.status(201).json({
+//       success: true,
+//       order,
+//     });
+
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).json({ message: "Order creation failed" });
+//   }
+// };
+
 exports.createManualPaymentOrder = async (req, res) => {
   try {
 
+    const { amount, customer_details, products } = req.body;
+    const website = req.tenant;
+
+    if (!website) {
+      return res.status(400).json({ message: "Tenant missing" });
+    }
+
+    const orderCount = await Order.countDocuments({ website });
+
+    const internalId =
+      `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
+
     const paymentProof = req.file ? req.file.path : null;
 
-    const order = new Order({
-      internal_order_id: req.body.internal_order_id,
-      website: req.body.website,
+    const order = await Order.create({
+      internal_order_id: internalId,
+      website,
+      user: req.user._id,
 
       payment_mode: "BANK",
-      payment_proof: paymentProof, // ⭐ SAVE FILE NAME
-
       payment_status: "PENDING_VERIFICATION",
       order_status: "pending",
 
-      amount: req.body.amount,
+      amount,
       currency: "INR",
 
-      customer_details: req.body.customer_details,
-      products: req.body.products,
+      customer_details: JSON.parse(customer_details),
+      products: JSON.parse(products),
+
+      payment_proof: paymentProof,
     });
 
-    await order.save();
-
-    res.status(201).json({
-      success: true,
+    res.json({
+      order_id: internalId,
       order,
     });
 
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Order creation failed" });
+  } catch (error) {
+    console.error("Manual Payment Error:", error);
+    res.status(500).json({ message: "Manual payment order failed" });
   }
 };
