@@ -562,25 +562,16 @@ exports.createManualPaymentOrder = async (req, res) => {
     }
 
     // ✅ OCR TEXT EXTRACTION
-    const result = await Tesseract.recognize(paymentProof, 'eng');
-    const text = result.data.text.toLowerCase();
+    // ✅ TAKE VALUES FROM FRONTEND
+const transactionId = req.body.transaction_id;
+const fromUpi = req.body.from_upi;
+const toUpi = req.body.to_upi;
 
-    console.log("OCR TEXT:", text);
-
-    // ✅ EXTRACT VALUES USING REGEX
-    const txnMatch = text.match(/(txn|transaction|ref)[^\d]*(\d{8,})/i);
-    const upiMatches = text.match(/[a-zA-Z0-9.\-_]+@[a-zA-Z]+/g);
-
-    const transactionId = txnMatch ? txnMatch[2] : null;
-    const fromUpi = upiMatches ? upiMatches[0] : null;
-    const toUpi = upiMatches ? upiMatches[1] : null;
-
-    if (!transactionId || !fromUpi || !toUpi) {
-      return res.status(400).json({
-        message: "Could not extract payment details from screenshot"
-      });
-    }
-
+if (!transactionId || !fromUpi || !toUpi) {
+  return res.status(400).json({
+    message: "Payment details missing from frontend"
+  });
+}
     // ✅ FETCH ADMIN UPI FROM DB
     // ✅ FETCH ADMIN UPI FROM DB USING TENANT
 const paymentSettings = await PaymentSettings.findOne({ tenant: website });
