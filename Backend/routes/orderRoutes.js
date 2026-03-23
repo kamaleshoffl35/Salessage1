@@ -23,7 +23,7 @@ router.post(
 );
 router.post(
   "/orders/extract-payment",
-  upload.single("payment_proof"),
+  uploadPayment.single("payment_proof"),
   extractPaymentDetails
 );
 module.exports = router;
