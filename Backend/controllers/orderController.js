@@ -551,46 +551,64 @@ exports.createManualPaymentOrder = async (req, res) => {
     const { amount, customer_details, products } = req.body;
     const website = req.tenant;
 
+    // ✅ 1. BASIC VALIDATION
     if (!website) {
       return res.status(400).json({ message: "Tenant missing" });
     }
 
-    const paymentProof = req.file ? req.file.path : null;
-
-    if (!paymentProof) {
-      return res.status(400).json({ message: "Screenshot required" });
+    if (!amount || !customer_details || !products) {
+      return res.status(400).json({
+        message: "Missing order data (amount / customer / products)"
+      });
     }
 
-    // ✅ OCR TEXT EXTRACTION
-    // ✅ TAKE VALUES FROM FRONTEND
-const transactionId = req.body.transaction_id;
-const fromUpi = req.body.from_upi;
-const toUpi = req.body.to_upi;
+    // ✅ 2. FILE CHECK
+    const paymentProof = req.file?.path;
 
-if (!transactionId || !fromUpi || !toUpi) {
-  return res.status(400).json({
-    message: "Payment details missing from frontend"
-  });
-}
-    // ✅ FETCH ADMIN UPI FROM DB
-    // ✅ FETCH ADMIN UPI FROM DB USING TENANT
-const paymentSettings = await PaymentSettings.findOne({ tenant: website });
+    if (!paymentProof) {
+      return res.status(400).json({
+        message: "Screenshot required"
+      });
+    }
 
-if (!paymentSettings || !paymentSettings.upi_id) {
-  return res.status(400).json({
-    message: "Admin UPI not configured"
-  });
-}
+    // ✅ 3. GET OCR VALUES FROM FRONTEND (SAFE FALLBACK)
+    let transactionId = req.body.transaction_id || "";
+    let fromUpi = req.body.from_upi || "";
+    let toUpi = req.body.to_upi || "";
 
-const adminUpi = paymentSettings.upi_id.toLowerCase();// ⚠️ replace with DB value
+    // ⚠️ IMPORTANT: do NOT block if OCR failed
+    // Only transactionId is mandatory
+    if (!transactionId) {
+      return res.status(400).json({
+        message: "Transaction ID missing (OCR failed or not detected)"
+      });
+    }
 
-   if (toUpi.toLowerCase() !== adminUpi) {
-  return res.status(400).json({
-    message: "Incorrect UPI ID. Payment not sent to admin."
-  });
-}
+    // normalize
+    transactionId = transactionId.trim();
+    fromUpi = fromUpi.trim().toLowerCase();
+    toUpi = toUpi.trim().toLowerCase();
 
-    // ✅ CHECK DUPLICATE TRANSACTION
+    // ✅ 4. FETCH ADMIN UPI
+    const paymentSettings = await PaymentSettings.findOne({ tenant: website });
+
+    if (!paymentSettings || !paymentSettings.upi_id) {
+      return res.status(400).json({
+        message: "Admin UPI not configured"
+      });
+    }
+
+    const adminUpi = paymentSettings.upi_id.toLowerCase().trim();
+
+    // ⚠️ RELAXED VALIDATION (VERY IMPORTANT FIX)
+    // Only check if toUpi exists
+    if (toUpi && toUpi !== adminUpi) {
+      return res.status(400).json({
+        message: `Wrong UPI. Paid to ${toUpi}, expected ${adminUpi}`
+      });
+    }
+
+    // ✅ 5. DUPLICATE TRANSACTION CHECK
     const existingTxn = await Order.findOne({ transaction_id: transactionId });
 
     if (existingTxn) {
@@ -599,11 +617,25 @@ const adminUpi = paymentSettings.upi_id.toLowerCase();// ⚠️ replace with DB 
       });
     }
 
+    // ✅ 6. GENERATE ORDER ID
     const orderCount = await Order.countDocuments({ website });
 
-    const internalId =
-      `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
+    const internalId = `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
 
+    // ✅ 7. SAFE PARSE JSON
+    let parsedCustomer;
+    let parsedProducts;
+
+    try {
+      parsedCustomer = JSON.parse(customer_details);
+      parsedProducts = JSON.parse(products);
+    } catch (err) {
+      return res.status(400).json({
+        message: "Invalid JSON in customer_details or products"
+      });
+    }
+
+    // ✅ 8. CREATE ORDER
     const order = await Order.create({
       internal_order_id: internalId,
       website,
@@ -616,19 +648,21 @@ const adminUpi = paymentSettings.upi_id.toLowerCase();// ⚠️ replace with DB 
       amount,
       currency: "INR",
 
-      customer_details: JSON.parse(customer_details),
-      products: JSON.parse(products),
+      customer_details: parsedCustomer,
+      products: parsedProducts,
 
       payment_proof: paymentProof,
 
-      // ✅ NEW FIELDS
       transaction_id: transactionId,
-      from_upi: fromUpi,
-      to_upi: toUpi,
+      from_upi: fromUpi || null,
+      to_upi: toUpi || null,
     });
 
-    res.json({
+    // ✅ 9. SUCCESS RESPONSE
+    return res.status(200).json({
+      success: true,
       order_id: internalId,
+      message: "Order placed, waiting for admin verification",
       extracted: {
         transactionId,
         fromUpi,
@@ -638,7 +672,11 @@ const adminUpi = paymentSettings.upi_id.toLowerCase();// ⚠️ replace with DB 
 
   } catch (error) {
     console.error("Manual Payment Error:", error);
-    res.status(500).json({ message: "Manual payment order failed" });
+
+    return res.status(500).json({
+      message: "Manual payment order failed",
+      error: error.message
+    });
   }
 };
 
