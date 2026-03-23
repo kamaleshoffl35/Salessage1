@@ -574,13 +574,23 @@ if (upiMatches && upiMatches.length > 0) {
     ?.upi_id?.toLowerCase().trim();
 
   if (adminUpi) {
-    toUpi = normalizedUpis.find(u => u === adminUpi) || null;
+
+  const adminMatch = normalizedUpis.find(u => u === adminUpi);
+
+  if (adminMatch) {
+    toUpi = adminMatch;
     fromUpi = normalizedUpis.find(u => u !== adminUpi) || null;
   } else {
-    // fallback
-    fromUpi = normalizedUpis[0] || null;
-    toUpi = normalizedUpis[1] || null;
+    // fallback when admin upi not detected
+    toUpi = normalizedUpis[0] || null;
+    fromUpi = normalizedUpis[1] || null;
   }
+
+} else {
+  // fallback when admin upi not configured
+  toUpi = normalizedUpis[0] || null;
+  fromUpi = normalizedUpis[1] || null;
+}
 }
 
     return res.json({
