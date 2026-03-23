@@ -68,9 +68,11 @@ exports.getAllOrders = async (req, res) => {
       paymentStatus: order.payment_status,
 
       // ✅ ADD THIS
-      paymentProof: order.payment_proof
-        ? `${process.env.BASE_URL}/uploads/${order.payment_proof}`
-        : null
+     paymentProof: order.payment_proof
+  ? order.payment_proof.startsWith("http")
+    ? order.payment_proof
+    : `${process.env.BASE_URL}/uploads/${order.payment_proof}`
+  : null,
     }));
 
     res.json(formatted);

@@ -31,6 +31,7 @@ const OrdersPage = () => {
   const [showHistoryModal, setShowHistoryModal] = useState(false);
   const [historyInfo, setHistoryInfo] = useState(null);
   const [user, setUser] = useState(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   const role = user?.role || "user";
   const tableActions = useTableActions(role).filter((a) => a.type !== "edit");
@@ -113,7 +114,7 @@ const OrdersPage = () => {
     { key: "orderNumber", header: "Order ID", render: (o) => o.orderNumber },
     { key: "customer", header: "Customer", render: (o) => o.user?.name || "-" },
     { key: "totalAmount", header: "Total", render: (o) => `₹${o.totalAmount}` },
-    {
+ {
   key: "paymentProof",
   header: "Payment Screenshot",
   render: (o) =>
@@ -122,8 +123,8 @@ const OrdersPage = () => {
         src={o.paymentProof}
         alt="payment"
         width="50"
-        style={{ cursor: "pointer" }}
-        onClick={() => window.open(o.paymentProof, "_blank")}
+        style={{ cursor: "pointer", borderRadius: "5px" }}
+        onClick={() => setPreviewImage(o.paymentProof)}
       />
     ) : (
       "-"
@@ -453,7 +454,41 @@ const OrdersPage = () => {
           </div>
         </div>
       )}
+{previewImage && (
+  <div
+    className="modal show d-block"
+    style={{ backgroundColor: "rgba(0,0,0,0.7)" }}
+    onClick={() => setPreviewImage(null)}
+  >
+    <div className="modal-dialog modal-dialog-centered modal-lg" onClick={(e) => e.stopPropagation()}>
+      <div className="modal-content bg-dark">
+        <div className="modal-header border-0">
+          <h5 className="modal-title text-white">
+            Payment Screenshot
+          </h5>
 
+          <button
+            className="btn-close btn-close-white"
+            onClick={() => setPreviewImage(null)}
+          />
+        </div>
+
+        <div className="modal-body text-center">
+          <img
+            src={previewImage}
+            alt="payment"
+            style={{
+              width: "100%",
+              maxHeight: "80vh",
+              objectFit: "contain",
+              borderRadius: "10px",
+            }}
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+)}
       <HistoryModal
         open={showHistoryModal}
         onClose={() => setShowHistoryModal(false)}
