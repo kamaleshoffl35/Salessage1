@@ -2,6 +2,9 @@ const Order = require("../models/Order");
 const SalesReturn = require("../models/SalesReturn");
 const crypto = require("crypto");
 const razorpay = require("../config/razorpay");
+const Tesseract = require('tesseract.js');
+const fs = require('fs');
+const PaymentSettings = require("../models/PaymentSettings");
 exports.createOrder = async (req, res) => {
   try {
     const { amount, currency, customer_details, products } = req.body;
@@ -497,9 +500,54 @@ exports.getCancelledOrdersForReturn = async (req, res) => {
 //   }
 // };
 
+// exports.createManualPaymentOrder = async (req, res) => {
+//   try {
+
+//     const { amount, customer_details, products } = req.body;
+//     const website = req.tenant;
+
+//     if (!website) {
+//       return res.status(400).json({ message: "Tenant missing" });
+//     }
+
+//     const orderCount = await Order.countDocuments({ website });
+
+//     const internalId =
+//       `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
+
+//     const paymentProof = req.file ? req.file.path : null;
+
+//     const order = await Order.create({
+//       internal_order_id: internalId,
+//       website,
+//       user: req.user._id,
+
+//       payment_mode: "BANK",
+//       payment_status: "PENDING_VERIFICATION",
+//       order_status: "pending",
+
+//       amount,
+//       currency: "INR",
+
+//       customer_details: JSON.parse(customer_details),
+//       products: JSON.parse(products),
+
+//       payment_proof: paymentProof,
+//     });
+
+//     res.json({
+//       order_id: internalId,
+//       order,
+//     });
+
+//   } catch (error) {
+//     console.error("Manual Payment Error:", error);
+//     res.status(500).json({ message: "Manual payment order failed" });
+//   }
+// };
+
 exports.createManualPaymentOrder = async (req, res) => {
   try {
-
     const { amount, customer_details, products } = req.body;
     const website = req.tenant;
 
@@ -507,12 +555,63 @@ exports.createManualPaymentOrder = async (req, res) => {
       return res.status(400).json({ message: "Tenant missing" });
     }
 
+    const paymentProof = req.file ? req.file.path : null;
+
+    if (!paymentProof) {
+      return res.status(400).json({ message: "Screenshot required" });
+    }
+
+    // ✅ OCR TEXT EXTRACTION
+    const result = await Tesseract.recognize(paymentProof, 'eng');
+    const text = result.data.text.toLowerCase();
+
+    console.log("OCR TEXT:", text);
+
+    // ✅ EXTRACT VALUES USING REGEX
+    const txnMatch = text.match(/(txn|transaction|ref)[^\d]*(\d{8,})/i);
+    const upiMatches = text.match(/[a-zA-Z0-9.\-_]+@[a-zA-Z]+/g);
+
+    const transactionId = txnMatch ? txnMatch[2] : null;
+    const fromUpi = upiMatches ? upiMatches[0] : null;
+    const toUpi = upiMatches ? upiMatches[1] : null;
+
+    if (!transactionId || !fromUpi || !toUpi) {
+      return res.status(400).json({
+        message: "Could not extract payment details from screenshot"
+      });
+    }
+
+    // ✅ FETCH ADMIN UPI FROM DB
+    // ✅ FETCH ADMIN UPI FROM DB USING TENANT
+const paymentSettings = await PaymentSettings.findOne({ tenant: website });
+
+if (!paymentSettings || !paymentSettings.upi_id) {
+  return res.status(400).json({
+    message: "Admin UPI not configured"
+  });
+}
+
+const adminUpi = paymentSettings.upi_id.toLowerCase();// ⚠️ replace with DB value
+
+   if (toUpi.toLowerCase() !== adminUpi) {
+  return res.status(400).json({
+    message: "Incorrect UPI ID. Payment not sent to admin."
+  });
+}
+
+    // ✅ CHECK DUPLICATE TRANSACTION
+    const existingTxn = await Order.findOne({ transaction_id: transactionId });
+
+    if (existingTxn) {
+      return res.status(400).json({
+        message: "Transaction already used"
+      });
+    }
+
     const orderCount = await Order.countDocuments({ website });
 
     const internalId =
       `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
-
-    const paymentProof = req.file ? req.file.path : null;
 
     const order = await Order.create({
       internal_order_id: internalId,
@@ -530,11 +629,20 @@ exports.createManualPaymentOrder = async (req, res) => {
       products: JSON.parse(products),
 
       payment_proof: paymentProof,
+
+      // ✅ NEW FIELDS
+      transaction_id: transactionId,
+      from_upi: fromUpi,
+      to_upi: toUpi,
     });
 
     res.json({
       order_id: internalId,
-      order,
+      extracted: {
+        transactionId,
+        fromUpi,
+        toUpi
+      }
     });
 
   } catch (error) {
