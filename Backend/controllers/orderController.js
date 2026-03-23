@@ -411,9 +411,7 @@ exports.getCancelledOrdersForReturn = async (req, res) => {
 exports.createManualPaymentOrder = async (req, res) => {
   try {
     const { amount, customer_details, products } = req.body;
-    const website = req.tenant;
-
-    // ✅ 1. BASIC VALIDATION
+    const website = req.tenant;   
     if (!website) {
       return res.status(400).json({ message: "Tenant missing" });
     }
@@ -423,35 +421,25 @@ exports.createManualPaymentOrder = async (req, res) => {
         message: "Missing order data (amount / customer / products)"
       });
     }
-
-    // ✅ 2. FILE CHECK
-    const paymentProof = req.file?.path;
+     const paymentProof = req.file?.path;
 
     if (!paymentProof) {
       return res.status(400).json({
         message: "Screenshot required"
       });
     }
-
-    // ✅ 3. GET OCR VALUES FROM FRONTEND (SAFE FALLBACK)
     let transactionId = req.body.transaction_id || "";
     let fromUpi = req.body.from_upi || "";
     let toUpi = req.body.to_upi || "";
-
-    // ⚠️ IMPORTANT: do NOT block if OCR failed
-    // Only transactionId is mandatory
+   
     if (!transactionId) {
       return res.status(400).json({
         message: "Transaction ID missing (OCR failed or not detected)"
       });
     }
-
-    // normalize
     transactionId = transactionId.trim();
     fromUpi = fromUpi.trim().toLowerCase();
     toUpi = toUpi.trim().toLowerCase();
-
-    // ✅ 4. FETCH ADMIN UPI
    const paymentSettings =
   await PaymentSettings.findOne({ tenant: website }) ||
   await PaymentSettings.findOne({ tenant: null });
@@ -461,18 +449,13 @@ exports.createManualPaymentOrder = async (req, res) => {
         message: "Admin UPI not configured"
       });
     }
-
     const adminUpi = paymentSettings.upi_id.toLowerCase().trim();
 
-    // ⚠️ RELAXED VALIDATION (VERY IMPORTANT FIX)
-    // Only check if toUpi exists
     if (toUpi && toUpi !== adminUpi) {
       return res.status(400).json({
         message: `Wrong UPI. Paid to ${toUpi}, expected ${adminUpi}`
       });
     }
-
-    // ✅ 5. DUPLICATE TRANSACTION CHECK
     const existingTxn = await Order.findOne({ transaction_id: transactionId });
 
     if (existingTxn) {
@@ -480,13 +463,8 @@ exports.createManualPaymentOrder = async (req, res) => {
         message: `Transaction ID ${transactionId} already exists. Please upload a different payment screenshot.`
       });
     }
-
-    // ✅ 6. GENERATE ORDER ID
     const orderCount = await Order.countDocuments({ website });
-
     const internalId = `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
-
-    // ✅ 7. SAFE PARSE JSON
     let parsedCustomer;
     let parsedProducts;
 
@@ -499,7 +477,6 @@ exports.createManualPaymentOrder = async (req, res) => {
       });
     }
 
-    // ✅ 8. CREATE ORDER
     const order = await Order.create({
       internal_order_id: internalId,
       website,
@@ -522,7 +499,6 @@ exports.createManualPaymentOrder = async (req, res) => {
       to_upi: toUpi || null,
     });
 
-    // ✅ 9. SUCCESS RESPONSE
     return res.status(200).json({
       success: true,
       order_id: internalId,
@@ -544,7 +520,7 @@ exports.createManualPaymentOrder = async (req, res) => {
   }
 };
 
-// ✅ NEW OCR ONLY API
+
 exports.extractPaymentDetails = async (req, res) => {
   try {
     const paymentProof = req.file?.path;
@@ -568,7 +544,7 @@ let toUpi = null;
 if (upiMatches && upiMatches.length > 0) {
   const normalizedUpis = upiMatches.map(u => u.toLowerCase().trim());
 
-  // find admin UPI
+
   const adminUpi = (await PaymentSettings.findOne({ tenant: req.tenant }) 
     || await PaymentSettings.findOne({ tenant: null }))
     ?.upi_id?.toLowerCase().trim();
@@ -587,7 +563,7 @@ if (upiMatches && upiMatches.length > 0) {
   }
 
 } else {
-  // fallback when admin upi not configured
+
   toUpi = normalizedUpis[0] || null;
   fromUpi = normalizedUpis[1] || null;
 }
