@@ -562,8 +562,26 @@ exports.extractPaymentDetails = async (req, res) => {
     const upiMatches = text.match(/[a-zA-Z0-9.\-_]+@[a-zA-Z]+/g);
 
     const transactionId = txnMatch ? txnMatch[2] : null;
-    const fromUpi = upiMatches ? upiMatches[0] : null;
-    const toUpi = upiMatches ? upiMatches[1] : null;
+let fromUpi = null;
+let toUpi = null;
+
+if (upiMatches && upiMatches.length > 0) {
+  const normalizedUpis = upiMatches.map(u => u.toLowerCase().trim());
+
+  // find admin UPI
+  const adminUpi = (await PaymentSettings.findOne({ tenant: req.tenant }) 
+    || await PaymentSettings.findOne({ tenant: null }))
+    ?.upi_id?.toLowerCase().trim();
+
+  if (adminUpi) {
+    toUpi = normalizedUpis.find(u => u === adminUpi) || null;
+    fromUpi = normalizedUpis.find(u => u !== adminUpi) || null;
+  } else {
+    // fallback
+    fromUpi = normalizedUpis[0] || null;
+    toUpi = normalizedUpis[1] || null;
+  }
+}
 
     return res.json({
       transactionId,
