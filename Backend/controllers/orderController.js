@@ -167,9 +167,7 @@ exports.getAllOrders = async (req, res) => {
   totalAmount: order.amount,
   orderStatus: order.order_status,
   paymentStatus: order.payment_status,
-  paymentProof: order.payment_proof
-    ? `${process.env.BASE_URL}/uploads/${order.payment_proof}`
-    : null
+paymentProof: order.payment_proof || null,
 }));
 
     res.json(formatted);
@@ -430,36 +428,71 @@ exports.getCancelledOrdersForReturn = async (req, res) => {
 //   res.json({ order_id: internalId });
 // };
 
+// exports.createManualPaymentOrder = async (req, res) => {
+//   try {
+
+//     const { amount, customer_details, products } = req.body;
+//    const website = req.tenant;
+//     if (!website) {
+//       return res.status(400).json({ message: "Tenant missing" });
+//     }
+
+//     const orderCount = await Order.countDocuments({ website });
+
+//     const internalId =
+//       `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
+
+//     const order = await Order.create({
+//       internal_order_id: internalId,
+//       website,
+//       payment_mode: "BANK",
+//       payment_status: "PENDING_VERIFICATION",
+//       order_status: "pending",
+//       amount,
+//       customer_details: JSON.parse(customer_details),
+//       products: JSON.parse(products),
+//       payment_proof: req.file?.filename,
+//     });
+
+//     res.json({ order_id: internalId });
+
+//   } catch (error) {
+//     console.error("Manual Payment Error:", error);
+//     res.status(500).json({ message: "Manual payment order failed" });
+//   }
+// };
+
 exports.createManualPaymentOrder = async (req, res) => {
   try {
 
-    const { amount, customer_details, products } = req.body;
-   const website = req.tenant;
-    if (!website) {
-      return res.status(400).json({ message: "Tenant missing" });
-    }
+    const paymentProof = req.file ? req.file.path : null;
 
-    const orderCount = await Order.countDocuments({ website });
+    const order = new Order({
+      internal_order_id: req.body.internal_order_id,
+      website: req.body.website,
 
-    const internalId =
-      `CHAKRA-2026-${String(orderCount + 1).padStart(4, "0")}`;
-
-    const order = await Order.create({
-      internal_order_id: internalId,
-      website,
       payment_mode: "BANK",
+      payment_proof: paymentProof, // ⭐ SAVE FILE NAME
+
       payment_status: "PENDING_VERIFICATION",
       order_status: "pending",
-      amount,
-      customer_details: JSON.parse(customer_details),
-      products: JSON.parse(products),
-      payment_proof: req.file?.filename,
+
+      amount: req.body.amount,
+      currency: "INR",
+
+      customer_details: req.body.customer_details,
+      products: req.body.products,
     });
 
-    res.json({ order_id: internalId });
+    await order.save();
 
-  } catch (error) {
-    console.error("Manual Payment Error:", error);
-    res.status(500).json({ message: "Manual payment order failed" });
+    res.status(201).json({
+      success: true,
+      order,
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Order creation failed" });
   }
 };
