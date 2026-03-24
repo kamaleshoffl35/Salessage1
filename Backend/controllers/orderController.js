@@ -535,7 +535,7 @@ exports.extractPaymentDetails = async (req, res) => {
     console.log("OCR TEXT:", text);
 
     const txnMatch = text.match(/(txn|transaction|ref)[^\d]*(\d{8,})/i);
-    const upiMatches = text.match(/[a-zA-Z0-9.\-_]+@[a-zA-Z]+/g);
+const upiMatches = text.match(/[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+/g);
 
     const transactionId = txnMatch ? txnMatch[2] : null;
 let fromUpi = null;
