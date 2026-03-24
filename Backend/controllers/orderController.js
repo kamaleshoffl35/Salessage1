@@ -530,12 +530,17 @@ exports.extractPaymentDetails = async (req, res) => {
     }
 
     const result = await Tesseract.recognize(paymentProof, "eng");
-    const text = result.data.text.toLowerCase();
+   let text = result.data.text.toLowerCase();
+
+// remove line breaks and normalize spaces
+text = text.replace(/\n/g, " ");
+text = text.replace(/\s*@\s*/g, "@"); 
+text = text.replace(/\s+/g, " ");
 
     console.log("OCR TEXT:", text);
 
     const txnMatch = text.match(/(txn|transaction|ref)[^\d]*(\d{8,})/i);
-const upiMatches = text.match(/[a-zA-Z0-9.\-_]+@[a-zA-Z0-9.\-_]+/g);
+const upiMatches = text.match(/[a-z0-9.\-_]{2,}@[a-z0-9.\-_]{2,}/g);
 
     const transactionId = txnMatch ? txnMatch[2] : null;
 let fromUpi = null;
