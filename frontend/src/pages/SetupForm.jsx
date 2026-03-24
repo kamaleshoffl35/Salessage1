@@ -1,10 +1,8 @@
 import { useEffect, useState } from "react";
 import API from "../api/axiosInstance";
 import { useNavigate } from "react-router-dom";
-
 const SetupForm = () => {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
     title: "",
     tagline: "",
@@ -13,6 +11,7 @@ const SetupForm = () => {
     phone: "",
     email: "",
     address: "",
+    modules: [],
     socialLinks: {
       instagram: "",
       whatsapp: "",
@@ -20,18 +19,23 @@ const SetupForm = () => {
     },
     footerDescription: "",
     footerCardImage: "",
+     developedBy: "",   
+  copyright: "", 
+  offers: [],
     quickLinks: [],
-    customerCare: { phone: "", email: "" },
+  customerCare: [],
     categories: [],
     extraFields: [],
   });
 
   const [loading, setLoading] = useState(true);
-
+const [isEdit, setIsEdit] = useState(false);
   useEffect(() => {
     API.get("/setup")
       .then((res) => {
-        if (res.data) setForm(res.data);
+        if (res.data) 
+            setForm(res.data);
+        setIsEdit(true)
       })
       .finally(() => setLoading(false));
   }, []);
@@ -46,21 +50,19 @@ const SetupForm = () => {
     });
   };
 
-  // QUICK LINKS
   const addQuickLink = () => {
     setForm({
       ...form,
-      quickLinks: [...form.quickLinks, { name: "", url: "" }],
+      quickLinks: [...form.quickLinks, { name: ""}],
     });
   };
 
-  const handleQuickLinkChange = (i, key, value) => {
-    const updated = [...form.quickLinks];
-    updated[i][key] = value;
-    setForm({ ...form, quickLinks: updated });
-  };
+const handleQuickLinkChange = (i, value) => {
+  const updated = [...form.quickLinks];
+  updated[i].name = value;
+  setForm({ ...form, quickLinks: updated });
+};
 
-  // CATEGORIES
   const addCategory = () => {
     setForm({
       ...form,
@@ -74,116 +76,313 @@ const SetupForm = () => {
     setForm({ ...form, categories: updated });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    await API.post("/setup", form);
-    navigate("/");
-  };
+ const handleSubmit = async (e) => {
+  e.preventDefault();
 
+  const formData = new FormData();
+
+  Object.keys(form).forEach((key) => {
+    if (key === "logo" || key === "footerCardImage") {
+      if (form[key] instanceof File) {
+        formData.append(key, form[key]); 
+      }
+    } else {
+      formData.append(key, JSON.stringify(form[key]));
+    }
+  });
+
+  if (isEdit) {
+    await API.post("/setup", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  } else {
+    await API.post("/setup", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  }
+  navigate("/");
+};
+
+  const addModule = () => {
+  setForm({
+    ...form,
+    modules: [...form.modules, { name: "", subModules: [] }],
+  });
+};
+
+const handleModuleChange = (i, key, value) => {
+  const updated = [...form.modules];
+  updated[i][key] = value;
+  setForm({ ...form, modules: updated });
+};
+const addSubModule = (i) => {
+  const updated = [...form.modules];
+  updated[i].subModules.push({ name: "" });
+  setForm({ ...form, modules: updated });
+};
+
+const handleSubModuleChange = (i, j, value) => {
+  const updated = [...form.modules];
+  updated[i].subModules[j].name = value;
+  setForm({ ...form, modules: updated });
+};
+
+const addOffer = () => {
+  setForm({
+    ...form,
+    offers: [...form.offers, { description: "" }],
+  });
+};
+
+const handleOfferChange = (i, value) => {
+  const updated = [...form.offers];
+  updated[i].description = value;
+  setForm({ ...form, offers: updated });
+};
   if (loading) return <p className="text-center mt-5">Loading...</p>;
 
-  return (
-    <div className="d-flex justify-content-center" style={{ background: "#eef2f7", minHeight: "100vh" }}>
-      <div className="card p-4 shadow-lg mt-4 mb-4" style={{ width: "700px" }}>
+  const addCustomerCare = () => {
+  setForm({
+    ...form,
+    customerCare: [...form.customerCare, { phone: "", email: "" }],
+  });
+};
 
-        <h3 className="text-center fw-bold">Company Setup & Branding</h3>
+const handleCustomerCareChange = (i, key, value) => {
+  const updated = [...form.customerCare];
+  updated[i][key] = value;
+  setForm({ ...form, customerCare: updated });
+};
+ return (
+  <div className="container-fluid px-4 mt-3">
+    <div className="card shadow-lg p-4">
+      <h3 className="fw-bold mb-4">Company Setup & Branding</h3>
+      <form className="row g-4" onSubmit={handleSubmit}>
+        <div className="col-md-4">
+          <label>Company Name</label>
+          <input
+            className="form-control bg-light"
+            name="title"
+            value={form.title}
+            onChange={handleChange}
+          />
+        </div>
+        <div className="col-md-4">
+          <label>Tagline</label>
+          <input
+            className="form-control bg-light"
+            name="tagline"
+            value={form.tagline}
+            onChange={handleChange}
+          />
+        </div>
 
-        <form onSubmit={handleSubmit}>
-
-          {/* 🏢 COMPANY */}
-          <h5 className="mt-3 text-primary">Company</h5>
-          <input className="form-control mb-2" name="title" placeholder="Company Name"
-            value={form.title} onChange={handleChange} required />
-
-          <input className="form-control mb-2" name="tagline" placeholder="Tagline"
-            value={form.tagline} onChange={handleChange} />
-
-          <input className="form-control mb-2" name="logo" placeholder="Logo URL"
-            value={form.logo} onChange={handleChange} />
-
-          <textarea className="form-control mb-3" name="description"
-            placeholder="Description"
-            value={form.description} onChange={handleChange} />
-
-          {/* 📞 CONTACT */}
-          <h5 className="text-primary">Contact</h5>
-          <input className="form-control mb-2" name="phone" placeholder="Phone"
+        <div className="col-md-4">
+          <label>Logo</label>
+          <input
+            type="file"
+            className="form-control bg-light"
+            onChange={(e) =>
+              setForm({ ...form, logo: e.target.files[0] })
+            }
+          />
+        </div>
+        <div className="col-12">
+          <label>Description</label>
+          <textarea
+            className="form-control bg-light"
+            rows="3"
+            name="description"
+            value={form.description}
+            onChange={handleChange}
+          />
+        </div>
+ <label>Contact Details</label>
+        <div className="col-md-4">
+             
+          <input className="form-control bg-light" placeholder="Phone" name="phone"
             value={form.phone} onChange={handleChange} />
+        </div>
 
-          <input className="form-control mb-2" name="email" placeholder="Email"
+        <div className="col-md-4">
+          <input className="form-control bg-light" placeholder="Email" name="email"
             value={form.email} onChange={handleChange} />
+        </div>
 
-          <input className="form-control mb-3" name="address" placeholder="Address"
+        <div className="col-md-4">
+          <input className="form-control bg-light" placeholder="Address" name="address"
             value={form.address} onChange={handleChange} />
-
-          {/* 🌐 SOCIAL */}
-          <h5 className="text-primary">Social Media</h5>
-          <input className="form-control mb-2" placeholder="Instagram"
+        </div>
+ <label>Social Links</label>
+        <div className="col-md-4">
+          <input className="form-control bg-light" placeholder="Instagram"
             value={form.socialLinks.instagram}
-            onChange={(e) => handleNestedChange("socialLinks", "instagram", e.target.value)} />
+            onChange={(e) =>
+              handleNestedChange("socialLinks", "instagram", e.target.value)
+            }
+          />
+        </div>
 
-          <input className="form-control mb-2" placeholder="WhatsApp"
+        <div className="col-md-4">
+          <input className="form-control bg-light" placeholder="WhatsApp"
             value={form.socialLinks.whatsapp}
-            onChange={(e) => handleNestedChange("socialLinks", "whatsapp", e.target.value)} />
+            onChange={(e) =>
+              handleNestedChange("socialLinks", "whatsapp", e.target.value)
+            }
+          />
+        </div>
 
-          <input className="form-control mb-3" placeholder="Facebook"
+        <div className="col-md-4">
+          <input className="form-control bg-light" placeholder="Facebook"
             value={form.socialLinks.facebook}
-            onChange={(e) => handleNestedChange("socialLinks", "facebook", e.target.value)} />
+            onChange={(e) =>
+              handleNestedChange("socialLinks", "facebook", e.target.value)
+            }
+          />
+        </div>
+<div className="col-12">
+  <div className="row">
+    <div className="col-md-4">
+      <label>Quick Links</label>
 
-          {/* 🦶 FOOTER */}
-          <h5 className="text-primary">Footer</h5>
-          <textarea className="form-control mb-2" name="footerDescription"
-            placeholder="Footer Description"
-            value={form.footerDescription} onChange={handleChange} />
+      {form.quickLinks.map((l, i) => (
+        <div key={i} className="mb-2">
+          <input
+            className="form-control bg-light"
+            placeholder="Quick Link Name"
+            value={l.name}
+            onChange={(e) =>
+              handleQuickLinkChange(i, e.target.value)
+            }
+          />
+        </div>
+      ))}
 
-          <input className="form-control mb-3" name="footerCardImage"
-            placeholder="Footer Card Image URL"
-            value={form.footerCardImage} onChange={handleChange} />
-
-          {/* 🔗 QUICK LINKS */}
-          <h5 className="text-primary">Quick Links</h5>
-          {form.quickLinks.map((l, i) => (
-            <div key={i} className="d-flex gap-2 mb-2">
-              <input className="form-control" placeholder="Name"
-                value={l.name}
-                onChange={(e) => handleQuickLinkChange(i, "name", e.target.value)} />
-
-              <input className="form-control" placeholder="URL"
-                value={l.url}
-                onChange={(e) => handleQuickLinkChange(i, "url", e.target.value)} />
-            </div>
-          ))}
-          <button type="button" className="btn btn-outline-secondary mb-3" onClick={addQuickLink}>
-            + Add Link
-          </button>
-
-          {/* 🛒 CATEGORIES */}
-          <h5 className="text-primary">Categories</h5>
-          {form.categories.map((c, i) => (
-            <input key={i} className="form-control mb-2"
-              value={c}
-              placeholder="Category"
-              onChange={(e) => handleCategoryChange(i, e.target.value)} />
-          ))}
-          <button type="button" className="btn btn-outline-secondary mb-3" onClick={addCategory}>
-            + Add Category
-          </button>
-
-          {/* 👩‍💼 CUSTOMER CARE */}
-          <h5 className="text-primary">Customer Care</h5>
-          <input className="form-control mb-2" placeholder="Care Phone"
-            value={form.customerCare.phone}
-            onChange={(e) => handleNestedChange("customerCare", "phone", e.target.value)} />
-
-          <input className="form-control mb-3" placeholder="Care Email"
-            value={form.customerCare.email}
-            onChange={(e) => handleNestedChange("customerCare", "email", e.target.value)} />
-
-          <button className="btn btn-primary w-100">Save</button>
-        </form>
-      </div>
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-secondary"
+        onClick={addQuickLink}
+      >
+    Add Link
+      </button>
     </div>
-  );
+    <div className="col-md-4">
+      <label>Modules</label>
+
+      {form.modules.map((mod, i) => (
+        <div key={i} className="border p-2 mb-2 rounded">
+
+          <input
+            className="form-control bg-light mb-2"
+            placeholder="Module Name"
+            value={mod.name}
+            onChange={(e) =>
+              handleModuleChange(i, "name", e.target.value)
+            }
+          />
+
+          {mod.subModules.map((sub, j) => (
+            <input
+              key={j}
+              className="form-control bg-light mb-1"
+              placeholder="Sub Module"
+              value={sub.name}
+              onChange={(e) =>
+                handleSubModuleChange(i, j, e.target.value)
+              }
+            />
+          ))}
+
+          <button
+            type="button"
+            className="btn btn-sm btn-outline-secondary mt-1"
+            onClick={() => addSubModule(i)}
+          >
+            Sub
+          </button>
+        </div>
+      ))}
+
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-secondary"
+        onClick={addModule}
+      >
+        Add Module
+      </button>
+    </div>
+
+    <div className="col-md-4">
+      <label>Offers</label>
+
+      {form.offers.map((offer, i) => (
+        <textarea
+          key={i}
+          className="form-control bg-light mb-2"
+          placeholder="Offer Description"
+          value={offer.description}
+          onChange={(e) =>
+            handleOfferChange(i, e.target.value)
+          }
+        />
+      ))}
+
+      <button
+        type="button"
+        className="btn btn-sm btn-outline-secondary"
+        onClick={addOffer}
+      >
+        Add Offer
+      </button>
+    </div>
+
+  </div>
+</div>
+        <div className="col-md-6">
+          <input className="form-control bg-light" placeholder="Developed By"
+            name="developedBy"
+            value={form.developedBy}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="col-md-6">
+          <input className="form-control bg-light" placeholder="Copyright"
+            name="copyright"
+            value={form.copyright}
+            onChange={handleChange}
+          />
+        </div>
+<div className="col-md-6">
+  <label>Footer Description</label>
+  <textarea
+    className="form-control bg-light"
+    rows="2"
+    name="footerDescription"
+    value={form.footerDescription}
+    onChange={handleChange}
+  />
+</div>
+<div className="col-md-6">
+  <label>Footer Card Image</label>
+  <input
+    type="file"
+    className="form-control bg-light"
+    onChange={(e) =>
+      setForm({ ...form, footerCardImage: e.target.files[0] })
+    }
+  />
+</div>
+        <div className="col-12 text-end">
+          <button className="btn add text-white px-4">
+  {isEdit ? "Update Setup" : "Save Setup"}
+</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+);
 };
 
 export default SetupForm;

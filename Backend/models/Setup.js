@@ -2,46 +2,50 @@ const mongoose = require("mongoose");
 
 const setupSchema = new mongoose.Schema(
   {
-    // 🏢 COMPANY
     title: { type: String, required: true },
     tagline: String,
     description: String,
     logo: String,
-
-    // 📞 CONTACT
     phone: String,
     email: String,
     address: String,
-
-    // 🌐 SOCIAL MEDIA
     socialLinks: {
       instagram: String,
       whatsapp: String,
       facebook: String,
     },
-
-    // 🦶 FOOTER
+    modules: [
+      {
+        name: String,
+        subModules: [
+          {
+            name: String,
+          },
+        ],
+      },
+    ],
+    offers: [
+      {
+        description: String,
+      },
+    ],
     footerDescription: String,
     footerCardImage: String,
-
-    // 🔗 QUICK LINKS
+    developedBy: String,
+    copyright: String,
     quickLinks: [
       {
         name: String,
-        url: String,
+      },
+    ],
+    customerCare: [
+      {
+        phone: String,
+        email: String,
       },
     ],
 
-    // 👩‍💼 CUSTOMER CARE
-    customerCare: {
-      phone: String,
-      email: String,
-    },
-
-    // 🛒 CATEGORIES
     categories: [String],
-
-    // ➕ EXTRA
     extraFields: [
       {
         label: String,
@@ -54,7 +58,7 @@ const setupSchema = new mongoose.Schema(
       ref: "User",
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 module.exports = mongoose.model("Setup", setupSchema);

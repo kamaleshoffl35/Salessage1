@@ -1,11 +1,6 @@
 const multer = require("multer");
 const { CloudinaryStorage } = require("multer-storage-cloudinary");
 const cloudinary = require("../config/cloudinary");
-
-/* ================================
-   Product Image Upload
-================================ */
-
 const productStorage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -15,11 +10,6 @@ const productStorage = new CloudinaryStorage({
 });
 
 const uploadProduct = multer({ storage: productStorage });
-
-/* ================================
-   Payment Screenshot Upload
-================================ */
-
 const paymentStorage = new CloudinaryStorage({
   cloudinary,
   params: {
@@ -29,10 +19,6 @@ const paymentStorage = new CloudinaryStorage({
 });
 
 const uploadPayment = multer({ storage: paymentStorage });
-
-/* ================================
-   QR Code Upload (NEW)
-================================ */
 
 const qrStorage = new CloudinaryStorage({
   cloudinary,
@@ -44,8 +30,40 @@ const qrStorage = new CloudinaryStorage({
 
 const uploadQR = multer({ storage: qrStorage });
 
+const logoStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "company_logos",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+  },
+});
+
+const uploadLogo = multer({ storage: logoStorage });
+
+const footerStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "footer_images",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+  },
+});
+
+const setupStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: "setup",
+    allowed_formats: ["jpg", "png", "jpeg", "webp"],
+  },
+});
+
+const uploadSetup = multer({ storage: setupStorage });
+
+const uploadFooter = multer({ storage: footerStorage });
 module.exports = {
   uploadProduct,
   uploadPayment,
-  uploadQR
+  uploadQR,
+  uploadLogo,
+  uploadFooter, 
+  uploadSetup,
 };
