@@ -10,6 +10,10 @@ const orderSchema = new mongoose.Schema(
       required: true,
     },
     payment_proof: String,
+    payment_app:{
+type:String,
+enum:["GPAY","PAYTM","PHONEPE"],
+},
     payment_status: {
       type: String,
       enum: ["SUCCESS", "PENDING", "FAILED", "CANCELLED","PENDING_VERIFICATION"], 

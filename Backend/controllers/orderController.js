@@ -412,6 +412,7 @@ exports.createManualPaymentOrder = async (req, res) => {
   try {
     const { amount, customer_details, products } = req.body;
     const website = req.tenant;   
+    const paymentApp = req.body.payment_app || null;
     if (!website) {
       return res.status(400).json({ message: "Tenant missing" });
     }
@@ -484,6 +485,7 @@ exports.createManualPaymentOrder = async (req, res) => {
 
       payment_mode: "BANK",
       payment_status: "PENDING_VERIFICATION",
+      payment_app: paymentApp,
       order_status: "pending",
 
       amount,
