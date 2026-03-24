@@ -17,16 +17,37 @@ const Login = () => {
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   setError("");
+  //   try {
+  //     await login(form.email.trim(), form.password.trim());
+  //     navigate("/");
+  //   } catch (err) {
+  //     setError(err.response?.data?.error || err.message);
+  //   }
+  // };
+
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError("");
-    try {
-      await login(form.email.trim(), form.password.trim());
-      navigate("/");
-    } catch (err) {
-      setError(err.response?.data?.error || err.message);
+  e.preventDefault();
+  setError("");
+
+  try {
+    await login(form.email.trim(), form.password.trim());
+
+    // 🔥 CHECK SETUP EXISTS
+    const setup = await API.get("/setup");
+
+    if (!setup.data) {
+      navigate("/setup");   // first time
+    } else {
+      navigate("/");        // already completed
     }
-  };
+
+  } catch (err) {
+    setError(err.response?.data?.error || err.message);
+  }
+};
   return (
     <div className="d-flex justify-content-center align-items-center vh-100"
       style={{ backgroundColor: "#c2cdd8ff" }}

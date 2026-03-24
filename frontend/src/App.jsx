@@ -28,6 +28,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import ResetPassword from "./pages/ResetPassword";
 import OrdersPage from "./pages/OrdersPage";
 import CancelledOrdersPage from "./pages/CancelledOrdersPage";
+import SetupForm from "./pages/SetupForm";
 import Category from "./pages/Category";
 import API from "./api/axiosInstance";
 import { Outlet } from "react-router-dom";
@@ -67,8 +68,11 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+        
         <Route element={<ProtectedRoute roles={["super_admin", "admin", "user"]} />}>
+
           <Route path="/" element={<Dashboard />}>
+          <Route path="/setup" element={<SetupForm />} />
             <Route path="products" element={<Product />} />
             <Route path="categories" element={<Category />} />
             <Route path="units" element={<UnitMaster/> } />

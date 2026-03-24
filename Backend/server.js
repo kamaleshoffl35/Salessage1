@@ -25,6 +25,7 @@ const userRoutes = require("./routes/userRoutes");
 const cartRoutes = require("./routes/cartRoutes");
 const reviewRoutes = require("./routes/reviewRoutes");
 const paymentsettingsRoutes = require("./routes/paymentsettingsRoutes")
+const setupRoutes = require("./routes/setupRoutes")
 const app = express();
 const cookieParser = require("cookie-parser");
 
@@ -88,6 +89,7 @@ mongoose.connect(process.env.MONGO_URI)
     console.log("MongoDB connected");
  })
 .catch(err => console.log(err));
+app.use("/api/setup", setupRoutes)
 app.use("/api/products", productRoutes);
 app.use("/uploads", express.static("uploads"));
 app.use("/api/categories", categoryRoutes);

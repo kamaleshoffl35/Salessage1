@@ -50,6 +50,7 @@ useEffect(() => {
   }, []);
   const modules = [
     { name: "Dashboard", path: "/", icon: <AiOutlineDashboard />, roles: ["super_admin", "admin", "user"] },
+    { name: "Setup", path: "/setup", icon: <AiOutlineDashboard />, roles: ["super_admin"] },
     { name: "Products", path: "/products", icon: <MdProductionQuantityLimits />, roles: ["super_admin", "admin", "user"] },
     { name: "Categories", path: "/categories", icon: <MdOutlineCategory />, roles: ["super_admin", "admin", "user"] },
     { name: "Units", path: "/units", icon:<MdAttachMoney/>, roles:["super_admin","admin","user"]},
