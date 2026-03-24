@@ -112,7 +112,13 @@ const OrdersPage = () => {
 
   const tableColumns = [
     { key: "orderNumber", header: "Order ID", render: (o) => o.orderNumber },
+      { key: "date", header: "Date", render: (o) => o.orderDate },
     { key: "customer", header: "Customer", render: (o) => o.user?.name || "-" },
+      { key: "phone", header: "Phone", render: (o) => o.user?.phone || "-" },
+        { key: "transaction", header: "Transaction ID", render: (o) => o.transaction_id || "-" },
+        { key: "paymentMode", header: "Payment Mode", render: (o) => o.paymentMode },
+         { key: "paymentApp", header: "Payment App", render: (o) => o.payment_app || "-" },
+
     { key: "totalAmount", header: "Total", render: (o) => `₹${o.totalAmount}` },
  {
   key: "paymentProof",
@@ -320,7 +326,21 @@ const OrdersPage = () => {
                     <p>
                       <b>Payment Mode:</b> {selectedOrder.paymentMode}
                     </p>
+<p>
+  <b>Transaction ID:</b> {selectedOrder.transaction_id}
+</p>
 
+<p>
+  <b>Payment App:</b> {selectedOrder.payment_app}
+</p>
+
+<p>
+  <b>From UPI:</b> {selectedOrder.from_upi}
+</p>
+
+<p>
+  <b>To UPI:</b> {selectedOrder.to_upi}
+</p>
                     <p>
                       <b>Total:</b> ₹{selectedOrder.totalAmount}
                     </p>

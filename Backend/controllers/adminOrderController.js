@@ -41,39 +41,39 @@ exports.getAllOrders = async (req, res) => {
     const orders = await Order.find().sort({ createdAt: -1 });
 
     const formatted = orders.map((order) => ({
-      _id: order._id,
-      orderNumber: order.internal_order_id,
+  _id: order._id,
+  orderNumber: order.internal_order_id,
 
-      createdAt: order.createdAt,
-      orderDate: new Date(order.createdAt).toLocaleString("en-IN"),
+  createdAt: order.createdAt,
+  orderDate: new Date(order.createdAt).toLocaleString("en-IN"),
 
-      user: {
-        name: order.customer_details?.fullName,
-        email: order.customer_details?.email,
-        phone: order.customer_details?.phone,
-        addressLine1: order.customer_details?.addressLine1,
-        city: order.customer_details?.city,
-        state: order.customer_details?.state,
-        postalCode: order.customer_details?.postalCode,
-        country: order.customer_details?.country,
-      },
+  transaction_id: order.transaction_id,
+  payment_app: order.payment_app,
+  from_upi: order.from_upi,
+  to_upi: order.to_upi,
 
-      products: order.products,
+  user: {
+    name: order.customer_details?.fullName,
+    email: order.customer_details?.email,
+    phone: order.customer_details?.phone,
+    addressLine1: order.customer_details?.addressLine1,
+    city: order.customer_details?.city,
+    state: order.customer_details?.state,
+    postalCode: order.customer_details?.postalCode,
+    country: order.customer_details?.country,
+  },
 
-      totalAmount: order.amount,
-      currency: order.currency,
-      paymentMode: order.payment_mode,
+  products: order.products,
 
-      orderStatus: order.order_status,
-      paymentStatus: order.payment_status,
+  totalAmount: order.amount,
+  currency: order.currency,
+  paymentMode: order.payment_mode,
 
-      // ✅ ADD THIS
-     paymentProof: order.payment_proof
-  ? order.payment_proof.startsWith("http")
-    ? order.payment_proof
-    : `${process.env.BASE_URL}/uploads/${order.payment_proof}`
-  : null,
-    }));
+  orderStatus: order.order_status,
+  paymentStatus: order.payment_status,
+
+  paymentProof: order.payment_proof
+}));
 
     res.json(formatted);
 
